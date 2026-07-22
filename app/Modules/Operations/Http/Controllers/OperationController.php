@@ -1,0 +1,165 @@
+<?php
+
+namespace App\Modules\Operations\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use App\Modules\Operations\Application\Actions\RegisterOperation;
+use App\Modules\Operations\Application\Actions\ListOperations;
+use App\Modules\Operations\Application\Actions\AnnulOperation;
+use App\Modules\Operations\Http\Requests\RegisterOperationRequest;
+use App\Modules\Operations\Http\Requests\AnnulOperationRequest;
+use App\Modules\Operations\Models\Operation;
+use App\Modules\Operations\Models\OperationType;
+use App\Modules\BankingNetwork\Models\BankAgent;
+use App\Modules\BankingNetwork\Models\UserBankAgentAssignment;
+use App\Modules\Audit\Models\AuditLog;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
+use Illuminate\View\View;
+
+class OperationController extends Controller
+{
+    public function index(Request $request, ListOperations $listOperations): View
+    {
+        Gate::authorize('viewAny', Operation::class);
+
+        $user = auth()->user();
+        $isAdmin = $user->role->value === 'ADMINISTRADOR_PROPIETARIO';
+
+        $operations = $listOperations->execute(
+            $request->only(['bank_agent_id', 'operation_type_id', 'status', 'user_id', 'date_from', 'date_to']),
+            $isAdmin,
+            $user->id,
+            $user->organization_id,
+        );
+
+        $agents = collect();
+        $types = collect();
+
+        if ($isAdmin) {
+            $agents = BankAgent::where('organization_id', $user->organization_id)->orderBy('code')->get();
+        } else {
+            $agents = BankAgent::whereHas('activeAssignments', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })->orderBy('code')->get();
+        }
+
+        $types = OperationType::where('organization_id', $user->organization_id)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        return view('operations.index', compact('operations', 'agents', 'types'));
+    }
+
+    public function create(): View
+    {
+        Gate::authorize('register', Operation::class);
+
+        $user = auth()->user();
+
+        $assignments = UserBankAgentAssignment::with(['bankAgent.store', 'bankAgent.bank'])
+            ->where('user_id', $user->id)
+            ->where('is_active', true)
+            ->get();
+
+        $agentIds = $assignments->pluck('bank_agent_id');
+
+        $bankIds = $assignments->map(function ($assignment) {
+            return $assignment->bankAgent->bank_id;
+        })->unique()->toArray();
+
+        $types = OperationType::where('organization_id', $user->organization_id)
+            ->where('is_active', true)
+            ->where(function ($query) use ($bankIds) {
+                $query->whereNull('bank_id')
+                    ->orWhereIn('bank_id', $bankIds);
+            })
+            ->orderBy('name')
+            ->get();
+
+        $idempotencyKey = hash('sha256', Str::uuid()->toString() . microtime());
+
+        return view('operations.create', compact('assignments', 'types', 'idempotencyKey'));
+    }
+
+    public function store(RegisterOperationRequest $request, RegisterOperation $registerOperation): RedirectResponse
+    {
+        Gate::authorize('register', Operation::class);
+
+        $existing = Operation::where('idempotency_key', $request->input('idempotency_key'))->first();
+
+        if ($existing) {
+            return redirect()->route('operations.show', $existing)
+                ->with('status', 'Esta operación ya fue registrada previamente.')
+                ->with('idempotent', true);
+        }
+
+        try {
+            $operation = $registerOperation->execute(
+                $request->validated(),
+                auth()->id(),
+                auth()->user()->organization_id,
+            );
+
+            AuditLog::create([
+                'correlation_id' => (string) Str::uuid(),
+                'created_at' => now(),
+                'organization_id' => $operation->organization_id,
+                'actor_user_id' => auth()->id(),
+                'action' => 'operation.created',
+                'entity_type' => Operation::class,
+                'entity_id' => $operation->id,
+                'before_values' => null,
+                'after_values' => $operation->only(['amount', 'currency', 'status', 'effective_at']),
+                'occurred_at' => now(),
+            ]);
+
+            return redirect()->route('operations.show', $operation)
+                ->with('status', 'Operación registrada correctamente.');
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            $existingByKey = Operation::where('idempotency_key', $request->input('idempotency_key'))->first();
+            if ($existingByKey) {
+                return redirect()->route('operations.show', $existingByKey)
+                    ->with('status', 'Esta operación ya fue registrada previamente.')
+                    ->with('idempotent', true);
+            }
+            throw $e;
+        }
+    }
+
+    public function show(Operation $operation): View
+    {
+        Gate::authorize('view', $operation);
+
+        $operation->load(['bankAgent.store', 'bankAgent.bank', 'operationType', 'user', 'annulledBy']);
+
+        return view('operations.show', compact('operation'));
+    }
+
+    public function annul(AnnulOperationRequest $request, Operation $operation, AnnulOperation $annulOperation): RedirectResponse
+    {
+        Gate::authorize('annul', $operation);
+
+        $user = auth()->user();
+        $isAdmin = $user->role->value === 'ADMINISTRADOR_PROPIETARIO';
+
+        try {
+            $annulOperation->execute(
+                $operation,
+                $request->input('reason'),
+                $user->id,
+                $isAdmin,
+            );
+
+            return redirect()->route('operations.show', $operation)
+                ->with('status', 'Operación anulada correctamente.');
+        } catch (\RuntimeException $e) {
+            return redirect()->route('operations.show', $operation)
+                ->withErrors(['annulment' => $e->getMessage()]);
+        }
+    }
+}

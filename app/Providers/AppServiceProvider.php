@@ -6,7 +6,6 @@ use App\Modules\IdentityAccess\Services\JwtTokenService;
 use App\Modules\IdentityAccess\Services\RefreshTokenService;
 use Illuminate\Support\ServiceProvider;
 use Psr\Clock\ClockInterface;
-use Psr\Clock\Clock;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -16,12 +15,7 @@ class AppServiceProvider extends ServiceProvider
             public function now(): \DateTimeImmutable
             {
                 return new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
-        $this->app->singleton(RefreshTokenService::class, function () {
-            return new RefreshTokenService(
-                pepper: config('session-security.refresh.pepper', ''),
-            );
-        });
-    }
+            }
         });
 
         $this->app->singleton(JwtTokenService::class, function () {
@@ -36,6 +30,12 @@ class AppServiceProvider extends ServiceProvider
                 issuer: config('session-security.jwt.issuer'),
                 audience: config('session-security.jwt.audience'),
                 clock: $this->app->make(ClockInterface::class),
+            );
+        });
+
+        $this->app->singleton(RefreshTokenService::class, function () {
+            return new RefreshTokenService(
+                pepper: config('session-security.refresh.pepper', ''),
             );
         });
     }

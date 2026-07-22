@@ -37,5 +37,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(OperationalStructureSeeder::class);
+        $this->call(OperationTypeSeeder::class);
     }
 }
