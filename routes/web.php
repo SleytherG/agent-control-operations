@@ -8,3 +8,4 @@ require __DIR__.'/identity-access.php';
 require __DIR__.'/organization.php';
 require __DIR__.'/banking-network.php';
 require __DIR__.'/operations.php';
+require __DIR__.'/reporting.php';

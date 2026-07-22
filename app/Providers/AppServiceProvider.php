@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Modules\IdentityAccess\Services\JwtTokenService;
 use App\Modules\IdentityAccess\Services\RefreshTokenService;
+use App\Modules\Reporting\Policies\DashboardPolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Psr\Clock\ClockInterface;
 
@@ -42,6 +44,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        //
+        Gate::define('viewOperatorDashboard', [DashboardPolicy::class, 'viewOperatorDashboard']);
+        Gate::define('viewAdminDashboard', [DashboardPolicy::class, 'viewAdminDashboard']);
     }
 }

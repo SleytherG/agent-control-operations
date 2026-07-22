@@ -9,6 +9,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/identity-access/session-timer.js',
                 'resources/css/identity-access/session.css',
+                'resources/js/reporting/dashboard-charts.js',
             ],
             refresh: true,
         }),
