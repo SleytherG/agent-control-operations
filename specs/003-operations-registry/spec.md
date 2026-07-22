@@ -20,6 +20,12 @@
 
 **Change Classification**: Nueva capacidad funcional
 
+## Clarifications
+
+### Session 2026-07-22
+
+- Q: ¿Cómo se combinan los tipos generales con los tipos por banco en el formulario de registro? → A: Mostrar los tipos del banco del agente más todos los tipos generales combinados.
+
 ## Scope *(mandatory)*
 
 ### In Scope
@@ -50,7 +56,7 @@
 ### Business Rules
 
 - **BR-001**: Solo `ADMINISTRADOR_PROPIETARIO` administra el catálogo de tipos de operación.
-- **BR-002**: Cada tipo de operación tiene nombre, descripción opcional, referencia a un banco o nula para aplicación general, dirección de efectivo (`ENTRADA`, `SALIDA`, `NEUTRA`, `POR_CONFIRMAR`) y estado activo/inactivo. El nombre debe ser único por banco o global si no tiene banco asignado.
+- **BR-002**: Cada tipo de operación tiene nombre, descripción opcional, referencia a un banco o nula para aplicación general, dirección de efectivo (`ENTRADA`, `SALIDA`, `NEUTRA`, `POR_CONFIRMAR`) y estado activo/inactivo. El nombre debe ser único por banco o global si no tiene banco asignado. Al registrar una operación en un agente, el operador ve los tipos del banco del agente más todos los tipos generales activos combinados.
 - **BR-003**: Un operador solo puede registrar operaciones en agentes bancarios activos a los que está asignado. El sistema valida la asignación activa en el momento del registro.
 - **BR-004**: El monto de una operación debe ser mayor que cero y almacenarse con tipo decimal. La moneda por defecto es `PEN`.
 - **BR-005**: El usuario que registra la operación se obtiene de la sesión autenticada y no puede modificarse desde el formulario ni desde parámetros de solicitud.
