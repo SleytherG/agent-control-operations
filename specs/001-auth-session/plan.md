@@ -40,7 +40,7 @@ MySQL/MariaDB y document root en `public/`
 **Performance Goals**: al menos 95% de login, renovación y logout en <=2 s bajo carga interna;
 historial siempre paginado; validación protegida con consultas indexadas y sin relaciones N+1
 
-**Constraints**: sin SPA, Redis obligatorio, WebSockets, workers permanentes, microservicios,
+**Constraints**: sin SPA, sin dependencia obligatoria de Redis, sin WebSockets, workers permanentes ni microservicios,
 contenedores requeridos ni Node.js en runtime; assets compilados antes de desplegar
 
 **Scale/Scope**: una organización en MVP, múltiples tiendas/agentes y sesiones por usuario; el plan
