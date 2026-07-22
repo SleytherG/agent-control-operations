@@ -31,8 +31,11 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password'),
             'role' => Role::ADMINISTRADOR_PROPIETARIO,
             'status' => UserStatus::ACTIVE,
+            'password_changed_at' => now(),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        $this->call(OperationalStructureSeeder::class);
     }
 }

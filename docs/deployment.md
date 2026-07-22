@@ -40,3 +40,17 @@ server {
 ## Rollback
 
 Revertir migraciones con `php artisan migrate:rollback` y restaurar código anterior desde el sistema de control de versiones.
+
+## Backup Strategy - Nuevas Tablas (002-operational-structure)
+
+Las siguientes tablas deben incluirse en la estrategia de backup:
+
+- `regions` - Referencias geográficas (regiones)
+- `provinces` - Referencias geográficas (provincias)
+- `districts` - Referencias geográficas (distritos)
+- `stores` - Tiendas
+- `banks` - Bancos
+- `bank_agents` - Agentes bancarios
+- `user_bank_agent_assignments` - Asignaciones de operadores a agentes
+
+La columna `password_changed_at` en `users` se incluye automáticamente en el backup de la tabla `users`.

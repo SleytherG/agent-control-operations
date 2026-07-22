@@ -14,6 +14,7 @@ use App\Modules\IdentityAccess\Models\SessionEvent;
 use App\Modules\IdentityAccess\Models\User;
 use App\Modules\Audit\Models\AuditLog;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class DeactivateUser
@@ -65,6 +66,8 @@ class DeactivateUser
             ];
 
             AuditLog::create([
+                'correlation_id' => (string) Str::uuid(),
+                'created_at' => $now,
                 'organization_id' => $user->organization_id,
                 'actor_user_id' => $actor->id,
                 'action' => 'USER_DEACTIVATED',
@@ -74,7 +77,6 @@ class DeactivateUser
                 'after_values' => $after,
                 'reason' => $reason,
                 'occurred_at' => $now,
-                'created_at' => $now,
             ]);
 
             $activeSessions = AuthSession::where('user_id', $user->id)

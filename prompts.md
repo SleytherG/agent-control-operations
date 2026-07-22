@@ -269,6 +269,429 @@ Fuera de alcance:
 * Transferencias automáticas al banco.
 
 
+# SPEC 006 - Diseño UX/UI
+
+/speckit.specify
+
+Construir los fundamentos visuales, los componentes reutilizables y la
+maquetación responsive de la aplicación web interna para el control de
+operaciones realizadas en agentes bancarios.
+
+La maquetación debe tomar como referencia los artefactos exportados desde
+Google Stitch ubicados en:
+
+- docs/design/stitch/v1/DESIGN.md
+- docs/design/stitch/v1/MANIFEST.md
+- docs/design/stitch/v1/inicio_de_sesi_n/
+- docs/design/stitch/v1/aviso_de_expiraci_n_de_sesi_n/
+- docs/design/stitch/v1/dashboard_del_operador/
+- docs/design/stitch/v1/registro_r_pido_de_operaci_n/
+- docs/design/stitch/v1/historial_de_operaciones/
+- docs/design/stitch/v1/dashboard_administrativo/
+- docs/design/stitch/v1/cierre_operativo_diario/
+
+Cada carpeta contiene:
+
+- screen.png como referencia visual.
+- code.html como referencia estructural.
+
+Los diseños de Stitch constituyen una propuesta visual inicial y pueden ser
+mejorados cuando sea necesario para cumplir la constitution, las
+especificaciones funcionales, la accesibilidad, la consistencia, el
+responsive design y la eficiencia operacional.
+
+El código HTML exportado por Stitch no debe copiarse directamente como código
+de producción. Debe analizarse y traducirse a una solución mantenible,
+reutilizable y consistente con la arquitectura del proyecto.
+
+# Objetivo
+
+Proporcionar una base visual reutilizable para que las futuras
+especificaciones funcionales puedan conectar lógica real, datos,
+autorización y persistencia sin volver a diseñar cada pantalla desde cero.
+
+La interfaz debe ser:
+
+- Profesional.
+- Sobria.
+- Confiable.
+- Rápida.
+- Accesible.
+- Responsive.
+- Consistente.
+- De baja carga cognitiva.
+- Adecuada para usuarios con diferente nivel de experiencia tecnológica.
+
+# Regla de precedencia
+
+Para comportamiento y reglas de negocio prevalecen:
+
+1. Constitution.
+2. Especificaciones funcionales.
+3. Criterios de aceptación.
+4. Decisiones aprobadas.
+
+Para presentación visual:
+
+1. DESIGN.md.
+2. Decisiones visuales documentadas.
+3. screen.png.
+4. code.html.
+
+Cuando una referencia visual contradiga una regla funcional, debe mantenerse
+la regla funcional y documentarse la desviación visual.
+
+# Historia de usuario 1 — Sistema visual reutilizable
+
+Como equipo de desarrollo, necesitamos un sistema visual común para que todas
+las pantallas mantengan la misma identidad, jerarquía, espaciado,
+comportamiento y accesibilidad.
+
+El sistema visual debe definir:
+
+- Colores semánticos.
+- Tipografía.
+- Escala de espaciado.
+- Tamaños.
+- Radios.
+- Bordes.
+- Sombras necesarias.
+- Iconografía.
+- Breakpoints responsive.
+- Estados interactivos.
+- Estados de foco.
+- Densidad de información.
+- Presentación de importes monetarios.
+- Presentación de entradas y salidas de efectivo.
+- Presentación de estados activos, anulados y pendientes.
+
+Los nombres de los colores deben expresar su propósito y no solamente su
+apariencia.
+
+La entrada y salida de efectivo deben distinguirse mediante texto, iconografía
+y señales visuales. No deben depender únicamente del color.
+
+# Historia de usuario 2 — Layout autenticado
+
+Como usuario autenticado, necesito una estructura de navegación consistente
+para reconocer dónde estoy, qué agente bancario estoy utilizando y cuánto
+tiempo permanece activa mi sesión.
+
+El layout autenticado debe contemplar:
+
+- Navegación lateral en escritorio.
+- Navegación adaptada para tablet y móvil.
+- Encabezado.
+- Identificación del usuario.
+- Rol.
+- Tienda activa.
+- Banco y agente activo.
+- Indicador de sesión.
+- Área principal de contenido.
+- Breadcrumbs cuando sean necesarios.
+- Sistema de alertas y notificaciones.
+- Acción de cerrar sesión.
+
+Las opciones de navegación deben poder variar según el rol.
+
+El diseño debe diferenciar la experiencia del operador de la experiencia del
+administrador sin crear dos sistemas visuales incompatibles.
+
+# Historia de usuario 3 — Pantallas de autenticación
+
+Como usuario, necesito una pantalla de inicio de sesión y una advertencia de
+expiración claras para autenticarme y controlar la continuidad de mi sesión.
+
+Maquetar:
+
+- Inicio de sesión.
+- Credenciales incorrectas.
+- Usuario desactivado.
+- Demasiados intentos.
+- Error de red.
+- Envío en progreso.
+- Advertencia de expiración.
+- Renovación en progreso.
+- Renovación exitosa.
+- Sesión expirada.
+- Sesión revocada.
+
+La maquetación debe basarse en:
+
+- docs/design/stitch/v1/inicio_de_sesi_n/
+- docs/design/stitch/v1/aviso_de_expiraci_n_de_sesi_n/
+
+Esta historia implementa presentación visual. Las reglas JWT y el ciclo de
+seguridad pertenecen a la especificación funcional de autenticación.
+
+# Historia de usuario 4 — Pantallas del operador
+
+Como operador, necesito una interfaz orientada a registrar y consultar
+operaciones rápidamente, con mínima carga cognitiva.
+
+Maquetar:
+
+- Dashboard del operador.
+- Registro rápido de operación.
+- Historial de operaciones.
+
+Referencias:
+
+- docs/design/stitch/v1/dashboard_del_operador/
+- docs/design/stitch/v1/registro_r_pido_de_operaci_n/
+- docs/design/stitch/v1/historial_de_operaciones/
+
+El dashboard debe contemplar visualmente:
+
+- Cantidad de operaciones.
+- Monto bruto operado.
+- Entradas de efectivo.
+- Salidas de efectivo.
+- Movimiento neto.
+- Historial reciente.
+- Gráficos.
+- Acción principal Registrar operación.
+
+El formulario de registro debe priorizar:
+
+- Monto.
+- Tipo de operación.
+- Agente activo.
+- Fecha y hora.
+- Referencia opcional.
+- Observación opcional.
+- Confirmación.
+- Prevención visual de doble envío.
+
+El historial debe contemplar:
+
+- Filtros.
+- Tabla.
+- Paginación.
+- Estados.
+- Operaciones anuladas.
+- Vista responsive.
+
+No implementar todavía persistencia ni cálculos reales dentro de esta spec.
+
+# Historia de usuario 5 — Dashboard administrativo
+
+Como administrador propietario, necesito una interfaz de supervisión que me
+permita comprender el estado global de la organización y aplicar filtros.
+
+Maquetar el dashboard administrativo tomando como referencia:
+
+- docs/design/stitch/v1/dashboard_administrativo/
+
+Debe contemplar visualmente:
+
+- Cantidad total de operaciones.
+- Monto bruto operado.
+- Entradas.
+- Salidas.
+- Movimiento neto.
+- Tiendas.
+- Agentes.
+- Operadores.
+- Comparación de periodos.
+- Filtros geográficos y operacionales.
+- Rankings.
+- Gráficos.
+- Tablas comparativas.
+- Estados vacíos.
+- Estados de carga.
+- Estados de error.
+
+Los datos utilizados durante la maquetación deben ser ficticios y claramente
+identificables como datos de demostración.
+
+# Historia de usuario 6 — Cierre operativo diario
+
+Como usuario autorizado, necesito una pantalla de cierre diario clara para
+revisar visualmente el resumen de las operaciones de un agente.
+
+Maquetar la pantalla tomando como referencia:
+
+- docs/design/stitch/v1/cierre_operativo_diario/
+
+Debe contemplar:
+
+- Fecha de negocio.
+- Tienda.
+- Banco.
+- Agente.
+- Cantidad de operaciones.
+- Monto bruto.
+- Entradas.
+- Salidas.
+- Movimiento neto.
+- Totales por tipo.
+- Totales por operador.
+- Operaciones anuladas.
+- Advertencias.
+- Acción de confirmar.
+- Acción de reabrir para usuarios autorizados.
+- Estado abierto.
+- Estado confirmado.
+- Estado reabierto.
+
+La maquetación no debe presentar el cierre como conciliación bancaria,
+ganancia o utilidad.
+
+# Componentes obligatorios
+
+Crear una representación visual consistente para:
+
+- Layout principal.
+- Sidebar.
+- Encabezado.
+- Navegación móvil.
+- Botones.
+- Enlaces.
+- Inputs.
+- Campo monetario.
+- Selectores.
+- Calendarios.
+- Filtros.
+- Tablas.
+- Tarjetas métricas.
+- Badges.
+- Alertas.
+- Modales.
+- Toasts.
+- Paginación.
+- Dropdowns.
+- Tabs.
+- Breadcrumbs.
+- Tooltips.
+- Gráficos.
+- Skeletons.
+- Spinners.
+- Estados vacíos.
+- Estados de error.
+- Estados de éxito.
+- Confirmaciones.
+- Menús de acciones.
+
+Los componentes deben contemplar los estados que correspondan:
+
+- Normal.
+- Hover.
+- Focus.
+- Active.
+- Disabled.
+- Loading.
+- Error.
+- Success.
+
+# Responsive design
+
+Las pantallas deben ser utilizables en:
+
+- Escritorio de 1440 px.
+- Laptop de 1280 px.
+- Tablet de 768 px.
+- Móvil de 375 px.
+
+No debe existir desplazamiento horizontal global.
+
+Las tablas pueden desplazarse horizontalmente dentro de su propio contenedor
+o transformarse en tarjetas cuando esto mejore la comprensión.
+
+Las funciones esenciales no deben desaparecer en móvil.
+
+Los filtros avanzados pueden mostrarse mediante un panel lateral o modal.
+
+# Accesibilidad
+
+La maquetación debe buscar conformidad con WCAG 2.2 nivel AA.
+
+Debe incluir:
+
+- Contraste suficiente.
+- Foco visible.
+- Navegación mediante teclado.
+- Orden lógico de tabulación.
+- Etiquetas asociadas a campos.
+- Mensajes de error descriptivos.
+- Áreas táctiles adecuadas.
+- Textos alternativos.
+- Encabezados jerárquicos.
+- No depender únicamente del color.
+- Respeto por preferencias de movimiento reducido.
+
+# Mejoras autorizadas
+
+El agente puede apartarse de Stitch para mejorar:
+
+- Accesibilidad.
+- Consistencia.
+- Legibilidad.
+- Comportamiento responsive.
+- Jerarquía visual.
+- Rendimiento.
+- Reutilización.
+- Semántica HTML.
+- Navegación mediante teclado.
+- Estados faltantes.
+
+Toda desviación relevante debe documentar:
+
+- Elemento original.
+- Cambio realizado.
+- Justificación.
+- Beneficio.
+- Pantallas afectadas.
+
+# Restricciones
+
+No utilizar logos oficiales de bancos.
+
+No utilizar datos reales de clientes.
+
+No incorporar información bancaria sensible.
+
+No presentar monto operado como ganancia.
+
+No depender de animaciones complejas.
+
+No convertir la aplicación en una SPA.
+
+No duplicar componentes equivalentes entre pantallas.
+
+No insertar estilos visuales incompatibles con DESIGN.md sin documentarlo.
+
+# Fuera de alcance
+
+- Autenticación JWT real.
+- Persistencia en base de datos.
+- CRUD real.
+- Cálculos financieros reales.
+- Autorización real por roles.
+- Integración bancaria.
+- Conciliación bancaria.
+- Comisiones.
+- Ganancias.
+- Exportaciones.
+- Aplicación móvil nativa.
+- Modo offline.
+- Implementación completa de los gráficos con datos reales.
+
+# Criterios de éxito
+
+La feature se considera completa cuando:
+
+1. Las siete pantallas de Stitch tienen una representación maquetada.
+2. Las pantallas reutilizan el mismo sistema visual.
+3. No existe código HTML duplicado de forma innecesaria.
+4. Las pantallas funcionan en los cuatro tamaños definidos.
+5. Es posible navegar por teclado.
+6. Los estados importantes están representados.
+7. El diseño mantiene la intención visual de Stitch.
+8. Las mejoras respecto de Stitch están documentadas.
+9. Los datos de demostración están aislados de las vistas.
+10. La maquetación queda preparada para que futuras specs conecten lógica real.
+
 ### Prompt general para cada inicio de cada plan en cada spec independiente
 
 - /speckit.plan

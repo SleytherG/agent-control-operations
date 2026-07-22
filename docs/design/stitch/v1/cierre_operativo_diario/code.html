@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cierre Diario - FinOps Portal</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Public+Sans:wght@600;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed": "#0b1c30",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-high": "#eae7e9",
+                      "on-tertiary-fixed": "#002113",
+                      "inverse-on-surface": "#f3f0f2",
+                      "primary-fixed-dim": "#bec6e0",
+                      "primary": "#000000",
+                      "surface-container": "#f0edef",
+                      "on-tertiary-container": "#009668",
+                      "error": "#ba1a1a",
+                      "surface-tint": "#565e74",
+                      "on-background": "#1b1b1d",
+                      "on-primary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "tertiary-fixed": "#6ffbbe",
+                      "on-secondary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "surface-dim": "#dcd9db",
+                      "outline": "#76777d",
+                      "surface-bright": "#fcf8fa",
+                      "secondary-fixed": "#d3e4fe",
+                      "primary-fixed": "#dae2fd",
+                      "on-primary-container": "#7c839b",
+                      "on-error": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "secondary-fixed-dim": "#b7c8e1",
+                      "surface-container-low": "#f6f3f5",
+                      "secondary": "#505f76",
+                      "tertiary": "#000000",
+                      "on-secondary-fixed-variant": "#38485d",
+                      "inverse-primary": "#bec6e0",
+                      "on-primary-fixed-variant": "#3f465c",
+                      "surface-container-lowest": "#ffffff",
+                      "on-surface-variant": "#45464d",
+                      "surface": "#fcf8fa",
+                      "surface-variant": "#e4e2e4",
+                      "secondary-container": "#d0e1fb",
+                      "tertiary-container": "#002113",
+                      "on-surface": "#1b1b1d",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "on-secondary-container": "#54647a",
+                      "on-primary-fixed": "#131b2e",
+                      "background": "#fcf8fa",
+                      "primary-container": "#131b2e",
+                      "outline-variant": "#c6c6cd",
+                      "surface-container-highest": "#e4e2e4",
+                      "inverse-surface": "#303032"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "sm": "8px",
+                      "lg": "24px",
+                      "gutter": "20px",
+                      "max-width": "1440px",
+                      "xs": "4px",
+                      "xl": "32px",
+                      "margin": "24px",
+                      "base": "4px",
+                      "md": "16px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Public Sans"
+                      ],
+                      "label-bold": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Public Sans"
+                      ],
+                      "headline-sm": [
+                              "Public Sans"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "data-mono": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-bold": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "30px",
+                              {
+                                      "lineHeight": "36px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "data-mono": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        /* Custom utilities to enforce strict design system rules */
+        .ds-table-header { @apply bg-surface-container-low font-label-bold text-label-bold text-on-surface-variant px-sm py-sm text-left uppercase tracking-wider; }
+        .ds-table-cell { @apply px-sm py-md border-b border-outline-variant font-body-md text-body-md text-on-surface; }
+        .ds-card { @apply bg-surface border border-outline-variant rounded-DEFAULT; }
+        .ds-status-dot { @apply w-2 h-2 rounded-full inline-block mr-xs; }
+      </style>
+</head>
+<body class="bg-background text-on-background antialiased font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed overflow-hidden flex h-screen">
+<!-- SideNavBar (Shared Component) -->
+<aside class="h-full w-64 fixed left-0 top-0 overflow-y-auto border-r border-outline-variant dark:border-outline-variant bg-surface-container-lowest dark:bg-surface-container-lowest flex flex-col z-50">
+<!-- Header Profile -->
+<div class="p-lg border-b border-outline-variant flex items-center gap-md">
+<img alt="User profile photo" class="w-10 h-10 rounded-full object-cover border border-outline-variant" data-alt="A highly professional studio portrait of a corporate financial analyst. The subject is in focus against a clean, minimalist white background. Lighting is soft, bright, and even, conveying a modern, trustworthy corporate identity suitable for a high-end enterprise application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEBiImYgyUVxTqvK_MK-lbGLvxolKNqHkWuuEr1Wz4Xn2kDYsKu_Yz8LTri_T4L21hKR-X8YG6R-JzKGq5q8o0-7diG1YXp3SliSwNDi5wifUy5lGCFdfZQk9cwZIPPN1e_b1Z-2TsCohNpO_8PGh07_pfMaZifGpPLB_yl8TtX1Ku4E0cgIN6P9oYSOWTv95dq-wxeyMTwM5B5km8_j0PZcvRO6pQdYixTSx1CaAc9JrO1bdxJwAw"/>
+<div>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary">FinOps Portal</h1>
+<p class="font-body-sm text-body-sm text-secondary">Active Session</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 py-md font-body-md text-body-md">
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high dark:hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">home</span>
+                Inicio
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high dark:hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">add_card</span>
+                Registrar operación
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high dark:hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">history</span>
+                Mis operaciones
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high dark:hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">dashboard</span>
+                Dashboard
+            </a>
+<!-- ACTIVE TAB -->
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container font-bold border-r-4 border-primary transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">event_available</span>
+                Cierre diario
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high dark:hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">storefront</span>
+                Tiendas
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high dark:hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">account_balance</span>
+                Agentes bancarios
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high dark:hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">group</span>
+                Trabajadores
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high dark:hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">account_balance_wallet</span>
+                Bancos
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high dark:hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">category</span>
+                Tipos de operación
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high dark:hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">security</span>
+                Auditoría
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high dark:hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+                Configuración
+            </a>
+</nav>
+</aside>
+<!-- TopAppBar (Shared Component) -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 z-40 bg-surface dark:bg-surface border-b border-outline-variant dark:border-outline-variant flex justify-between items-center px-lg">
+<!-- Search Bar area (on_left) -->
+<div class="flex-1 flex items-center">
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant" style="font-size: 20px;">search</span>
+<input class="w-full pl-lg pr-sm py-1.5 bg-surface-container-low border border-outline-variant rounded-DEFAULT font-body-sm text-body-sm text-on-surface focus:outline-none focus:border-primary transition-colors" placeholder="Search operations..." type="text"/>
+</div>
+</div>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-md">
+<div class="hidden lg:flex flex-col items-end mr-md font-label-bold text-label-bold text-on-surface-variant">
+<span>Store: Plaza Central</span>
+<span class="text-secondary">Agent: 00124</span>
+</div>
+<div class="flex items-center gap-sm text-primary dark:text-primary">
+<button class="p-2 rounded-full hover:bg-surface-container-low transition-all scale-95 active:scale-100 flex items-center justify-center">
+<span class="material-symbols-outlined">timer</span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-low transition-all scale-95 active:scale-100 flex items-center justify-center relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-low transition-all scale-95 active:scale-100 flex items-center justify-center">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 ml-[16rem] mt-16 p-lg overflow-y-auto bg-surface-container-lowest relative">
+<div class="max-w-[1440px] mx-auto">
+<!-- Page Header & Actions -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-lg gap-md">
+<div>
+<div class="flex items-center gap-sm mb-xs">
+<span class="ds-status-dot bg-error"></span>
+<span class="font-label-bold text-label-bold text-error tracking-widest uppercase">Cierre Pendiente</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Cierre Diario - Agente 00124</h2>
+</div>
+<div class="flex items-center gap-sm">
+<button class="flex items-center gap-xs px-md py-2 border border-outline text-on-surface rounded-DEFAULT hover:bg-surface-container-low transition-colors font-label-bold text-label-bold">
+<span class="material-symbols-outlined" style="font-size: 18px;">print</span>
+                        Descargar/Imprimir resumen
+                    </button>
+<button class="flex items-center gap-xs px-md py-2 border border-outline text-on-surface rounded-DEFAULT hover:bg-surface-container-low transition-colors font-label-bold text-label-bold">
+<span class="material-symbols-outlined" style="font-size: 18px;">list_alt</span>
+                        Revisar operaciones
+                    </button>
+<button class="flex items-center gap-xs px-md py-2 bg-on-tertiary-container text-on-primary rounded-DEFAULT hover:opacity-90 transition-opacity font-label-bold text-label-bold shadow-sm">
+<span class="material-symbols-outlined" style="font-size: 18px;">check_circle</span>
+                        Confirmar cierre
+                    </button>
+</div>
+</div>
+<!-- Context Bar -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-lg">
+<div class="ds-card p-md flex flex-col justify-center">
+<span class="font-label-bold text-label-bold text-on-surface-variant mb-xs">FECHA DE OPERACIÓN</span>
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">24 Oct 2023</span>
+</div>
+<div class="ds-card p-md flex flex-col justify-center">
+<span class="font-label-bold text-label-bold text-on-surface-variant mb-xs">TIENDA</span>
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">Plaza Central</span>
+</div>
+<div class="ds-card p-md flex flex-col justify-center">
+<span class="font-label-bold text-label-bold text-on-surface-variant mb-xs">BANCO ASIGNADO</span>
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">Banco Nación</span>
+</div>
+<div class="ds-card p-md flex flex-col justify-center">
+<span class="font-label-bold text-label-bold text-on-surface-variant mb-xs">AGENTE RESPONSABLE</span>
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">ID: 00124 (M. Gómez)</span>
+</div>
+</div>
+<!-- Key Metrics Grid -->
+<div class="grid grid-cols-1 md:grid-cols-5 gap-gutter mb-xl">
+<div class="ds-card p-md flex flex-col">
+<span class="font-label-bold text-label-bold text-on-surface-variant mb-sm">TOTAL OPS</span>
+<div class="font-headline-md text-headline-md font-data-mono text-on-surface mt-auto">142</div>
+</div>
+<div class="ds-card p-md flex flex-col">
+<span class="font-label-bold text-label-bold text-on-surface-variant mb-sm">MONTO BRUTO</span>
+<div class="font-headline-md text-headline-md font-data-mono text-on-surface mt-auto">$45,230.00</div>
+</div>
+<div class="ds-card p-md flex flex-col">
+<span class="font-label-bold text-label-bold text-on-surface-variant mb-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-on-tertiary-container" style="font-size: 16px;">arrow_downward</span>
+                        TOTAL ENTRADAS
+                    </span>
+<div class="font-headline-md text-headline-md font-data-mono text-on-surface mt-auto">$32,100.50</div>
+</div>
+<div class="ds-card p-md flex flex-col">
+<span class="font-label-bold text-label-bold text-on-surface-variant mb-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-error" style="font-size: 16px;">arrow_upward</span>
+                        TOTAL SALIDAS
+                    </span>
+<div class="font-headline-md text-headline-md font-data-mono text-on-surface mt-auto">$13,129.50</div>
+</div>
+<div class="ds-card p-md flex flex-col bg-surface-container border-primary">
+<span class="font-label-bold text-label-bold text-primary mb-sm">MOVIMIENTO NETO</span>
+<div class="font-headline-md text-headline-md font-data-mono text-primary mt-auto">+$18,971.00</div>
+</div>
+</div>
+<!-- Main Data Grid -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Left Column (Tables) -->
+<div class="col-span-12 lg:col-span-8 flex flex-col gap-lg">
+<!-- Breakdown by Type -->
+<div class="ds-card overflow-hidden">
+<div class="p-md border-b border-outline-variant bg-surface">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Desglose por Tipo de Operación</h3>
+</div>
+<table class="w-full text-left border-collapse">
+<thead>
+<tr>
+<th class="ds-table-header">Tipo</th>
+<th class="ds-table-header text-right">Volumen</th>
+<th class="ds-table-header text-right">Entradas</th>
+<th class="ds-table-header text-right">Salidas</th>
+</tr>
+</thead>
+<tbody>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="ds-table-cell font-medium">Depósitos</td>
+<td class="ds-table-cell text-right font-data-mono">85</td>
+<td class="ds-table-cell text-right font-data-mono text-on-tertiary-container">$28,500.00</td>
+<td class="ds-table-cell text-right font-data-mono text-on-surface-variant">-</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="ds-table-cell font-medium">Retiros</td>
+<td class="ds-table-cell text-right font-data-mono">42</td>
+<td class="ds-table-cell text-right font-data-mono text-on-surface-variant">-</td>
+<td class="ds-table-cell text-right font-data-mono text-error">$12,400.00</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="ds-table-cell font-medium">Pago de Servicios</td>
+<td class="ds-table-cell text-right font-data-mono">15</td>
+<td class="ds-table-cell text-right font-data-mono text-on-tertiary-container">$3,600.50</td>
+<td class="ds-table-cell text-right font-data-mono text-on-surface-variant">-</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors border-t-2 border-outline-variant bg-surface-container-lowest">
+<td class="ds-table-cell font-label-bold text-label-bold">TOTALES</td>
+<td class="ds-table-cell text-right font-data-mono font-bold">142</td>
+<td class="ds-table-cell text-right font-data-mono font-bold">$32,100.50</td>
+<td class="ds-table-cell text-right font-data-mono font-bold">$12,400.00</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Breakdown by Worker -->
+<div class="ds-card overflow-hidden">
+<div class="p-md border-b border-outline-variant bg-surface">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Actividad por Trabajador</h3>
+</div>
+<table class="w-full text-left border-collapse">
+<thead>
+<tr>
+<th class="ds-table-header">Trabajador</th>
+<th class="ds-table-header text-right">Ops Mencionadas</th>
+<th class="ds-table-header text-right">Monto Procesado</th>
+</tr>
+</thead>
+<tbody>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="ds-table-cell flex items-center gap-sm">
+<div class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-label-bold text-[10px]">CG</div>
+<span>Carlos García</span>
+</td>
+<td class="ds-table-cell text-right font-data-mono">68</td>
+<td class="ds-table-cell text-right font-data-mono">$18,450.00</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="ds-table-cell flex items-center gap-sm">
+<div class="w-6 h-6 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-label-bold text-[10px]">LM</div>
+<span>Laura Martínez</span>
+</td>
+<td class="ds-table-cell text-right font-data-mono">74</td>
+<td class="ds-table-cell text-right font-data-mono">$26,780.00</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Right Column (Status & Participants) -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-lg">
+<!-- Status of Operations -->
+<div class="ds-card p-md">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-md">Estado de Operaciones</h3>
+<div class="flex flex-col gap-sm">
+<div class="flex justify-between items-center p-sm bg-surface-container-low rounded-DEFAULT border border-outline-variant">
+<div class="flex items-center gap-xs">
+<span class="ds-status-dot bg-on-tertiary-container"></span>
+<span class="font-body-md text-body-md">Activas</span>
+</div>
+<span class="font-data-mono font-medium">138</span>
+</div>
+<div class="flex justify-between items-center p-sm bg-surface-container-low rounded-DEFAULT border border-outline-variant">
+<div class="flex items-center gap-xs">
+<span class="ds-status-dot bg-error"></span>
+<span class="font-body-md text-body-md">Anuladas</span>
+</div>
+<span class="font-data-mono font-medium">2</span>
+</div>
+<div class="flex justify-between items-center p-sm bg-surface-container-low rounded-DEFAULT border border-outline-variant">
+<div class="flex items-center gap-xs">
+<span class="ds-status-dot bg-outline"></span>
+<span class="font-body-md text-body-md">Pendientes</span>
+</div>
+<span class="font-data-mono font-medium">1</span>
+</div>
+<div class="flex justify-between items-center p-sm bg-error-container rounded-DEFAULT border border-error/20">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-on-error-container" style="font-size: 16px;">warning</span>
+<span class="font-body-md text-body-md text-on-error-container font-medium">Direcciones no conf.</span>
+</div>
+<span class="font-data-mono font-bold text-on-error-container">1</span>
+</div>
+</div>
+</div>
+<!-- Participants -->
+<div class="ds-card p-md">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-md">Participantes Activos</h3>
+<div class="flex flex-col gap-md">
+<div class="flex items-center gap-md">
+<img alt="Worker" class="w-8 h-8 rounded-full object-cover border border-outline-variant" data-alt="A small, professional headshot of a male bank teller in a light blue collared shirt, facing forward with a slight smile. Clean white background. High resolution, corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGWm4LHmZ0K4hQe4exUEx8o7Jbv8qseEzbhvEwWkR--ZY8Ce4HblaoACD5mnnK9p09tQ55pltaVysQboO8fLrlggMEP16NARFZqCYEmgKAmeyWvLhBFz3e_uVkXo62jgViudGLNaWZfI0uKFL2GkT9hQsiOWn9R2AHnySG_uC6wNXQWDAnZqOd8s3iR-1Oh6nF8_cTWJI1mzUf6aHqFfYXHamRGefZD7Z_UHpyh_DFOktKQmDcrpzV"/>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface">Carlos García</span>
+<span class="font-label-bold text-label-bold text-on-surface-variant">CAJERO P1</span>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<img alt="Worker" class="w-8 h-8 rounded-full object-cover border border-outline-variant" data-alt="A small, professional headshot of a female bank supervisor in a dark navy blazer, facing forward. Clean white background. High resolution, corporate aesthetic, confident expression." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbA0JjqqeTMd0GWE9SKmu0-7Fr6JVmHcTApwvP2AeLJwHVwzUfctIZi06hFrqDqe0Dbx40z_BIbKT7WVAnfJTMxCLrQElhLLRHu1RJkbSI6yh4gsEzTcijpDosi4rXDBAYRB8cT-hJN-_pExQpuAXCAF7_eE_-EkKbCjMJdS6JS3Khgzc0YXCnInLxHF2FyQtYXmMl_VGPAfIGqmBYK_Q5tKZphbnIZblVBo8Zj3VtZ5QmOxCesall"/>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface">Laura Martínez</span>
+<span class="font-label-bold text-label-bold text-on-surface-variant">SUPERVISOR TURNO</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dashboard - FinOps Portal</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Public+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed": "#0b1c30",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-high": "#eae7e9",
+                      "on-tertiary-fixed": "#002113",
+                      "inverse-on-surface": "#f3f0f2",
+                      "primary-fixed-dim": "#bec6e0",
+                      "primary": "#000000",
+                      "surface-container": "#f0edef",
+                      "on-tertiary-container": "#009668",
+                      "error": "#ba1a1a",
+                      "surface-tint": "#565e74",
+                      "on-background": "#1b1b1d",
+                      "on-primary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "tertiary-fixed": "#6ffbbe",
+                      "on-secondary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "surface-dim": "#dcd9db",
+                      "outline": "#76777d",
+                      "surface-bright": "#fcf8fa",
+                      "secondary-fixed": "#d3e4fe",
+                      "primary-fixed": "#dae2fd",
+                      "on-primary-container": "#7c839b",
+                      "on-error": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "secondary-fixed-dim": "#b7c8e1",
+                      "surface-container-low": "#f6f3f5",
+                      "secondary": "#505f76",
+                      "tertiary": "#000000",
+                      "on-secondary-fixed-variant": "#38485d",
+                      "inverse-primary": "#bec6e0",
+                      "on-primary-fixed-variant": "#3f465c",
+                      "surface-container-lowest": "#ffffff",
+                      "on-surface-variant": "#45464d",
+                      "surface": "#fcf8fa",
+                      "surface-variant": "#e4e2e4",
+                      "secondary-container": "#d0e1fb",
+                      "tertiary-container": "#002113",
+                      "on-surface": "#1b1b1d",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "on-secondary-container": "#54647a",
+                      "on-primary-fixed": "#131b2e",
+                      "background": "#fcf8fa",
+                      "primary-container": "#131b2e",
+                      "outline-variant": "#c6c6cd",
+                      "surface-container-highest": "#e4e2e4",
+                      "inverse-surface": "#303032"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "sm": "8px",
+                      "lg": "24px",
+                      "gutter": "20px",
+                      "max-width": "1440px",
+                      "xs": "4px",
+                      "xl": "32px",
+                      "margin": "24px",
+                      "base": "4px",
+                      "md": "16px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Public Sans"],
+                      "label-bold": ["Inter"],
+                      "headline-lg": ["Public Sans"],
+                      "headline-sm": ["Public Sans"],
+                      "body-sm": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "data-mono": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "label-bold": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "body-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "500"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-headline-md, .font-headline-sm, .font-headline-lg { font-family: 'Public Sans', sans-serif; }
+        
+        /* Custom Scrollbar for sleekness */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f6f3f5; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c6c6cd; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #76777d; 
+        }
+    </style>
+<!-- Chart.js for visualizations -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-background text-on-background min-h-screen flex antialiased">
+<!-- SideNavBar (from JSON) -->
+<nav aria-label="Sidebar" class="bg-surface-container-lowest text-primary h-full w-64 fixed left-0 top-0 overflow-y-auto border-r border-outline-variant transition-all duration-200 ease-in-out z-50 flex flex-col hidden md:flex">
+<!-- Brand / Header -->
+<div class="px-margin py-lg border-b border-outline-variant flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden shrink-0 border border-outline-variant">
+<img alt="User profile photo" class="w-full h-full object-cover" data-alt="A macro shot of a sleek, brushed metal security vault dial acting as a corporate profile photo placeholder. The lighting is cold, precise, and high-contrast, fitting a modern financial light-mode theme with stark whites, silvers, and deep navy shadows. Professional and authoritative." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9OMXGOO-22TrSQ3VJRhoRM49Q83rcI_vKd7ep9cFJg8e17QExoBsulll_eaVpPzb824sA78MJ9wSOBgaehb20buQ-Qo2zfPM9_6MOBlDRJCICTN39yZe8EjJTbJxHq7uLl1T47hGTtqmNraJfbtPNh42tx8-0uY5ehXbzbclbRLTsZ2nwlBnKqdrJnpuvBlTh49sfo6hmdyehx8xnzOTrpb7iRKksoV_oz3AmbMaoB1oHLDGxKz3q"/>
+</div>
+<div class="flex-1 min-w-0">
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary truncate">FinOps Portal</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Active Session</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<ul class="flex flex-col flex-1 py-md overflow-y-auto w-full gap-1">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-body-md text-body-md">Inicio</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="add_card">add_card</span>
+<span class="font-body-md text-body-md">Registrar operación</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-body-md text-body-md">Mis operaciones</span>
+</a>
+</li>
+<!-- ACTIVE TAB: Dashboard -->
+<li>
+<a aria-current="page" class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container font-bold border-r-4 border-primary" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="event_available">event_available</span>
+<span class="font-body-md text-body-md">Cierre diario</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+<span class="font-body-md text-body-md">Tiendas</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+<span class="font-body-md text-body-md">Agentes bancarios</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-body-md text-body-md">Trabajadores</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-body-md text-body-md">Bancos</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="category">category</span>
+<span class="font-body-md text-body-md">Tipos de operación</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+<span class="font-body-md text-body-md">Auditoría</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors mt-auto border-t border-outline-variant" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-md text-body-md">Configuración</span>
+</a>
+</li>
+</ul>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col md:ml-64 w-full min-h-screen">
+<!-- TopAppBar (from JSON) -->
+<header class="bg-surface fixed top-0 right-0 w-full md:w-[calc(100%-16rem)] h-16 z-40 flex justify-between items-center px-lg border-b border-outline-variant flat no shadows transition-transform">
+<!-- Mobile Menu Toggle (Visible only on mobile) -->
+<button class="md:hidden text-primary p-2 -ml-2 rounded-full hover:bg-surface-container-low">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="flex items-center gap-4">
+<h2 class="font-headline-md text-headline-md font-extrabold text-primary hidden md:block">Financial Operations</h2>
+</div>
+<div class="flex items-center gap-4">
+<!-- Search (on_left relative to actions) -->
+<div class="relative hidden sm:block w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-full py-1.5 pl-10 pr-4 font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" placeholder="Search..." type="text"/>
+</div>
+<!-- Trailing Context / Actions -->
+<div class="hidden lg:flex items-center gap-4 mr-4 border-r border-outline-variant pr-4">
+<div class="flex flex-col items-end">
+<span class="font-label-bold text-label-bold text-primary">Store: Plaza Central</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Agent: 00124</span>
+</div>
+</div>
+<!-- Icon Actions -->
+<div class="flex items-center gap-1">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors" title="timer">
+<span class="material-symbols-outlined" data-icon="timer">timer</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors relative" title="notifications">
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors" title="account_circle">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<div class="flex-1 mt-16 p-margin max-w-max-width mx-auto w-full overflow-x-hidden">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-lg gap-4">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-primary mb-1">National Control Center</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Overview of daily financial operations, cash flow, and agent performance.</p>
+</div>
+<div class="flex gap-2">
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-container border border-outline-variant rounded-lg hover:bg-surface-container-high transition-colors font-label-bold text-label-bold text-primary">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                        Export Report
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-lg hover:bg-on-secondary-fixed transition-colors font-label-bold text-label-bold">
+<span class="material-symbols-outlined text-[18px]">autorenew</span>
+                        Refresh Data
+                    </button>
+</div>
+</div>
+<!-- Filters Panel (Dense, Structured) -->
+<section class="bg-surface border border-outline-variant rounded-xl p-md mb-lg">
+<div class="flex items-center gap-2 mb-4 border-b border-outline-variant pb-2">
+<span class="material-symbols-outlined text-on-surface-variant">filter_alt</span>
+<h3 class="font-label-bold text-label-bold text-primary uppercase">Global Filters</h3>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+<!-- Date Range -->
+<div class="flex flex-col gap-1">
+<label class="font-label-bold text-label-bold text-on-surface-variant">Date Range</label>
+<select class="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-3 py-1.5 font-body-sm text-body-sm focus:border-primary outline-none h-[34px]">
+<option>Today</option>
+<option>Yesterday</option>
+<option>Last 7 Days</option>
+<option>This Month</option>
+<option>Custom Range...</option>
+</select>
+</div>
+<!-- Region -->
+<div class="flex flex-col gap-1">
+<label class="font-label-bold text-label-bold text-on-surface-variant">Region</label>
+<select class="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-3 py-1.5 font-body-sm text-body-sm focus:border-primary outline-none h-[34px]">
+<option>All Regions</option>
+<option>North</option>
+<option>Central</option>
+<option>South</option>
+</select>
+</div>
+<!-- Province -->
+<div class="flex flex-col gap-1">
+<label class="font-label-bold text-label-bold text-on-surface-variant">Province/State</label>
+<select class="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-3 py-1.5 font-body-sm text-body-sm focus:border-primary outline-none h-[34px]" disabled="">
+<option>Select Region First</option>
+</select>
+</div>
+<!-- Store -->
+<div class="flex flex-col gap-1">
+<label class="font-label-bold text-label-bold text-on-surface-variant">Store</label>
+<select class="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-3 py-1.5 font-body-sm text-body-sm focus:border-primary outline-none h-[34px]">
+<option>All Stores</option>
+<option>Plaza Central</option>
+<option>Mall Sur</option>
+<option>Av. Arequipa</option>
+</select>
+</div>
+<!-- Bank -->
+<div class="flex flex-col gap-1">
+<label class="font-label-bold text-label-bold text-on-surface-variant">Bank</label>
+<select class="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-3 py-1.5 font-body-sm text-body-sm focus:border-primary outline-none h-[34px]">
+<option>All Banks</option>
+<option>Banco de Crédito</option>
+<option>Interbank</option>
+<option>BBVA</option>
+</select>
+</div>
+<!-- Worker -->
+<div class="flex flex-col gap-1 lg:col-start-1">
+<label class="font-label-bold text-label-bold text-on-surface-variant">Worker / Teller</label>
+<input class="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-3 py-1.5 font-body-sm text-body-sm focus:border-primary outline-none h-[34px]" placeholder="Search by name/ID" type="text"/>
+</div>
+<!-- Agent -->
+<div class="flex flex-col gap-1">
+<label class="font-label-bold text-label-bold text-on-surface-variant">Agent ID</label>
+<input class="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-3 py-1.5 font-body-sm text-body-sm focus:border-primary outline-none h-[34px]" placeholder="e.g. 00124" type="text"/>
+</div>
+<!-- Status -->
+<div class="flex flex-col gap-1">
+<label class="font-label-bold text-label-bold text-on-surface-variant">Op Status</label>
+<select class="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT px-3 py-1.5 font-body-sm text-body-sm focus:border-primary outline-none h-[34px]">
+<option>All Statuses</option>
+<option>Completed</option>
+<option>Pending</option>
+<option>Voided</option>
+<option>Error</option>
+</select>
+</div>
+<div class="flex items-end lg:col-span-2 justify-end gap-2">
+<button class="px-4 py-1.5 text-secondary font-label-bold text-label-bold hover:bg-surface-container-low rounded-DEFAULT h-[34px]">Clear</button>
+<button class="px-4 py-1.5 bg-primary-container text-on-primary-container font-label-bold text-label-bold rounded-DEFAULT h-[34px] hover:bg-on-primary-fixed-variant hover:text-white transition-colors">Apply Filters</button>
+</div>
+</div>
+</section>
+<!-- High-Level KPIs (Bento-style grid) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-lg">
+<!-- KPI 1: Gross Amount -->
+<div class="bg-surface border border-outline-variant rounded-xl p-md flex flex-col justify-between relative overflow-hidden group hover:border-primary transition-colors">
+<div class="flex justify-between items-start mb-2 z-10">
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Gross Amount Operated</span>
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">account_balance</span>
+</div>
+</div>
+<div class="z-10">
+<h3 class="font-headline-lg text-headline-lg text-primary tracking-tight">$4,250,192.00</h3>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[14px] text-tertiary-fixed-dim">trending_up</span>
+<span class="font-body-sm text-body-sm text-tertiary-fixed-dim">+12.5% vs yesterday</span>
+</div>
+</div>
+<!-- Subtle background decoration -->
+<div class="absolute -bottom-6 -right-6 text-surface-container-high opacity-50 group-hover:scale-110 transition-transform duration-500 z-0">
+<span class="material-symbols-outlined text-[120px]">account_balance</span>
+</div>
+</div>
+<!-- KPI 2: Cash-ins -->
+<div class="bg-surface border border-outline-variant rounded-xl p-md flex flex-col justify-between">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Total Cash-Ins</span>
+<div class="w-8 h-8 rounded-full bg-tertiary-fixed-dim/20 text-tertiary-fixed-dim flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</div>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary">$2,850,000.00</h3>
+<div class="text-on-surface-variant font-data-mono text-data-mono mt-1">14,203 ops</div>
+</div>
+</div>
+<!-- KPI 3: Cash-outs -->
+<div class="bg-surface border border-outline-variant rounded-xl p-md flex flex-col justify-between">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Total Cash-Outs</span>
+<div class="w-8 h-8 rounded-full bg-error-container text-on-error-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">upload</span>
+</div>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary">$1,400,192.00</h3>
+<div class="text-on-surface-variant font-data-mono text-data-mono mt-1">8,105 ops</div>
+</div>
+</div>
+<!-- KPI 4: Net Movement -->
+<div class="bg-surface border border-outline-variant rounded-xl p-md flex flex-col justify-between">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Net Movement</span>
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">sync_alt</span>
+</div>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary">+$1,449,808.00</h3>
+<div class="flex items-center gap-1 mt-1">
+<span class="inline-block w-2 h-2 rounded-full bg-tertiary-fixed-dim"></span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Liquidity Surplus</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Metrics (Dense bar) -->
+<div class="grid grid-cols-2 md:grid-cols-5 gap-px bg-outline-variant border border-outline-variant rounded-lg overflow-hidden mb-lg">
+<div class="bg-surface p-3 flex flex-col items-center justify-center text-center">
+<span class="font-headline-sm text-headline-sm text-primary">22,308</span>
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase">Total Ops</span>
+</div>
+<div class="bg-surface p-3 flex flex-col items-center justify-center text-center">
+<span class="font-headline-sm text-headline-sm text-primary">412</span>
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase">Active Workers</span>
+</div>
+<div class="bg-surface p-3 flex flex-col items-center justify-center text-center">
+<span class="font-headline-sm text-headline-sm text-primary">84</span>
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase">Active Stores</span>
+</div>
+<div class="bg-surface p-3 flex flex-col items-center justify-center text-center">
+<span class="font-headline-sm text-headline-sm text-primary">156</span>
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase">Active Agents</span>
+</div>
+<div class="bg-surface p-3 flex flex-col items-center justify-center text-center col-span-2 md:col-span-1 border-t md:border-t-0 border-outline-variant">
+<span class="font-headline-sm text-headline-sm text-error">42</span>
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase">Voided Ops</span>
+</div>
+</div>
+<!-- Charts Section (Asymmetric Layout) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg mb-lg">
+<!-- Main Chart: Evolution -->
+<div class="lg:col-span-2 bg-surface border border-outline-variant rounded-xl p-md flex flex-col">
+<div class="flex justify-between items-center mb-4">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-primary">Operations Evolution</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Hourly volume of transactions (Today)</p>
+</div>
+<div class="flex gap-2">
+<button class="px-2 py-1 text-xs font-label-bold bg-surface-container-high rounded text-primary">Vol</button>
+<button class="px-2 py-1 text-xs font-label-bold hover:bg-surface-container-high rounded text-on-surface-variant">Val</button>
+</div>
+</div>
+<div class="flex-1 min-h-[300px] w-full relative">
+<canvas id="evolutionChart"></canvas>
+</div>
+</div>
+<!-- Secondary Chart: Doughnut -->
+<div class="bg-surface border border-outline-variant rounded-xl p-md flex flex-col">
+<div class="mb-4">
+<h3 class="font-headline-sm text-headline-sm text-primary">Ops by Bank Partner</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Distribution of total gross volume</p>
+</div>
+<div class="flex-1 flex items-center justify-center min-h-[250px] relative">
+<canvas id="bankDoughnutChart"></canvas>
+<!-- Center Text for Doughnut -->
+<div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-2">
+<span class="font-headline-md text-headline-md text-primary">4</span>
+<span class="font-label-bold text-label-bold text-on-surface-variant">Partners</span>
+</div>
+</div>
+<div class="mt-4 grid grid-cols-2 gap-2">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-sm" style="background-color: #0b1c30;"></span>
+<span class="font-body-sm text-body-sm text-secondary truncate">BCP (45%)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-sm" style="background-color: #54647a;"></span>
+<span class="font-body-sm text-body-sm text-secondary truncate">Interbank (30%)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-sm" style="background-color: #bec6e0;"></span>
+<span class="font-body-sm text-body-sm text-secondary truncate">BBVA (15%)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-sm" style="background-color: #e4e2e4;"></span>
+<span class="font-body-sm text-body-sm text-secondary truncate">Other (10%)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Section: Rankings & Bar Chart -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg mb-lg">
+<!-- Cash In vs Out Bar Chart -->
+<div class="bg-surface border border-outline-variant rounded-xl p-md flex flex-col">
+<div class="mb-4">
+<h3 class="font-headline-sm text-headline-sm text-primary">Flow Comparison</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Cash-In vs Cash-Out by Region</p>
+</div>
+<div class="flex-1 min-h-[250px] w-full relative">
+<canvas id="flowBarChart"></canvas>
+</div>
+</div>
+<!-- Top Performers List (Stores) -->
+<div class="bg-surface border border-outline-variant rounded-xl p-md flex flex-col">
+<div class="flex justify-between items-center mb-4 border-b border-outline-variant pb-2">
+<h3 class="font-headline-sm text-headline-sm text-primary">Top 5 Stores</h3>
+<span class="font-label-bold text-label-bold text-on-surface-variant">By Volume</span>
+</div>
+<div class="flex-1 overflow-y-auto">
+<ul class="flex flex-col gap-1">
+<li class="flex justify-between items-center p-2 hover:bg-surface-container-low rounded-DEFAULT">
+<div class="flex items-center gap-3">
+<span class="font-label-bold text-label-bold text-secondary-fixed-dim w-4">1</span>
+<div>
+<div class="font-body-sm text-body-sm font-medium text-primary">Plaza Central</div>
+<div class="font-label-bold text-label-bold text-on-surface-variant">LIMA-01</div>
+</div>
+</div>
+<span class="font-data-mono text-data-mono text-primary">$842k</span>
+</li>
+<li class="flex justify-between items-center p-2 hover:bg-surface-container-low rounded-DEFAULT">
+<div class="flex items-center gap-3">
+<span class="font-label-bold text-label-bold text-secondary-fixed-dim w-4">2</span>
+<div>
+<div class="font-body-sm text-body-sm font-medium text-primary">Mall Sur</div>
+<div class="font-label-bold text-label-bold text-on-surface-variant">LIMA-04</div>
+</div>
+</div>
+<span class="font-data-mono text-data-mono text-primary">$610k</span>
+</li>
+<li class="flex justify-between items-center p-2 hover:bg-surface-container-low rounded-DEFAULT">
+<div class="flex items-center gap-3">
+<span class="font-label-bold text-label-bold text-secondary-fixed-dim w-4">3</span>
+<div>
+<div class="font-body-sm text-body-sm font-medium text-primary">Arequipa Centro</div>
+<div class="font-label-bold text-label-bold text-on-surface-variant">ARQ-01</div>
+</div>
+</div>
+<span class="font-data-mono text-data-mono text-primary">$455k</span>
+</li>
+<li class="flex justify-between items-center p-2 hover:bg-surface-container-low rounded-DEFAULT">
+<div class="flex items-center gap-3">
+<span class="font-label-bold text-label-bold text-secondary-fixed-dim w-4">4</span>
+<div>
+<div class="font-body-sm text-body-sm font-medium text-primary">Trujillo Norte</div>
+<div class="font-label-bold text-label-bold text-on-surface-variant">TRU-02</div>
+</div>
+</div>
+<span class="font-data-mono text-data-mono text-primary">$320k</span>
+</li>
+<li class="flex justify-between items-center p-2 hover:bg-surface-container-low rounded-DEFAULT">
+<div class="flex items-center gap-3">
+<span class="font-label-bold text-label-bold text-secondary-fixed-dim w-4">5</span>
+<div>
+<div class="font-body-sm text-body-sm font-medium text-primary">San Isidro Empresarial</div>
+<div class="font-label-bold text-label-bold text-on-surface-variant">LIMA-12</div>
+</div>
+</div>
+<span class="font-data-mono text-data-mono text-primary">$298k</span>
+</li>
+</ul>
+</div>
+</div>
+<!-- Top Performers List (Workers) -->
+<div class="bg-surface border border-outline-variant rounded-xl p-md flex flex-col">
+<div class="flex justify-between items-center mb-4 border-b border-outline-variant pb-2">
+<h3 class="font-headline-sm text-headline-sm text-primary">Top Tellers</h3>
+<span class="font-label-bold text-label-bold text-on-surface-variant">By Ops Count</span>
+</div>
+<div class="flex-1 overflow-y-auto">
+<ul class="flex flex-col gap-1">
+<li class="flex justify-between items-center p-2 hover:bg-surface-container-low rounded-DEFAULT group">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-label-bold">JC</div>
+<div>
+<div class="font-body-sm text-body-sm font-medium text-primary">Jorge Campos</div>
+<div class="flex items-center gap-1">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim"></span>
+<span class="font-label-bold text-label-bold text-on-surface-variant">ID: 8832</span>
+</div>
+</div>
+</div>
+<div class="text-right">
+<div class="font-data-mono text-data-mono text-primary">412 ops</div>
+<div class="font-label-bold text-label-bold text-tertiary-fixed-dim group-hover:block hidden absolute bg-surface shadow-md p-1 -mt-8 -ml-10 rounded">0% Void</div>
+</div>
+</li>
+<li class="flex justify-between items-center p-2 hover:bg-surface-container-low rounded-DEFAULT">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-secondary flex items-center justify-center font-label-bold">MR</div>
+<div>
+<div class="font-body-sm text-body-sm font-medium text-primary">Maria Rojas</div>
+<div class="flex items-center gap-1">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim"></span>
+<span class="font-label-bold text-label-bold text-on-surface-variant">ID: 9102</span>
+</div>
+</div>
+</div>
+<div class="font-data-mono text-data-mono text-primary">389 ops</div>
+</li>
+<li class="flex justify-between items-center p-2 hover:bg-surface-container-low rounded-DEFAULT">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-secondary flex items-center justify-center font-label-bold">AL</div>
+<div>
+<div class="font-body-sm text-body-sm font-medium text-primary">Ana Lopez</div>
+<div class="flex items-center gap-1">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-outline"></span>
+<span class="font-label-bold text-label-bold text-on-surface-variant">ID: 4421</span>
+</div>
+</div>
+</div>
+<div class="font-data-mono text-data-mono text-primary">350 ops</div>
+</li>
+<li class="flex justify-between items-center p-2 hover:bg-surface-container-low rounded-DEFAULT">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-secondary flex items-center justify-center font-label-bold">LP</div>
+<div>
+<div class="font-body-sm text-body-sm font-medium text-primary">Luis Perez</div>
+<div class="flex items-center gap-1">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim"></span>
+<span class="font-label-bold text-label-bold text-on-surface-variant">ID: 7731</span>
+</div>
+</div>
+</div>
+<div class="font-data-mono text-data-mono text-primary">315 ops</div>
+</li>
+<li class="flex justify-between items-center p-2 hover:bg-surface-container-low rounded-DEFAULT">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-secondary flex items-center justify-center font-label-bold">CM</div>
+<div>
+<div class="font-body-sm text-body-sm font-medium text-primary">Carlos Mendoza</div>
+<div class="flex items-center gap-1">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim"></span>
+<span class="font-label-bold text-label-bold text-on-surface-variant">ID: 2290</span>
+</div>
+</div>
+</div>
+<div class="font-data-mono text-data-mono text-primary">299 ops</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Chart Initializations -->
+<script>
+        // Use Tailwind config colors for charts to match design system exactly
+        const colors = {
+            primary: "#000000",
+            onSecondaryFixed: "#0b1c30",
+            secondaryContainer: "#d0e1fb",
+            outlineVariant: "#c6c6cd",
+            tertiaryFixedDim: "#4edea3",
+            error: "#ba1a1a",
+            surfaceContainerHigh: "#eae7e9",
+            secondary: "#505f76",
+            primaryFixedDim: "#bec6e0"
+        };
+
+        // Standard chart options for a flat, modern, minimalist look
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.color = "#76777d"; // outline
+        Chart.defaults.scale.grid.color = "#e4e2e4"; // surface-variant
+        Chart.defaults.plugins.tooltip.backgroundColor = "#1b1b1d"; // on-surface
+        Chart.defaults.plugins.tooltip.padding = 12;
+        Chart.defaults.plugins.tooltip.cornerRadius = 4;
+
+        // 1. Evolution Line Chart
+        const ctxEvolution = document.getElementById('evolutionChart').getContext('2d');
+        new Chart(ctxEvolution, {
+            type: 'line',
+            data: {
+                labels: ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'],
+                datasets: [{
+                    label: 'Transaction Volume',
+                    data: [120, 250, 400, 450, 380, 200, 350, 480, 520, 300],
+                    borderColor: colors.onSecondaryFixed,
+                    backgroundColor: colors.secondaryContainer + '40', // slightly transparent
+                    borderWidth: 2,
+                    pointBackgroundColor: colors.onSecondaryFixed,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    fill: true,
+                    tension: 0.4 // Smooth curves
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        border: { display: false },
+                        ticks: { maxTicksLimit: 6 }
+                    },
+                    x: {
+                        grid: { display: false },
+                        border: { display: false }
+                    }
+                }
+            }
+        });
+
+        // 2. Bank Doughnut Chart
+        const ctxDoughnut = document.getElementById('bankDoughnutChart').getContext('2d');
+        new Chart(ctxDoughnut, {
+            type: 'doughnut',
+            data: {
+                labels: ['BCP', 'Interbank', 'BBVA', 'Other'],
+                datasets: [{
+                    data: [45, 30, 15, 10],
+                    backgroundColor: [
+                        colors.onSecondaryFixed,
+                        colors.secondary,
+                        colors.primaryFixedDim,
+                        colors.surfaceContainerHigh
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%', // Thin ring
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // 3. Flow Comparison Bar Chart
+        const ctxBar = document.getElementById('flowBarChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: ['North', 'Central', 'South', 'East'],
+                datasets: [
+                    {
+                        label: 'Cash-In',
+                        data: [450, 800, 300, 200],
+                        backgroundColor: colors.tertiaryFixedDim,
+                        borderRadius: 2,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.8
+                    },
+                    {
+                        label: 'Cash-Out',
+                        data: [350, 600, 250, 180],
+                        backgroundColor: colors.surfaceContainerHigh,
+                        borderRadius: 2,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.8
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        align: 'end',
+                        labels: {
+                            usePointStyle: true,
+                            boxWidth: 8,
+                            boxHeight: 8,
+                            font: { size: 11, weight: '600' }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        border: { display: false },
+                        ticks: { maxTicksLimit: 5, callback: function(value) { return '$' + value + 'k'; } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        border: { display: false }
+                    }
+                }
+            }
+        });
+    </script>
+</body></html>

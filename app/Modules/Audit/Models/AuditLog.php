@@ -17,5 +17,6 @@ class AuditLog extends Model
     protected $fillable = [
         'organization_id', 'actor_user_id', 'action', 'entity_type', 'entity_id',
         'before_values', 'after_values', 'reason', 'occurred_at', 'correlation_id',
+        'created_at',
     ];
 }

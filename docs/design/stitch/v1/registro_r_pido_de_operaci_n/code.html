@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Registrar Operación - FinOps Portal</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Public+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-filled {
+            font-variation-settings: 'FILL' 1;
+        }
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #dcd9db; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #c6c6cd; }
+        
+        /* Hide number input spinners */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-secondary-fixed": "#0b1c30", "on-tertiary": "#ffffff", "surface-container-high": "#eae7e9", "on-tertiary-fixed": "#002113", "inverse-on-surface": "#f3f0f2", "primary-fixed-dim": "#bec6e0", "primary": "#000000", "surface-container": "#f0edef", "on-tertiary-container": "#009668", "error": "#ba1a1a", "surface-tint": "#565e74", "on-background": "#1b1b1d", "on-primary": "#ffffff", "on-tertiary-fixed-variant": "#005236", "tertiary-fixed": "#6ffbbe", "on-secondary": "#ffffff", "on-error-container": "#93000a", "surface-dim": "#dcd9db", "outline": "#76777d", "surface-bright": "#fcf8fa", "secondary-fixed": "#d3e4fe", "primary-fixed": "#dae2fd", "on-primary-container": "#7c839b", "on-error": "#ffffff", "error-container": "#ffdad6", "secondary-fixed-dim": "#b7c8e1", "surface-container-low": "#f6f3f5", "secondary": "#505f76", "tertiary": "#000000", "on-secondary-fixed-variant": "#38485d", "inverse-primary": "#bec6e0", "on-primary-fixed-variant": "#3f465c", "surface-container-lowest": "#ffffff", "on-surface-variant": "#45464d", "surface": "#fcf8fa", "surface-variant": "#e4e2e4", "secondary-container": "#d0e1fb", "tertiary-container": "#002113", "on-surface": "#1b1b1d", "tertiary-fixed-dim": "#4edea3", "on-secondary-container": "#54647a", "on-primary-fixed": "#131b2e", "background": "#fcf8fa", "primary-container": "#131b2e", "outline-variant": "#c6c6cd", "surface-container-highest": "#e4e2e4", "inverse-surface": "#303032"
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                    spacing: { "sm": "8px", "lg": "24px", "gutter": "20px", "max-width": "1440px", "xs": "4px", "xl": "32px", "margin": "24px", "base": "4px", "md": "16px" },
+                    fontFamily: { "headline-md": ["Public Sans"], "label-bold": ["Inter"], "headline-lg": ["Public Sans"], "headline-sm": ["Public Sans"], "body-sm": ["Inter"], "body-lg": ["Inter"], "body-md": ["Inter"], "data-mono": ["Inter"] },
+                    fontSize: {
+                        "headline-md": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }],
+                        "label-bold": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "600" }],
+                        "headline-lg": ["30px", { lineHeight: "36px", letterSpacing: "-0.02em", fontWeight: "600" }],
+                        "headline-sm": ["20px", { lineHeight: "28px", fontWeight: "600" }],
+                        "body-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }],
+                        "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+                        "data-mono": ["14px", { lineHeight: "20px", fontWeight: "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased overflow-hidden flex h-screen">
+<!-- Shell: SideNavBar -->
+<aside class="hidden md:flex h-full w-64 fixed left-0 top-0 overflow-y-auto bg-surface-container-lowest border-r border-outline-variant flex-col z-50">
+<!-- Header -->
+<div class="px-6 py-8 border-b border-outline-variant flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-headline-sm text-headline-sm font-bold">F</div>
+<div>
+<h2 class="font-headline-sm text-headline-sm font-bold text-primary tracking-tight">FinOps Portal</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Active Session</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex-1 py-4 flex flex-col gap-1 font-body-md text-body-md">
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">home</span> Inicio
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container font-bold border-r-4 border-primary transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined icon-filled">add_card</span> Registrar operación
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">history</span> Mis operaciones
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">event_available</span> Cierre diario
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">storefront</span> Tiendas
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">account_balance</span> Agentes bancarios
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">group</span> Trabajadores
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span> Bancos
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">category</span> Tipos de operación
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">security</span> Auditoría
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span> Configuración
+            </a>
+</nav>
+</aside>
+<!-- Shell: TopAppBar (Desktop only per instructions to use full width if no side nav, but we have side nav, so we offset) -->
+<header class="hidden md:flex fixed top-0 right-0 w-[calc(100%-16rem)] h-16 z-40 bg-surface border-b border-outline-variant justify-between items-center px-lg">
+<div class="flex items-center gap-4">
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Store: Plaza Central</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Agent: 00124</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-all text-on-surface-variant scale-95 active:scale-100">
+<span class="material-symbols-outlined">timer</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-all text-on-surface-variant scale-95 active:scale-100">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-all text-primary scale-95 active:scale-100">
+<span class="material-symbols-outlined icon-filled">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 h-full md:ml-64 w-full pt-0 md:pt-16 overflow-y-auto bg-background">
+<!-- Mobile Header Fallback (Simple) -->
+<div class="md:hidden flex items-center justify-between p-4 bg-surface border-b border-outline-variant sticky top-0 z-40">
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">FinOps</h1>
+<button class="text-primary"><span class="material-symbols-outlined">menu</span></button>
+</div>
+<div class="p-margin md:p-xl max-w-4xl mx-auto w-full">
+<div class="mb-lg flex justify-between items-end">
+<div>
+<h1 class="font-headline-md text-headline-md font-semibold text-primary">Registro Rápido</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Ingrese los detalles de la transacción de caja.</p>
+</div>
+</div>
+<!-- REGISTRATION FORM -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm transition-all duration-300" id="form-container">
+<!-- Read Only Context Bar -->
+<div class="bg-surface-container-low px-lg py-3 rounded-t-xl border-b border-outline-variant flex flex-wrap gap-x-6 gap-y-2 items-center">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant" style="font-size: 16px;">store</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Tienda:</span>
+<span class="font-data-mono text-data-mono text-primary font-medium">Plaza Central</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant" style="font-size: 16px;">badge</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Agente:</span>
+<span class="font-data-mono text-data-mono text-primary font-medium">BCP - 00124</span>
+</div>
+</div>
+<form class="p-lg md:p-xl grid grid-cols-1 md:grid-cols-12 gap-gutter" id="registration-form">
+<!-- HERO INPUT: Monto -->
+<div class="col-span-1 md:col-span-12 mb-4">
+<label class="block font-label-bold text-label-bold text-on-surface-variant uppercase mb-2" for="amount">Monto de Operación</label>
+<div class="relative flex items-center bg-surface-container-lowest rounded-lg border-2 border-outline-variant focus-within:border-primary transition-colors overflow-hidden group">
+<div class="px-4 py-4 bg-surface-container-low border-r border-outline-variant flex items-center justify-center h-full">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface-variant">PEN</span>
+</div>
+<span class="absolute left-[88px] font-headline-lg text-headline-lg text-primary pointer-events-none">S/</span>
+<input class="w-full h-24 pl-14 pr-6 bg-transparent text-right font-headline-lg text-headline-lg font-bold text-primary placeholder-outline border-none focus:ring-0" id="amount" placeholder="0.00" required="" step="0.01" style="font-size: 48px; line-height: 1;" type="number"/>
+</div>
+</div>
+<!-- Row: Bank & Direction -->
+<div class="col-span-1 md:col-span-6 space-y-2">
+<label class="block font-label-bold text-label-bold text-on-surface-variant uppercase" for="bank">Banco Destino / Origen</label>
+<div class="relative">
+<select class="w-full appearance-none bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-md text-body-md text-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" id="bank" required="">
+<option disabled="" selected="" value="">Seleccione banco...</option>
+<option value="bcp">Banco de Crédito (BCP)</option>
+<option value="bbva">BBVA Continental</option>
+<option value="interbank">Interbank</option>
+<option value="scotiabank">Scotiabank</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-3 pointer-events-none text-on-surface-variant">expand_more</span>
+</div>
+</div>
+<div class="col-span-1 md:col-span-6 space-y-2">
+<label class="block font-label-bold text-label-bold text-on-surface-variant uppercase" for="direction">Dirección de Caja</label>
+<div class="grid grid-cols-2 gap-2 h-[46px]">
+<label class="cursor-pointer relative">
+<input checked="" class="peer sr-only" name="direction" required="" type="radio" value="entrada"/>
+<div class="w-full h-full flex items-center justify-center gap-2 rounded-lg border border-outline-variant peer-checked:bg-primary peer-checked:text-on-primary peer-checked:border-primary text-secondary transition-all">
+<span class="material-symbols-outlined" style="font-size: 18px;">arrow_downward</span>
+<span class="font-body-md text-body-md font-medium">Entrada</span>
+</div>
+</label>
+<label class="cursor-pointer relative">
+<input class="peer sr-only" name="direction" type="radio" value="salida"/>
+<div class="w-full h-full flex items-center justify-center gap-2 rounded-lg border border-outline-variant peer-checked:bg-primary peer-checked:text-on-primary peer-checked:border-primary text-secondary transition-all">
+<span class="material-symbols-outlined" style="font-size: 18px;">arrow_upward</span>
+<span class="font-body-md text-body-md font-medium">Salida</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Row: Type -->
+<div class="col-span-1 md:col-span-12 space-y-2">
+<label class="block font-label-bold text-label-bold text-on-surface-variant uppercase" for="type">Tipo de Operación</label>
+<div class="relative">
+<select class="w-full appearance-none bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-md text-body-md text-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" id="type" required="">
+<option disabled="" selected="" value="">Seleccione tipo...</option>
+<option value="deposito">Depósito en Efectivo</option>
+<option value="retiro">Retiro de Efectivo</option>
+<option value="pago_servicios">Pago de Servicios</option>
+<option value="transferencia">Transferencia a Terceros</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-3 pointer-events-none text-on-surface-variant">expand_more</span>
+</div>
+</div>
+<!-- Divider -->
+<div class="col-span-1 md:col-span-12 py-2">
+<div class="h-px w-full bg-outline-variant"></div>
+</div>
+<!-- Optional Fields -->
+<div class="col-span-1 md:col-span-6 space-y-2">
+<label class="block font-label-bold text-label-bold text-on-surface-variant uppercase" for="reference">Nº Referencia <span class="text-outline font-normal normal-case">(Opcional)</span></label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-data-mono text-data-mono text-primary placeholder-outline focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors" id="reference" placeholder="Ej. OP-123456" type="text"/>
+</div>
+<div class="col-span-1 md:col-span-6 space-y-2">
+<label class="block font-label-bold text-label-bold text-on-surface-variant uppercase" for="notes">Observaciones <span class="text-outline font-normal normal-case">(Opcional)</span></label>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 font-body-md text-body-md text-primary placeholder-outline focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors resize-none" id="notes" placeholder="Detalles adicionales..." rows="1"></textarea>
+</div>
+<!-- Action Area -->
+<div class="col-span-1 md:col-span-12 mt-4 pt-6 border-t border-outline-variant flex justify-end">
+<button class="w-full md:w-auto px-8 py-4 bg-primary text-on-primary rounded-lg font-label-bold text-label-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-tertiary-container transition-colors shadow-sm" type="submit">
+<span class="material-symbols-outlined icon-filled" style="font-size: 20px;">task_alt</span>
+                            Registrar Operación
+                        </button>
+</div>
+</form>
+</div>
+<!-- SUCCESS STATE (Hidden by default) -->
+<div class="hidden bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-xl text-center flex-col items-center justify-center min-h-[500px]" id="success-container">
+<div class="w-20 h-20 rounded-full bg-surface-container-low flex items-center justify-center mb-6 mx-auto">
+<span class="material-symbols-outlined icon-filled text-on-tertiary-container" style="font-size: 48px; color: #009668;">check_circle</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg font-bold text-primary mb-2">Registro Exitoso</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-8">La operación ha sido registrada en el sistema central.</p>
+<div class="bg-surface rounded-lg border border-outline-variant p-6 w-full max-w-md mx-auto mb-8 text-left grid grid-cols-2 gap-y-4">
+<div class="col-span-2 flex justify-between items-end border-b border-outline-variant pb-4 mb-2">
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase">Monto Total</span>
+<span class="font-headline-sm text-headline-sm font-bold text-primary" id="success-amount">S/ 0.00</span>
+</div>
+<div>
+<span class="block font-label-bold text-label-bold text-on-surface-variant uppercase mb-1">Código Interno</span>
+<span class="font-data-mono text-data-mono text-primary font-medium">TRX-8921A</span>
+</div>
+<div>
+<span class="block font-label-bold text-label-bold text-on-surface-variant uppercase mb-1">Hora</span>
+<span class="font-data-mono text-data-mono text-primary font-medium" id="success-time">14:32:05</span>
+</div>
+<div>
+<span class="block font-label-bold text-label-bold text-on-surface-variant uppercase mb-1">Banco</span>
+<span class="font-body-md text-body-md text-primary" id="success-bank">BCP</span>
+</div>
+<div>
+<span class="block font-label-bold text-label-bold text-on-surface-variant uppercase mb-1">Tipo</span>
+<span class="font-body-md text-body-md text-primary" id="success-type">Depósito</span>
+</div>
+</div>
+<div class="flex flex-col md:flex-row gap-4 justify-center">
+<button class="px-6 py-3 border border-outline text-primary rounded-lg font-label-bold text-label-bold uppercase tracking-wider hover:bg-surface-container-low transition-colors" id="btn-reset">
+                        Registrar Otra
+                    </button>
+<button class="px-6 py-3 bg-primary text-on-primary rounded-lg font-label-bold text-label-bold uppercase tracking-wider hover:bg-tertiary-container transition-colors">
+                        Ver Detalle
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('registration-form');
+            const formContainer = document.getElementById('form-container');
+            const successContainer = document.getElementById('success-container');
+            const btnReset = document.getElementById('btn-reset');
+            
+            // Format amount input on blur
+            const amountInput = document.getElementById('amount');
+            amountInput.addEventListener('blur', (e) => {
+                let val = parseFloat(e.target.value);
+                if (!isNaN(val)) {
+                    e.target.value = val.toFixed(2);
+                }
+            });
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                // Get values to populate success screen
+                const amt = document.getElementById('amount').value;
+                const bankSelect = document.getElementById('bank');
+                const bankText = bankSelect.options[bankSelect.selectedIndex].text;
+                const typeSelect = document.getElementById('type');
+                const typeText = typeSelect.options[typeSelect.selectedIndex].text;
+                
+                // Set success values
+                document.getElementById('success-amount').innerText = `S/ ${parseFloat(amt).toFixed(2)}`;
+                document.getElementById('success-bank').innerText = bankText;
+                document.getElementById('success-type').innerText = typeText;
+                
+                const now = new Date();
+                document.getElementById('success-time').innerText = now.toLocaleTimeString('es-PE', { hour12: false });
+
+                // Transition
+                formContainer.classList.add('hidden');
+                successContainer.classList.remove('hidden');
+            });
+
+            btnReset.addEventListener('click', () => {
+                form.reset();
+                successContainer.classList.add('hidden');
+                formContainer.classList.remove('hidden');
+                document.getElementById('amount').focus();
+            });
+        });
+    </script>
+</body></html>

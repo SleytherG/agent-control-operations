@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AgenteFlow - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#0b1c30",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#eae7e9",
+                        "on-tertiary-fixed": "#002113",
+                        "inverse-on-surface": "#f3f0f2",
+                        "primary-fixed-dim": "#bec6e0",
+                        "primary": "#000000",
+                        "surface-container": "#f0edef",
+                        "on-tertiary-container": "#009668",
+                        "error": "#ba1a1a",
+                        "surface-tint": "#565e74",
+                        "on-background": "#1b1b1d",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "tertiary-fixed": "#6ffbbe",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#dcd9db",
+                        "outline": "#76777d",
+                        "surface-bright": "#fcf8fa",
+                        "secondary-fixed": "#d3e4fe",
+                        "primary-fixed": "#dae2fd",
+                        "on-primary-container": "#7c839b",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "surface-container-low": "#f6f3f5",
+                        "secondary": "#505f76",
+                        "tertiary": "#000000",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "inverse-primary": "#bec6e0",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#45464d",
+                        "surface": "#fcf8fa",
+                        "surface-variant": "#e4e2e4",
+                        "secondary-container": "#d0e1fb",
+                        "tertiary-container": "#002113",
+                        "on-surface": "#1b1b1d",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-secondary-container": "#54647a",
+                        "on-primary-fixed": "#131b2e",
+                        "background": "#fcf8fa",
+                        "primary-container": "#131b2e",
+                        "outline-variant": "#c6c6cd",
+                        "surface-container-highest": "#e4e2e4",
+                        "inverse-surface": "#303032"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "lg": "24px",
+                        "gutter": "20px",
+                        "max-width": "1440px",
+                        "xs": "4px",
+                        "xl": "32px",
+                        "margin": "24px",
+                        "base": "4px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Public Sans"],
+                        "label-bold": ["Inter"],
+                        "headline-lg": ["Public Sans"],
+                        "headline-sm": ["Public Sans"],
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "data-mono": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-bold": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-lg": ["30px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+</head>
+<body class="bg-surface-container-low min-h-screen flex items-center justify-center p-gutter">
+<!-- Card Container -->
+<div class="w-full max-w-[420px] bg-surface-container-lowest border border-outline-variant rounded-xl p-xl flex flex-col gap-lg shadow-sm">
+<!-- Header / Logo -->
+<div class="flex flex-col items-center text-center gap-sm">
+<div class="w-16 h-16 bg-primary rounded-xl flex items-center justify-center text-on-primary mb-sm">
+<span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'FILL' 1;">hub</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">AgenteFlow</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Acceso seguro a operaciones</p>
+</div>
+<!-- Dynamic Error State (Hidden by default) -->
+<div class="hidden bg-error-container border border-error/20 rounded-lg p-sm flex items-start gap-sm" id="error-container">
+<span class="material-symbols-outlined text-error mt-xs" style="font-variation-settings: 'FILL' 1; font-size: 20px;">error</span>
+<div class="flex-1">
+<p class="font-label-bold text-label-bold text-on-error-container" id="error-title">Error de autenticación</p>
+<p class="font-body-sm text-body-sm text-on-error-container/80 mt-xs" id="error-message">Credenciales incorrectas.</p>
+</div>
+<button class="text-on-error-container/60 hover:text-on-error-container" onclick="hideError()" type="button">
+<span class="material-symbols-outlined" style="font-size: 18px;">close</span>
+</button>
+</div>
+<!-- Form -->
+<form class="flex flex-col gap-md" id="login-form" onsubmit="handleLogin(event)">
+<!-- Username Input -->
+<div class="flex flex-col gap-xs">
+<label class="font-label-bold text-label-bold text-on-surface" for="username">Usuario o Correo</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant">person</span>
+<input class="w-full h-[48px] pl-10 pr-sm bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-md text-body-md text-on-surface placeholder:text-outline" id="username" placeholder="ID de agente o email" required="" type="text"/>
+</div>
+</div>
+<!-- Password Input -->
+<div class="flex flex-col gap-xs">
+<div class="flex justify-between items-center">
+<label class="font-label-bold text-label-bold text-on-surface" for="password">Contraseña</label>
+<a class="font-body-sm text-body-sm text-on-secondary-container hover:text-primary transition-colors" href="#">¿Olvidó su contraseña?</a>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant">lock</span>
+<input class="w-full h-[48px] pl-10 pr-10 bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-md text-body-md text-on-surface placeholder:text-outline" id="password" placeholder="••••••••" required="" type="password"/>
+<button aria-label="Mostrar u ocultar contraseña" class="absolute right-xs top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface transition-colors flex items-center justify-center h-8 w-8 rounded-full hover:bg-surface-container-low" onclick="togglePassword()" type="button">
+<span class="material-symbols-outlined" id="toggle-icon" style="font-size: 20px;">visibility</span>
+</button>
+</div>
+</div>
+<!-- Primary Action Button -->
+<button class="w-full h-[48px] mt-sm bg-primary text-on-primary font-label-bold text-label-bold rounded-lg hover:bg-on-primary-fixed-variant transition-colors flex items-center justify-center relative overflow-hidden group disabled:opacity-70 disabled:cursor-not-allowed" id="submit-btn" type="submit">
+<span id="btn-text">Iniciar sesión</span>
+<span class="material-symbols-outlined absolute hidden animate-spin" id="btn-spinner">progress_activity</span>
+</button>
+</form>
+<!-- Footer -->
+<div class="text-center mt-sm">
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                ¿Necesita acceso? <a class="text-primary font-medium hover:underline" href="#">Contacte al administrador</a>
+</p>
+</div>
+</div>
+<script>
+        function togglePassword() {
+            const pwdInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggle-icon');
+            
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                toggleIcon.textContent = 'visibility_off';
+            } else {
+                pwdInput.type = 'password';
+                toggleIcon.textContent = 'visibility';
+            }
+        }
+
+        function hideError() {
+            document.getElementById('error-container').classList.add('hidden');
+        }
+
+        function showError(type) {
+            const container = document.getElementById('error-container');
+            const title = document.getElementById('error-title');
+            const message = document.getElementById('error-message');
+            
+            container.classList.remove('hidden');
+            
+            switch(type) {
+                case 'credentials':
+                    title.textContent = 'Credenciales incorrectas';
+                    message.textContent = 'El usuario o la contraseña no coinciden. Intente de nuevo.';
+                    break;
+                case 'deactivated':
+                    title.textContent = 'Usuario desactivado';
+                    message.textContent = 'Su cuenta de agente ha sido suspendida. Contacte soporte.';
+                    break;
+                case 'network':
+                    title.textContent = 'Error de conexión';
+                    message.textContent = 'No se pudo conectar con el servidor central. Verifique su red.';
+                    break;
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submit-btn');
+            const btnText = document.getElementById('btn-text');
+            const btnSpinner = document.getElementById('btn-spinner');
+            
+            // Hide previous errors
+            hideError();
+            
+            // Set loading state
+            btn.disabled = true;
+            btnText.classList.add('opacity-0');
+            btnSpinner.classList.remove('hidden');
+            
+            // Simulate network request
+            setTimeout(() => {
+                // Reset button state
+                btn.disabled = false;
+                btnText.classList.remove('opacity-0');
+                btnSpinner.classList.add('hidden');
+                
+                // Randomly show an error for demonstration of states
+                const errors = ['credentials', 'deactivated', 'network'];
+                const randomError = errors[Math.floor(Math.random() * errors.length)];
+                
+                showError(randomError);
+                
+            }, 1500);
+        }
+    </script>
+</body></html>

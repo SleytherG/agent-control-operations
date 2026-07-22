@@ -43,6 +43,10 @@ class AuthenticateJwtSession
         $request->merge(['auth_session_id' => $session->id]);
         $request->attributes->set('session_expires_at', $session->access_expires_at->toIso8601String());
 
+        if (is_null($user->password_changed_at) && ! $request->is('password/change') && ! $request->is('password/change/*')) {
+            return redirect()->route('password.change');
+        }
+
         return $next($request);
     }
 

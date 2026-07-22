@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dashboard - FinOps Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#0b1c30",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#eae7e9",
+                        "on-tertiary-fixed": "#002113",
+                        "inverse-on-surface": "#f3f0f2",
+                        "primary-fixed-dim": "#bec6e0",
+                        "primary": "#000000",
+                        "surface-container": "#f0edef",
+                        "on-tertiary-container": "#009668",
+                        "error": "#ba1a1a",
+                        "surface-tint": "#565e74",
+                        "on-background": "#1b1b1d",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "tertiary-fixed": "#6ffbbe",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#dcd9db",
+                        "outline": "#76777d",
+                        "surface-bright": "#fcf8fa",
+                        "secondary-fixed": "#d3e4fe",
+                        "primary-fixed": "#dae2fd",
+                        "on-primary-container": "#7c839b",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "surface-container-low": "#f6f3f5",
+                        "secondary": "#505f76",
+                        "tertiary": "#000000",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "inverse-primary": "#bec6e0",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#45464d",
+                        "surface": "#fcf8fa",
+                        "surface-variant": "#e4e2e4",
+                        "secondary-container": "#d0e1fb",
+                        "tertiary-container": "#002113",
+                        "on-surface": "#1b1b1d",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-secondary-container": "#54647a",
+                        "on-primary-fixed": "#131b2e",
+                        "background": "#fcf8fa",
+                        "primary-container": "#131b2e",
+                        "outline-variant": "#c6c6cd",
+                        "surface-container-highest": "#e4e2e4",
+                        "inverse-surface": "#303032"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "lg": "24px",
+                        "gutter": "20px",
+                        "max-width": "1440px",
+                        "xs": "4px",
+                        "xl": "32px",
+                        "margin": "24px",
+                        "base": "4px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Public Sans"],
+                        "label-bold": ["Inter"],
+                        "headline-lg": ["Public Sans"],
+                        "headline-sm": ["Public Sans"],
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "data-mono": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-bold": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-lg": ["30px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "data-mono": ["14px", { "lineHeight": "20px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        /* Custom scrollbar for sidebar */
+        .sidebar-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .sidebar-scroll::-webkit-scrollbar-thumb {
+            background-color: theme('colors.outline-variant');
+            border-radius: 4px;
+        }
+    </style>
+<!-- Chart.js for data visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex overflow-hidden">
+<!-- SideNavBar (Predicted Component) -->
+<nav class="h-full w-64 fixed left-0 top-0 overflow-y-auto bg-surface-container-lowest dark:bg-surface-container-lowest border-r border-outline-variant dark:border-outline-variant flex flex-col z-50 sidebar-scroll">
+<!-- Header -->
+<div class="p-lg border-b border-outline-variant flex flex-col gap-sm">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" style="font-size: 18px;">account_balance</span>
+</div>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary">FinOps Portal</h1>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-xs">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim"></span> Active Session
+            </p>
+</div>
+<!-- Primary Action CTA -->
+<div class="p-4 border-b border-outline-variant">
+<button class="w-full bg-primary text-on-primary py-3 px-4 rounded-lg flex items-center justify-center gap-2 font-label-bold text-label-bold hover:bg-surface-tint transition-colors shadow-sm">
+<span class="material-symbols-outlined">add_card</span>
+                Registrar operación
+            </button>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 py-4 flex flex-col gap-1">
+<!-- Active Tab: Dashboard -->
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-body-md text-body-md font-medium">Inicio</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="add_card">add_card</span>
+<span class="font-body-md text-body-md font-medium">Registrar operación</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-body-md text-body-md font-medium">Mis operaciones</span>
+</a>
+<!-- Active Dashboard -->
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container font-bold border-r-4 border-primary" href="#">
+<span class="material-symbols-outlined fill" data-icon="dashboard">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="event_available">event_available</span>
+<span class="font-body-md text-body-md font-medium">Cierre diario</span>
+</a>
+<div class="px-4 py-2 mt-2">
+<p class="font-label-bold text-label-bold text-outline uppercase tracking-wider">Gestión</p>
+</div>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="storefront">storefront</span>
+<span class="font-body-md text-body-md font-medium">Tiendas</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+<span class="font-body-md text-body-md font-medium">Agentes bancarios</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-body-md text-body-md font-medium">Trabajadores</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-body-md text-body-md font-medium">Bancos</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="category">category</span>
+<span class="font-body-md text-body-md font-medium">Tipos de operación</span>
+</a>
+<div class="px-4 py-2 mt-2">
+<p class="font-label-bold text-label-bold text-outline uppercase tracking-wider">Sistema</p>
+</div>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+<span class="font-body-md text-body-md font-medium">Auditoría</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-md text-body-md font-medium">Configuración</span>
+</a>
+</div>
+<!-- User Profile Footer -->
+<div class="p-4 border-t border-outline-variant mt-auto">
+<div class="flex items-center gap-3">
+<img alt="User profile photo" class="w-10 h-10 rounded-full object-cover border border-outline-variant" data-alt="A small, professional headshot of a corporate operator against a clean, light gray background, suitable for a web dashboard profile picture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfbmjKfyf107LKx_ZqT_WRkel82JnU2XNokdIK_V8f1sOkjl10SAgQ1OxnosaXeh2iSVoSagCklrUFLrXMbzuAthzd3-uwGluFl5_ZY5UTTOuaIhSxvZyF-Ric52qA1P_LJPiB_aMEoUo6jvPSMUuk3iYmdMDYpxJXTY-QKYWX2EIa3o4URP9QLQ1a4l7gQ9hkFpSKg5XD25fTRlJSSmEWDhETbiD9S84EMp59u8YlLAaCkGOMjlsY"/>
+<div class="flex-1 min-w-0">
+<p class="font-body-md text-body-md font-semibold text-on-surface truncate">Carlos Mendoza</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Operador Nivel 2</p>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 ml-64 flex flex-col h-screen overflow-hidden">
+<!-- TopAppBar (Predicted Component) -->
+<header class="flex justify-between items-center px-lg h-16 bg-surface border-b border-outline-variant shrink-0">
+<div class="flex items-center gap-md">
+<h2 class="font-headline-sm text-headline-sm font-extrabold text-primary">Financial Operations</h2>
+<div class="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-surface-container rounded-md">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim"></span>
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Store: Plaza Central</span>
+</div>
+<div class="hidden xl:flex items-center gap-2 px-3 py-1.5 bg-surface-container rounded-md">
+<span class="material-symbols-outlined text-on-surface-variant" style="font-size: 16px;">badge</span>
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Agent: 00124 (BCP)</span>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<div class="text-right mr-4 hidden md:block">
+<p class="font-label-bold text-label-bold text-on-surface-variant">24 OCT 2023</p>
+<p class="font-body-sm text-body-sm text-primary font-medium" id="clock">14:32:05</p>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-all">
+<span class="material-symbols-outlined" data-icon="timer">timer</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-all relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-all">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Scrollable Main Canvas -->
+<main class="flex-1 overflow-y-auto bg-background p-lg">
+<div class="max-w-[1440px] mx-auto flex flex-col gap-lg">
+<!-- Welcome Section -->
+<div class="flex flex-col gap-xs">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Buen día, Carlos.</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Resumen operativo para <strong>Plaza Central</strong> al corte de las 14:30.</p>
+</div>
+<!-- KPI Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-md">
+<!-- KPI 1: Ops of the Day -->
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<p class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Ops. del Día</p>
+<span class="material-symbols-outlined text-primary-fixed-dim">receipt_long</span>
+</div>
+<p class="font-headline-lg text-headline-lg text-on-surface mt-2">142</p>
+<div class="flex items-center gap-1 mt-auto pt-2">
+<span class="material-symbols-outlined text-tertiary-fixed-dim" style="font-size: 16px;">trending_up</span>
+<span class="font-body-sm text-body-sm text-tertiary-fixed-dim font-medium">+12% vs ayer</span>
+</div>
+</div>
+<!-- KPI 2: Gross Amount -->
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<p class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Monto Bruto</p>
+<span class="material-symbols-outlined text-primary-fixed-dim">payments</span>
+</div>
+<p class="font-headline-lg text-headline-lg text-on-surface mt-2">S/ 45,230.50</p>
+<div class="flex items-center gap-1 mt-auto pt-2">
+<span class="material-symbols-outlined text-tertiary-fixed-dim" style="font-size: 16px;">trending_up</span>
+<span class="font-body-sm text-body-sm text-tertiary-fixed-dim font-medium">+5.4% vs ayer</span>
+</div>
+</div>
+<!-- KPI 3: Cash-ins (Green) -->
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant flex flex-col gap-2 relative overflow-hidden">
+<div class="absolute right-0 top-0 w-2 h-full bg-tertiary-fixed-dim"></div>
+<div class="flex justify-between items-start">
+<p class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Entradas</p>
+<span class="material-symbols-outlined text-tertiary-fixed-dim">south_west</span>
+</div>
+<p class="font-headline-lg text-headline-lg text-on-surface mt-2">S/ 32,150.00</p>
+<div class="flex items-center gap-1 mt-auto pt-2">
+<span class="font-body-sm text-body-sm text-on-surface-variant">98 operaciones</span>
+</div>
+</div>
+<!-- KPI 4: Cash-outs (Red) -->
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant flex flex-col gap-2 relative overflow-hidden">
+<div class="absolute right-0 top-0 w-2 h-full bg-error"></div>
+<div class="flex justify-between items-start">
+<p class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Salidas</p>
+<span class="material-symbols-outlined text-error">north_east</span>
+</div>
+<p class="font-headline-lg text-headline-lg text-on-surface mt-2">S/ 13,080.50</p>
+<div class="flex items-center gap-1 mt-auto pt-2">
+<span class="font-body-sm text-body-sm text-on-surface-variant">44 operaciones</span>
+</div>
+</div>
+<!-- KPI 5: Net Movement -->
+<div class="bg-primary-container p-4 rounded-xl border border-primary-container flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<p class="font-label-bold text-label-bold text-on-primary-container uppercase tracking-wider">Movimiento Neto</p>
+<span class="material-symbols-outlined text-on-primary-container">account_balance_wallet</span>
+</div>
+<p class="font-headline-lg text-headline-lg text-on-primary mt-2">S/ 19,069.50</p>
+<div class="flex items-center gap-1 mt-auto pt-2">
+<span class="px-2 py-1 bg-surface-container-lowest/20 rounded font-label-bold text-label-bold text-on-primary">Positivo</span>
+</div>
+</div>
+</div>
+<!-- Bento Grid: Charts & Tables -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg h-full">
+<!-- Left Column: Charts (Span 2) -->
+<div class="lg:col-span-2 flex flex-col gap-lg">
+<!-- Ops by Hour Chart -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant h-[300px] flex flex-col">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Volumen Operativo por Hora</h3>
+<button class="text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<div class="flex-1 relative w-full h-full">
+<canvas id="opsByHourChart"></canvas>
+</div>
+</div>
+<!-- Recent History Table -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant flex-1 flex flex-col overflow-hidden">
+<div class="p-6 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Últimas 5 Operaciones</h3>
+<a class="font-label-bold text-label-bold text-primary hover:underline" href="#">VER TODAS</a>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="p-4 font-label-bold text-label-bold text-on-surface-variant uppercase">Hora</th>
+<th class="p-4 font-label-bold text-label-bold text-on-surface-variant uppercase">Banco / Agente</th>
+<th class="p-4 font-label-bold text-label-bold text-on-surface-variant uppercase">Tipo</th>
+<th class="p-4 font-label-bold text-label-bold text-on-surface-variant uppercase text-right">Monto</th>
+<th class="p-4 font-label-bold text-label-bold text-on-surface-variant uppercase text-center">Estado</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md divide-y divide-outline-variant">
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-4 font-data-mono text-data-mono text-on-surface-variant">14:28:12</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded bg-[#FF7A00] flex items-center justify-center text-white font-label-bold text-[10px]">BCP</div>
+<span class="text-on-surface font-medium">Agente 00124</span>
+</div>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1 text-tertiary-fixed-dim">
+<span class="material-symbols-outlined" style="font-size: 16px;">south_west</span> Depósito
+                                                </span>
+</td>
+<td class="p-4 text-right font-data-mono text-data-mono font-semibold">S/ 450.00</td>
+<td class="p-4 text-center">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim inline-block"></span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-4 font-data-mono text-data-mono text-on-surface-variant">14:15:05</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded bg-[#E3000F] flex items-center justify-center text-white font-label-bold text-[10px]">IBK</div>
+<span class="text-on-surface font-medium">Global Net</span>
+</div>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1 text-error">
+<span class="material-symbols-outlined" style="font-size: 16px;">north_east</span> Retiro
+                                                </span>
+</td>
+<td class="p-4 text-right font-data-mono text-data-mono font-semibold">S/ 1,200.00</td>
+<td class="p-4 text-center">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim inline-block"></span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-4 font-data-mono text-data-mono text-on-surface-variant">14:02:44</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded bg-[#FF7A00] flex items-center justify-center text-white font-label-bold text-[10px]">BCP</div>
+<span class="text-on-surface font-medium">Agente 00124</span>
+</div>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-size: 16px;">receipt</span> Pago Servicio
+                                                </span>
+</td>
+<td class="p-4 text-right font-data-mono text-data-mono font-semibold">S/ 85.50</td>
+<td class="p-4 text-center">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim inline-block"></span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-4 font-data-mono text-data-mono text-on-surface-variant">13:55:10</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded bg-[#00A9E0] flex items-center justify-center text-white font-label-bold text-[10px]">BBVA</div>
+<span class="text-on-surface font-medium">Agente Express</span>
+</div>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1 text-tertiary-fixed-dim">
+<span class="material-symbols-outlined" style="font-size: 16px;">south_west</span> Depósito
+                                                </span>
+</td>
+<td class="p-4 text-right font-data-mono text-data-mono font-semibold">S/ 3,500.00</td>
+<td class="p-4 text-center">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim inline-block"></span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-4 font-data-mono text-data-mono text-on-surface-variant">13:40:22</td>
+<td class="p-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded bg-[#FF7A00] flex items-center justify-center text-white font-label-bold text-[10px]">BCP</div>
+<span class="text-on-surface font-medium">Agente 00124</span>
+</div>
+</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1 text-error">
+<span class="material-symbols-outlined" style="font-size: 16px;">north_east</span> Retiro
+                                                </span>
+</td>
+<td class="p-4 text-right font-data-mono text-data-mono font-semibold">S/ 200.00</td>
+<td class="p-4 text-center">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim inline-block"></span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Right Column: Type Chart & Extra Info (Span 1) -->
+<div class="flex flex-col gap-lg">
+<!-- Ops by Type Doughnut Chart -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant flex-1 flex flex-col">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-6">Distribución por Tipo</h3>
+<div class="flex-1 relative flex items-center justify-center min-h-[250px]">
+<canvas id="opsByTypeChart"></canvas>
+<!-- Center Text Overlay for Doughnut -->
+<div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+<span class="font-label-bold text-label-bold text-on-surface-variant">TOTAL</span>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">142</span>
+</div>
+</div>
+<!-- Custom Legend -->
+<div class="mt-6 flex flex-col gap-3">
+<div class="flex justify-between items-center text-sm">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-tertiary-fixed-dim"></span>
+<span class="font-body-md text-on-surface">Depósitos</span>
+</div>
+<span class="font-data-mono text-on-surface-variant">52% (74)</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-error"></span>
+<span class="font-body-md text-on-surface">Retiros</span>
+</div>
+<span class="font-data-mono text-on-surface-variant">31% (44)</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary-fixed-dim"></span>
+<span class="font-body-md text-on-surface">Pago Serv.</span>
+</div>
+<span class="font-data-mono text-on-surface-variant">17% (24)</span>
+</div>
+</div>
+</div>
+<!-- System Status Card -->
+<div class="bg-surface-container p-6 rounded-xl border border-outline-variant">
+<h3 class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider mb-4">Estado de Conexión</h3>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-white flex items-center justify-center border border-outline-variant">
+<span class="text-[#FF7A00] font-bold text-xs">BCP</span>
+</div>
+<span class="font-body-md text-on-surface font-medium">Enlace BCP</span>
+</div>
+<div class="flex items-center gap-1.5 px-2 py-1 bg-tertiary-fixed-dim/20 rounded text-tertiary-fixed-dim text-xs font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim"></span> LINEA
+                                    </div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-white flex items-center justify-center border border-outline-variant">
+<span class="text-[#00A9E0] font-bold text-xs">BBVA</span>
+</div>
+<span class="font-body-md text-on-surface font-medium">Enlace BBVA</span>
+</div>
+<div class="flex items-center gap-1.5 px-2 py-1 bg-tertiary-fixed-dim/20 rounded text-tertiary-fixed-dim text-xs font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim"></span> LINEA
+                                    </div>
+</div>
+<div class="flex items-center justify-between opacity-60">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-white flex items-center justify-center border border-outline-variant">
+<span class="text-[#E3000F] font-bold text-xs">IBK</span>
+</div>
+<span class="font-body-md text-on-surface font-medium">Global Net</span>
+</div>
+<div class="flex items-center gap-1.5 px-2 py-1 bg-outline-variant/30 rounded text-on-surface-variant text-xs font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span> INTERMITENTE
+                                    </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Scripts for Charts and Clock -->
+<script>
+        // Clock Update
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('es-ES', { hour12: false });
+            document.getElementById('clock').textContent = timeString;
+        }
+        setInterval(updateClock, 1000);
+        
+        // Colors from theme
+        const colors = {
+            primary: '#000000',
+            primaryFixed: '#bec6e0',
+            tertiaryFixed: '#4edea3',
+            error: '#ba1a1a',
+            surfaceVariant: '#e4e2e4',
+            onSurfaceVariant: '#45464d'
+        };
+
+        // Chart.js Default styling
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.color = colors.onSurfaceVariant;
+        Chart.defaults.scale.grid.color = colors.surfaceVariant;
+
+        // Bar Chart: Ops by Hour
+        const ctxBar = document.getElementById('opsByHourChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00'],
+                datasets: [
+                    {
+                        label: 'Entradas',
+                        data: [12, 19, 25, 22, 15, 10, 8],
+                        backgroundColor: colors.tertiaryFixed,
+                        borderRadius: 4,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.8
+                    },
+                    {
+                        label: 'Salidas',
+                        data: [5, 8, 15, 12, 8, 4, 3],
+                        backgroundColor: colors.error,
+                        borderRadius: 4,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.8
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false // Using custom legend in UI
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: '#1b1b1d',
+                        titleFont: { size: 12 },
+                        bodyFont: { size: 12, family: "'Inter', sans-serif" },
+                        padding: 10,
+                        cornerRadius: 4
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        grid: { display: false }
+                    },
+                    y: {
+                        stacked: true,
+                        border: { display: false },
+                        beginAtZero: true
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        });
+
+        // Doughnut Chart: Ops by Type
+        const ctxDoughnut = document.getElementById('opsByTypeChart').getContext('2d');
+        new Chart(ctxDoughnut, {
+            type: 'doughnut',
+            data: {
+                labels: ['Depósitos', 'Retiros', 'Pago Servicios'],
+                datasets: [{
+                    data: [74, 44, 24],
+                    backgroundColor: [
+                        colors.tertiaryFixed,
+                        colors.error,
+                        colors.primaryFixed
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: {
+                    legend: {
+                        display: false // Using custom HTML legend below chart
+                    },
+                    tooltip: {
+                        backgroundColor: '#1b1b1d',
+                        bodyFont: { size: 12, family: "'Inter', sans-serif" },
+                        padding: 10,
+                        cornerRadius: 4,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed !== null) {
+                                    label += context.parsed + ' ops';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body></html>

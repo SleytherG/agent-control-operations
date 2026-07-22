@@ -32,5 +32,7 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <env name="JWT_SIGNING_KEY" value="r70uT3uOt8Yj5hg0CsY3Y2Fk+YmzDf4DS98Q9xqq42A="/>
+        <env name="REFRESH_PEPPER" value="test-pepper-value-for-testing"/>
     </php>
 </phpunit>

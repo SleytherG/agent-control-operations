@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FinOps Portal - Operator Dashboard</title>
+<!-- Fonts & Icons -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Public+Sans:wght@600;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed": "#0b1c30",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-high": "#eae7e9",
+                      "on-tertiary-fixed": "#002113",
+                      "inverse-on-surface": "#f3f0f2",
+                      "primary-fixed-dim": "#bec6e0",
+                      "primary": "#000000",
+                      "surface-container": "#f0edef",
+                      "on-tertiary-container": "#009668",
+                      "error": "#ba1a1a",
+                      "surface-tint": "#565e74",
+                      "on-background": "#1b1b1d",
+                      "on-primary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "tertiary-fixed": "#6ffbbe",
+                      "on-secondary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "surface-dim": "#dcd9db",
+                      "outline": "#76777d",
+                      "surface-bright": "#fcf8fa",
+                      "secondary-fixed": "#d3e4fe",
+                      "primary-fixed": "#dae2fd",
+                      "on-primary-container": "#7c839b",
+                      "on-error": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "secondary-fixed-dim": "#b7c8e1",
+                      "surface-container-low": "#f6f3f5",
+                      "secondary": "#505f76",
+                      "tertiary": "#000000",
+                      "on-secondary-fixed-variant": "#38485d",
+                      "inverse-primary": "#bec6e0",
+                      "on-primary-fixed-variant": "#3f465c",
+                      "surface-container-lowest": "#ffffff",
+                      "on-surface-variant": "#45464d",
+                      "surface": "#fcf8fa",
+                      "surface-variant": "#e4e2e4",
+                      "secondary-container": "#d0e1fb",
+                      "tertiary-container": "#002113",
+                      "on-surface": "#1b1b1d",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "on-secondary-container": "#54647a",
+                      "on-primary-fixed": "#131b2e",
+                      "background": "#fcf8fa",
+                      "primary-container": "#131b2e",
+                      "outline-variant": "#c6c6cd",
+                      "surface-container-highest": "#e4e2e4",
+                      "inverse-surface": "#303032"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "sm": "8px",
+                      "lg": "24px",
+                      "gutter": "20px",
+                      "max-width": "1440px",
+                      "xs": "4px",
+                      "xl": "32px",
+                      "margin": "24px",
+                      "base": "4px",
+                      "md": "16px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Public Sans"],
+                      "label-bold": ["Inter"],
+                      "headline-lg": ["Public Sans"],
+                      "headline-sm": ["Public Sans"],
+                      "body-sm": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "data-mono": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "label-bold": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                      "headline-lg": ["30px", {"lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "body-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "data-mono": ["14px", {"lineHeight": "20px", "fontWeight": "500"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        /* Custom styles for the chart bars */
+        .chart-bar { transition: height 0.3s ease; }
+        .chart-bar:hover { opacity: 0.8; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen overflow-hidden selection:bg-secondary-container selection:text-on-secondary-container">
+<!-- Global App Shell Layout -->
+<div class="flex h-screen w-full relative">
+<!-- SideNavBar -->
+<nav class="h-full w-64 fixed left-0 top-0 overflow-y-auto flex flex-col border-r border-outline-variant bg-surface-container-lowest z-30">
+<!-- Header/Brand -->
+<div class="px-margin py-lg border-b border-outline-variant flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">FinOps Portal</h1>
+<p class="font-body-sm text-body-sm text-secondary">Active Session</p>
+</div>
+</div>
+<!-- Navigation Tabs -->
+<div class="flex-1 py-4 flex flex-col gap-1">
+<!-- Tab 1: Inicio -->
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-body-md text-body-md">Inicio</span>
+</a>
+<!-- Tab 2: Registrar operación -->
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">add_card</span>
+<span class="font-body-md text-body-md">Registrar operación</span>
+</a>
+<!-- Tab 3: Mis operaciones -->
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-body-md text-body-md">Mis operaciones</span>
+</a>
+<!-- Tab 4: Dashboard (ACTIVE) -->
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container font-bold border-r-4 border-primary transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<!-- Tab 5: Cierre diario -->
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">event_available</span>
+<span class="font-body-md text-body-md">Cierre diario</span>
+</a>
+<!-- Tab 6: Tiendas -->
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">storefront</span>
+<span class="font-body-md text-body-md">Tiendas</span>
+</a>
+<!-- Tab 7: Agentes bancarios -->
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">account_balance</span>
+<span class="font-body-md text-body-md">Agentes bancarios</span>
+</a>
+<!-- Tab 8: Trabajadores -->
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-body-md text-body-md">Trabajadores</span>
+</a>
+<!-- Tab 9: Bancos -->
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-body-md text-body-md">Bancos</span>
+</a>
+<!-- Tab 10: Tipos de operación -->
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">category</span>
+<span class="font-body-md text-body-md">Tipos de operación</span>
+</a>
+<!-- Tab 11: Auditoría -->
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">security</span>
+<span class="font-body-md text-body-md">Auditoría</span>
+</a>
+</div>
+<!-- Bottom Pinned Settings -->
+<div class="mt-auto py-4 border-t border-outline-variant">
+<!-- Tab 12: Configuración -->
+<a class="flex items-center gap-3 px-4 py-3 text-secondary hover:bg-surface-container-low transition-colors hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md">Configuración</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area Wrapper (Offset by Sidebar) -->
+<div class="ml-64 flex-1 flex flex-col h-screen relative">
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 z-20 flex justify-between items-center px-lg bg-surface border-b border-outline-variant">
+<!-- Product Name -->
+<div class="flex items-center">
+<h2 class="font-headline-md text-headline-md font-extrabold text-primary">Financial Operations</h2>
+</div>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-lg">
+<!-- Contextual Info -->
+<div class="flex flex-col items-end mr-4">
+<span class="font-label-bold text-label-bold text-on-surface-variant">Store: Plaza Central</span>
+<span class="font-body-sm text-body-sm text-secondary">Agent: 00124</span>
+</div>
+<!-- Icons Cluster -->
+<div class="flex items-center gap-sm">
+<!-- Session Timer Indicator (Warning State - Using semantic error color for urgent warning per theme limits) -->
+<button class="relative p-2 rounded-full hover:bg-surface-container-low transition-all scale-95 active:scale-100 flex items-center justify-center text-error bg-error-container/30">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">timer</span>
+<!-- Ping animation for urgency -->
+<span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-error animate-ping"></span>
+<span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-error"></span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-low transition-all scale-95 active:scale-100 flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-low transition-all scale-95 active:scale-100 flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Dashboard Canvas (Content behind modal) -->
+<main class="flex-1 mt-16 p-margin overflow-y-auto bg-background filter blur-[2px] transition-all duration-300 pointer-events-none select-none">
+<div class="max-w-[1440px] mx-auto w-full">
+<!-- Page Header -->
+<div class="flex items-center justify-between mb-lg">
+<div>
+<h3 class="font-headline-lg text-headline-lg text-primary">Today's Overview</h3>
+<p class="font-body-md text-body-md text-secondary">Real-time metrics for Store: Plaza Central</p>
+</div>
+<button class="bg-surface border border-outline-variant text-primary px-4 py-2 rounded-lg font-label-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                            Export Report
+                        </button>
+</div>
+<!-- Metrics Bento Grid -->
+<div class="grid grid-cols-12 gap-gutter mb-gutter">
+<!-- Metric 1: Total Ops -->
+<div class="col-span-3 bg-surface border border-outline-variant rounded-xl p-md flex flex-col justify-between h-32 relative overflow-hidden group">
+<div class="flex justify-between items-start z-10">
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Total Ops</span>
+<span class="material-symbols-outlined text-secondary">receipt_long</span>
+</div>
+<div class="z-10">
+<span class="font-headline-lg text-headline-lg font-data-mono text-primary">1,492</span>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-on-tertiary-container text-[16px]">trending_up</span>
+<span class="font-label-bold text-label-bold text-on-tertiary-container">+12.5%</span>
+</div>
+</div>
+<!-- Decorative background accent -->
+<div class="absolute -bottom-8 -right-8 w-24 h-24 bg-surface-container-low rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
+</div>
+<!-- Metric 2: Cash In -->
+<div class="col-span-3 bg-surface border border-outline-variant rounded-xl p-md flex flex-col justify-between h-32">
+<div class="flex justify-between items-start">
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Cash In</span>
+<span class="material-symbols-outlined text-on-tertiary-container">arrow_downward</span>
+</div>
+<div>
+<span class="font-headline-lg text-headline-lg font-data-mono text-primary">$45,200</span>
+</div>
+</div>
+<!-- Metric 3: Cash Out -->
+<div class="col-span-3 bg-surface border border-outline-variant rounded-xl p-md flex flex-col justify-between h-32">
+<div class="flex justify-between items-start">
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Cash Out</span>
+<span class="material-symbols-outlined text-error">arrow_upward</span>
+</div>
+<div>
+<span class="font-headline-lg text-headline-lg font-data-mono text-primary">$12,850</span>
+</div>
+</div>
+<!-- Metric 4: Net Movement (Highlighted) -->
+<div class="col-span-3 bg-primary text-on-primary rounded-xl p-md flex flex-col justify-between h-32 shadow-lg relative overflow-hidden">
+<div class="flex justify-between items-start z-10">
+<span class="font-label-bold text-label-bold uppercase tracking-wider opacity-90">Net Movement</span>
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<div class="z-10">
+<span class="font-headline-lg text-headline-lg font-data-mono">$32,350</span>
+<p class="font-body-sm text-body-sm opacity-80 mt-1">Available liquidity</p>
+</div>
+<!-- Subtle geometric pattern for premium feel -->
+<svg class="absolute inset-0 w-full h-full opacity-10" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<pattern height="20" id="grid" patternunits="userSpaceOnUse" width="20">
+<path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" stroke-width="0.5"></path>
+</pattern>
+</defs>
+<rect fill="url(#grid)" height="100%" width="100%"></rect>
+</svg>
+</div>
+</div>
+<!-- Charts & Activity Row -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Chart Section -->
+<div class="col-span-8 bg-surface border border-outline-variant rounded-xl p-lg flex flex-col h-[400px]">
+<h4 class="font-headline-sm text-headline-sm text-primary mb-6">Ops by Hour</h4>
+<!-- Simple CSS Bar Chart -->
+<div class="flex-1 flex items-end justify-between gap-2 px-2 relative border-b border-outline-variant pb-2">
+<!-- Y-Axis lines -->
+<div class="absolute inset-0 flex flex-col justify-between pointer-events-none pb-2 border-l border-outline-variant z-0 pl-1">
+<span class="font-body-sm text-body-sm text-secondary absolute -left-8 top-0">100</span>
+<div class="w-full h-px bg-outline-variant opacity-20 mt-auto mb-1/4"></div>
+<span class="font-body-sm text-body-sm text-secondary absolute -left-6 bottom-0">0</span>
+</div>
+<!-- Bars (z-10 to sit above axis lines) -->
+<div class="w-full flex items-end justify-between gap-1 z-10 h-full">
+<div class="w-full bg-secondary-container rounded-t-sm chart-bar" style="height: 20%;"></div>
+<div class="w-full bg-secondary-container rounded-t-sm chart-bar" style="height: 45%;"></div>
+<div class="w-full bg-secondary-container rounded-t-sm chart-bar" style="height: 80%;"></div>
+<div class="w-full bg-primary rounded-t-sm chart-bar" style="height: 100%;"></div>
+<div class="w-full bg-secondary-container rounded-t-sm chart-bar" style="height: 60%;"></div>
+<div class="w-full bg-secondary-container rounded-t-sm chart-bar" style="height: 30%;"></div>
+<div class="w-full bg-secondary-container rounded-t-sm chart-bar" style="height: 50%;"></div>
+<div class="w-full bg-secondary-container rounded-t-sm chart-bar" style="height: 75%;"></div>
+</div>
+</div>
+<!-- X-Axis Labels -->
+<div class="flex justify-between px-2 mt-3 pl-4">
+<span class="font-label-bold text-label-bold text-secondary">08:00</span>
+<span class="font-label-bold text-label-bold text-secondary">10:00</span>
+<span class="font-label-bold text-label-bold text-primary font-bold">12:00</span> <!-- Peak highlighted -->
+<span class="font-label-bold text-label-bold text-secondary">14:00</span>
+<span class="font-label-bold text-label-bold text-secondary">16:00</span>
+</div>
+</div>
+<!-- Recent Activity / Side Panel -->
+<div class="col-span-4 bg-surface border border-outline-variant rounded-xl p-lg flex flex-col h-[400px]">
+<h4 class="font-headline-sm text-headline-sm text-primary mb-4">Live Feed</h4>
+<div class="flex-1 overflow-y-auto pr-2 flex flex-col gap-4">
+<!-- Activity Item -->
+<div class="flex gap-3 items-start">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">arrow_downward</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-primary font-medium">Cash Deposit</p>
+<p class="font-body-sm text-body-sm text-secondary">Terminal 3 • $5,000</p>
+</div>
+<span class="font-label-bold text-label-bold text-secondary ml-auto">Just now</span>
+</div>
+<div class="w-full h-px bg-surface-variant"></div>
+<!-- Activity Item -->
+<div class="flex gap-3 items-start">
+<div class="w-8 h-8 rounded-full bg-error-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[16px] text-error">arrow_upward</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-primary font-medium">Withdrawal</p>
+<p class="font-body-sm text-body-sm text-secondary">Terminal 1 • $1,200</p>
+</div>
+<span class="font-label-bold text-label-bold text-secondary ml-auto">2m ago</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- SESSION EXPIRATION MODAL OVERLAY -->
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/40 backdrop-blur-sm px-4">
+<!-- Modal Box -->
+<div class="bg-surface w-full max-w-md rounded-xl shadow-[0px_8px_24px_rgba(15,23,42,0.12)] border border-outline-variant flex flex-col overflow-hidden transform transition-all scale-100">
+<!-- Modal Header / Content Area -->
+<div class="p-lg flex flex-col items-center text-center">
+<!-- Warning Icon Container -->
+<div class="w-16 h-16 rounded-full bg-error-container/30 flex items-center justify-center mb-6 relative">
+<!-- Pulse effect for urgency -->
+<div class="absolute inset-0 rounded-full border-2 border-error animate-ping opacity-50"></div>
+<span class="material-symbols-outlined text-[32px] text-error">timer_off</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-primary mb-2">Tu sesión está por finalizar</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6 px-4">
+                            Por razones de seguridad, tu sesión se cerrará automáticamente debido a inactividad. ¿Deseas continuar operando?
+                        </p>
+<!-- Countdown Timer Display -->
+<div class="bg-surface-container-low border border-outline-variant w-full py-4 rounded-lg flex flex-col items-center justify-center gap-1 mb-2">
+<span class="font-label-bold text-label-bold text-secondary uppercase tracking-wider">Tiempo restante</span>
+<!-- Using arbitrary font-size briefly for impact on the timer, but pairing it strictly with theme font family -->
+<span class="font-data-mono text-error font-semibold text-[40px] leading-none tracking-tight tabular-nums">00:30</span>
+</div>
+</div>
+<!-- Modal Actions Footer -->
+<div class="px-lg py-4 bg-surface-container-lowest border-t border-surface-variant flex items-center justify-end gap-sm">
+<button class="px-6 py-2.5 rounded-lg border border-outline font-label-bold text-label-bold text-primary hover:bg-surface-container-low transition-colors focus:ring-2 focus:ring-outline-variant outline-none">
+                            Cerrar sesión
+                        </button>
+<button class="px-6 py-2.5 rounded-lg bg-primary font-label-bold text-label-bold text-on-primary hover:bg-primary-fixed-variant transition-colors shadow-sm focus:ring-2 focus:ring-primary focus:ring-offset-2 outline-none">
+                            Continuar sesión
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>
