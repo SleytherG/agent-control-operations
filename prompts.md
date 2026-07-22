@@ -269,8 +269,9 @@ Fuera de alcance:
 * Transferencias automáticas al banco.
 
 
+### Prompt general para cada inicio de cada plan en cada spec independiente
 
-/speckit.plan
+- /speckit.plan
 
 Genera el plan técnico para la especificación activa respetando estrictamente la constitución.
 
