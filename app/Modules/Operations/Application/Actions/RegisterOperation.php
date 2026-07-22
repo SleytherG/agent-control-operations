@@ -4,6 +4,7 @@ namespace App\Modules\Operations\Application\Actions;
 
 use App\Modules\BankingNetwork\Models\BankAgent;
 use App\Modules\BankingNetwork\Models\UserBankAgentAssignment;
+use App\Modules\DailyClosing\Models\DailyClosure;
 use App\Modules\Operations\Models\Operation;
 use Illuminate\Support\Facades\DB;
 
@@ -12,6 +13,7 @@ class RegisterOperation
     public function execute(array $data, int $userId, int $organizationId): Operation
     {
         $this->validateAssignment($data['bank_agent_id'], $userId);
+        $this->validateNotConfirmed($data['bank_agent_id'], $data['effective_at']);
 
         $bankAgent = BankAgent::findOrFail($data['bank_agent_id']);
 
@@ -47,6 +49,18 @@ class RegisterOperation
 
         if (! $assignment) {
             throw new \RuntimeException('El usuario no tiene una asignación activa a este agente bancario.');
+        }
+    }
+
+    private function validateNotConfirmed(int $bankAgentId, string $effectiveAt): void
+    {
+        $confirmedClosure = DailyClosure::where('bank_agent_id', $bankAgentId)
+            ->whereDate('business_date', date('Y-m-d', strtotime($effectiveAt)))
+            ->where('status', DailyClosure::STATUS_CONFIRMADO)
+            ->exists();
+
+        if ($confirmedClosure) {
+            throw new \RuntimeException('No se pueden registrar operaciones en una fecha con cierre confirmado.');
         }
     }
 }

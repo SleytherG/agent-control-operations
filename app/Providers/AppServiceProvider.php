@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Modules\DailyClosing\Models\DailyClosure;
+use App\Modules\DailyClosing\Policies\DailyClosingPolicy;
 use App\Modules\IdentityAccess\Services\JwtTokenService;
 use App\Modules\IdentityAccess\Services\RefreshTokenService;
 use App\Modules\Reporting\Policies\DashboardPolicy;
@@ -44,6 +46,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Gate::policy(DailyClosure::class, DailyClosingPolicy::class);
+
         Gate::define('viewOperatorDashboard', [DashboardPolicy::class, 'viewOperatorDashboard']);
         Gate::define('viewAdminDashboard', [DashboardPolicy::class, 'viewAdminDashboard']);
     }
