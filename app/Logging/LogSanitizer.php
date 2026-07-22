@@ -3,8 +3,7 @@
 namespace App\Logging;
 
 use Monolog\LogRecord;
-use Monolog\Formatter\LineFormatter;
-use Monolog\Handler\FormattableHandlerInterface;
+use Monolog\Processor\ProcessorInterface;
 
 class LogSanitizer
 {
@@ -16,16 +15,30 @@ class LogSanitizer
 
     public function __invoke($logger): void
     {
-        foreach ($logger->getHandlers() as $handler) {
-            if ($handler instanceof FormattableHandlerInterface) {
-                $handler->setFormatter(new LineFormatter(
-                    null,
-                    null,
-                    true,
-                    true
-                ));
+        $logger->pushProcessor(new class(self::SENSITIVE_KEYS) implements ProcessorInterface {
+            public function __construct(private array $keys) {}
+
+            public function __invoke(LogRecord $record): LogRecord
+            {
+                $context = $record->context;
+                $extra = $record->extra;
+
+                foreach ($this->keys as $key) {
+                    foreach (['context', 'extra'] as $section) {
+                        $arr = $section === 'context' ? $context : $extra;
+                        if (array_key_exists($key, $arr)) {
+                            if ($section === 'context') {
+                                $context[$key] = '[REDACTED]';
+                            } else {
+                                $extra[$key] = '[REDACTED]';
+                            }
+                        }
+                    }
+                }
+
+                return $record->with(context: $context, extra: $extra);
             }
-        }
+        });
     }
 
     public static function sanitize(array $record): array

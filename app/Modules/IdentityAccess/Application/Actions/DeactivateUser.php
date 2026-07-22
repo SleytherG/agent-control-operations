@@ -4,6 +4,7 @@ namespace App\Modules\IdentityAccess\Application\Actions;
 
 use App\Modules\IdentityAccess\Domain\Enums\AuthSessionStatus;
 use App\Modules\IdentityAccess\Domain\Enums\RefreshTokenState;
+use App\Modules\IdentityAccess\Domain\Enums\Role;
 use App\Modules\IdentityAccess\Domain\Enums\SessionEndReason;
 use App\Modules\IdentityAccess\Domain\Enums\SessionEventType;
 use App\Modules\IdentityAccess\Domain\Enums\UserStatus;
@@ -13,15 +14,34 @@ use App\Modules\IdentityAccess\Models\SessionEvent;
 use App\Modules\IdentityAccess\Models\User;
 use App\Modules\Audit\Models\AuditLog;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class DeactivateUser
 {
     public function execute(User $target, User $actor, string $reason): void
     {
+        if ($target->id === $actor->id) {
+            throw new RuntimeException('No puede desactivarse a sí mismo.');
+        }
+
         DB::transaction(function () use ($target, $actor, $reason) {
             $user = User::where('id', $target->id)->lockForUpdate()->first();
             if (! $user || $user->status !== UserStatus::ACTIVE) {
                 return;
+            }
+
+            if ($user->role === Role::ADMINISTRADOR_PROPIETARIO) {
+                $remainingAdmins = User::where('organization_id', $user->organization_id)
+                    ->where('role', Role::ADMINISTRADOR_PROPIETARIO)
+                    ->where('status', UserStatus::ACTIVE)
+                    ->where('id', '!=', $user->id)
+                    ->count();
+
+                if ($remainingAdmins === 0) {
+                    throw new RuntimeException(
+                        'No puede desactivar al último administrador propietario activo.'
+                    );
+                }
             }
 
             $now = now();

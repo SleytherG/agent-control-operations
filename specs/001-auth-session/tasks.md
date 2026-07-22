@@ -337,3 +337,18 @@ T085-T089 tests for authorized paginated session history
 - No crear tablas de Operations, BankingNetwork o DailyClosing en esta especificación.
 - Ninguna tarea introduce Redis, workers permanentes, WebSockets, SPA, Docker productivo o tokens en storage web.
 - Las tareas T058–T065 requieren MySQL/MariaDB real donde se indique; SQLite no sustituye locks InnoDB.
+
+---
+
+## Phase 9: Convergence
+
+**Purpose**: Corregir brechas detectadas entre especificación/constitución e implementación real.
+
+- [X] T107 CRITICAL Aplicar `UserPolicy::deactivate()` en `DeactivateUserController::deactivate()` mediante `Gate::authorize('deactivate', $target)` antes de ejecutar la acción per Constitution V, FR-019 (missing)
+- [X] T108 CRITICAL Corregir `config/app.php` para que el timezone de almacenamiento sea `UTC` y crear un accessor de presentación `America/Lima` en modelos que lo requieran per Constitution VIII, plan: time storage (contradicts)
+- [X] T109 Implementar rate limiter en `LoginController::login()` con clave `lower(trim(identifier)) + SHA-256(IP/48bits)` usando `RateLimiter::attempt()` per BR-009, FR-016 (missing)
+- [X] T110 Convertir `LogSanitizer` en un Monolog processor registrado en `config/logging.php` para que `sanitize()` realmente redacte contraseñas, JWTs y refresh tokens del contexto antes de escribir logs per SC-008, plan: audit strategy (partial)
+- [X] T111 Validar que `JWT_SIGNING_KEY` no esté vacía en `AppServiceProvider::register()` antes de construir `JwtTokenService` lanzando una excepción clara per plan: JWT profile and keys (missing)
+- [X] T112 Añadir validación de self-deactivation (`$actor->id !== $target->id`) y conteo de administradores activos restantes en `DeactivateUser::execute()` per FR-023 (missing)
+- [X] T113 Reemplazar stubs con assertions reales en los 37 tests marcados `markTestSkipped` cubriendo todos los escenarios de aceptación, autorización, integración MySQL/MariaDB, browser y rendimiento per Constitution X, plan: testing strategy (partial)
+- [X] T114 Documentar en `README.md` que el document root del servidor web debe ser `public/` y agregar referencia a `docs/deployment.md` per Constitution III, plan: deployment procedure (partial)

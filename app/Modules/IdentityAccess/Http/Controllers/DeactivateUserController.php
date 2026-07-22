@@ -7,6 +7,7 @@ use App\Modules\IdentityAccess\Application\Actions\DeactivateUser;
 use App\Modules\IdentityAccess\Http\Requests\DeactivateUserRequest;
 use App\Modules\IdentityAccess\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 
 class DeactivateUserController extends Controller
 {
@@ -23,6 +24,8 @@ class DeactivateUserController extends Controller
         }
 
         $target = User::findOrFail($user->id);
+
+        Gate::authorize('deactivate', $target);
 
         $this->deactivateUser->execute($target, $actor, $request->deactivationReason());
 
