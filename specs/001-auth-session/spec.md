@@ -85,8 +85,9 @@ historial incompleto de quién ingresó y por qué terminó su sesión.
 - **BR-008**: La reutilización de una credencial de renovación previamente usada, incluso por una
   solicitud concurrente, se considera fallo de seguridad, revoca la sesión completa y no emite
   nuevas credenciales.
-- **BR-009**: Cinco intentos fallidos de login para la misma combinación de identificador y origen en
-  un periodo de un minuto bloquean nuevos intentos de esa combinación durante un minuto.
+- **BR-009**: Cinco intentos fallidos de login para la misma clave de throttling en un periodo de un
+  minuto bloquean nuevos intentos de esa clave durante un minuto. La clave se compone del identificador
+  normalizado (lowercased, trimmed) y el hash SHA-256 de los primeros 48 bits de la IP remota.
 - **BR-010**: Una autenticación exitosa reinicia el conteo de intentos fallidos aplicable.
 - **BR-011**: Solo un `ADMINISTRADOR_PROPIETARIO` puede desactivar usuarios y debe registrar un motivo.
 - **BR-012**: Desactivar un usuario impide nuevos logins, invalida renovaciones y revoca todas sus
@@ -239,7 +240,8 @@ paginación, contenido y rechazo de filtros o identificadores que excedan el alc
    ver sesiones de todos los usuarios con inicio, finalización, estado y motivo.
 2. **Given** un `OPERADOR`, **When** consulta el historial, **Then** solo obtiene sus propias sesiones.
 3. **Given** un `OPERADOR`, **When** manipula filtros, parámetros o URLs para solicitar sesiones de
-   otro usuario, **Then** el servidor rechaza o excluye esos registros sin revelar su contenido.
+   otro usuario, **Then** el servidor ignora silenciosamente el filtro ajeno y restringe los resultados
+   exclusivamente a sus propias sesiones, sin revelar contenido ni existencia de registros de terceros.
 4. **Given** más sesiones que el tamaño de una página, **When** un usuario autorizado consulta el
    historial, **Then** recibe una página limitada y puede navegar a las demás sin descargar todo el
    historial de una vez.
@@ -290,8 +292,10 @@ paginación, contenido y rechazo de filtros o identificadores que excedan el alc
   `FALLO_SEGURIDAD`.
 - **FR-012**: La acción `Cerrar sesión` DEBE revocar la sesión vigente, registrar fecha, hora y
   `LOGOUT_MANUAL`, limpiar el estado local y redirigir al login.
-- **FR-013**: Al vencer el acceso, recibir una respuesta de autenticación inválida o detectar una
-  sesión expirada, la interfaz DEBE limpiar el estado autenticado y redirigir al login.
+- **FR-013**: Al vencer el acceso, recibir una respuesta 401 del servidor o detectar que la sesión
+  expiró, la interfaz DEBE limpiar el estado autenticado y redirigir al login. Una respuesta 403
+  (prohibido) o 419 (CSRF inválido) NO DEBE limpiar la autenticación; la interfaz DEBE mostrar el error
+  y permitir reintentar la acción correspondiente.
 - **FR-014**: Al recargar o reabrir la aplicación con un acceso vencido, el sistema DEBE solicitar
   credenciales y NO DEBE renovar silenciosamente.
 - **FR-015**: El sistema DEBE registrar toda finalización con fecha, hora y uno de los cuatro motivos
@@ -317,9 +321,11 @@ paginación, contenido y rechazo de filtros o identificadores que excedan el alc
 - **FR-026**: `ADMINISTRADOR_PROPIETARIO` DEBE poder consultar el historial de sesiones de todos los
   usuarios y `OPERADOR` DEBE poder consultar únicamente sus propias sesiones.
 - **FR-027**: El servidor DEBE imponer el alcance del historial independientemente de filtros,
-  parámetros o URLs y rechazar todo intento del operador de obtener sesiones ajenas.
-- **FR-028**: Toda consulta del historial DEBE estar paginada y mostrar como mínimo usuario permitido,
-  inicio, finalización, estado y motivo de finalización.
+  parámetros o URLs aplicando silenciosamente `user_id = current_user` para `OPERADOR` antes de
+  cualquier otro filtro, sin revelar la existencia o el contenido de sesiones ajenas.
+- **FR-028**: Toda consulta del historial DEBE estar paginada con un tamaño predeterminado de 25
+  registros y un máximo de 100; valores superiores al máximo DEBEN ser rechazados. Como mínimo cada
+  página DEBE mostrar usuario permitido, inicio, finalización, estado y motivo de finalización.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -397,7 +403,7 @@ paginación, contenido y rechazo de filtros o identificadores que excedan el alc
   asociado y ninguna permite renovar después de ese instante.
 - **SC-013**: El 100% de las consultas de historial hechas por un operador contienen exclusivamente
   sus sesiones, mientras que el administrador puede localizar sesiones de cualquier usuario; ninguna
-  página supera el tamaño definido en el plan.
+  página supera los 100 registros.
 
 ## Assumptions
 
@@ -405,8 +411,9 @@ paginación, contenido y rechazo de filtros o identificadores que excedan el alc
 - El correo y el nombre de usuario son obligatorios y únicos para cada cuenta.
 - La retención del historial se definirá en el plan conforme a seguridad y capacidad; cada credencial
   de renovación vence junto con su access token asociado.
-- El origen usado para limitar intentos combina el identificador normalizado con información de la
-  solicitud para reducir bloqueos abusivos de otras cuentas.
+- El origen usado para limitar intentos es el hash SHA-256 de los primeros 48 bits de la IP remota,
+  combinado con el identificador normalizado (lowercased, trimmed); esta clave no permite bloquear
+  cuentas de terceros que comparten IP.
 - La aplicación dispone de al menos un administrador propietario activo distinto del usuario que se
   desea desactivar.
 - El cliente usa navegadores modernos con cookies y JavaScript habilitados.

@@ -124,14 +124,14 @@ retained through absolute session expiry to detect replay.
 | Column | Type | Rules |
 |--------|------|-------|
 | id | BIGINT UNSIGNED | PK |
-| auth_session_id | BIGINT UNSIGNED | FK auth_sessions, RESTRICT |
+| auth_session_id | BIGINT UNSIGNED | nullable FK auth_sessions, RESTRICT; NULL for LOGIN_FAILED |
 | user_id | BIGINT UNSIGNED | FK users, RESTRICT |
 | type | VARCHAR(40) | LOGIN, REFRESHED, LOGOUT, EXPIRED, ADMIN_REVOKED, REFRESH_REUSE, LOGIN_FAILED |
 | occurred_at | DATETIME(6) | required |
 | context | JSON | sanitized metadata only |
 | created_at | DATETIME(6) | required; no update/delete UI |
 
-Indexes: `(auth_session_id, occurred_at)`, `(user_id, occurred_at)`, `(type, occurred_at)`.
+Indexes: `(auth_session_id, occurred_at)` where `auth_session_id IS NOT NULL`, `(user_id, occurred_at)`, `(type, occurred_at)`.
 
 ### audit_logs
 

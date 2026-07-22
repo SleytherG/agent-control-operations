@@ -138,7 +138,7 @@ auditoría, migraciones y recuperación son obligatorias y se escriben antes de 
 
 - [ ] T058 [P] [US3] Probar AC1 replay de refresh consumido, revocación y FALLO_SEGURIDAD en tests/Integration/IdentityAccess/RefreshReplayTest.php
 - [ ] T059 [P] [US3] Probar AC2 dos conexiones concurrentes, un sucesor máximo y revocación final en tests/Integration/IdentityAccess/ConcurrentRefreshTest.php
-- [ ] T060 [P] [US3] Probar AC3 contador cero y respuestas 401/403/419 limpian estado en tests/Browser/IdentityAccess/AuthenticationCleanupTest.php
+- [ ] T060 [P] [US3] Probar AC3 contador cero y respuesta 401 limpian estado; 403/419 no limpian autenticación en tests/Browser/IdentityAccess/AuthenticationCleanupTest.php
 - [ ] T061 [P] [US3] Probar AC4 recarga vencida sin solicitud silenciosa de refresh en tests/Browser/IdentityAccess/NoSilentRefreshTest.php
 - [ ] T062 [P] [US3] Probar AC5 cierre de navegador deriva EXPIRACION sin logout garantizado en tests/Feature/IdentityAccess/BrowserCloseExpiryTest.php
 - [ ] T063 [P] [US3] Probar AC6 sesión revocada rechaza access y refresh actuales en tests/Feature/IdentityAccess/RevokedSessionTest.php

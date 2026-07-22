@@ -121,7 +121,7 @@ todas las tablas vacías, rechazado por entrega incremental y YAGNI.
 
 ## Test Database
 
-**Decision**: PHPUnit. La suite funcional puede usar una DB aislada, pero concurrencia/locks se
+**Decision**: PHPUnit y Laravel Dusk. La suite funcional puede usar una DB aislada, pero concurrencia/locks se
 ejecuta obligatoriamente sobre MySQL 8 y MariaDB soportada con dos conexiones reales.
 
 **Rationale**: SQLite no reproduce `FOR UPDATE`, isolation ni deadlocks. Probar ambos motores evita

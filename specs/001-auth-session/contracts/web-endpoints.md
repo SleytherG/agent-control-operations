@@ -8,7 +8,9 @@
 - Error bodies never distinguish unknown user, wrong password, inactive account or unknown token.
 - Protected HTML includes non-secret `expiresAt` in ISO-8601 UTC for the timer.
 - `401` means authentication invalid/expired and causes local cleanup/login. `403` means authenticated
-  but unauthorized. `419` means CSRF failure. `422` means input validation. `429` means throttled.
+  but unauthorized (session MUST NOT be cleaned; UI displays the error). `419` means CSRF failure
+  (session MUST NOT be cleaned; UI refreshes the CSRF token and allows retry). `422` means input
+  validation. `429` means throttled.
 
 ## GET /login
 
@@ -61,13 +63,14 @@ original terminal reason.
 Protected server-rendered, always paginated.
 
 **Query**: `page` (>=1), optional `from`, `to`, `status`; optional `user` only for administrator.
-Page size is fixed/configured in the plan implementation and bounded.
+Page size is fixed at 25 records with a hard maximum of 100; values exceeding 100 receive 422.
 
 **Authorization**:
 
 - `ADMINISTRADOR_PROPIETARIO`: sessions from all users in the organization and may filter by user.
-- `OPERADOR`: server forces `user_id=authenticated user`; supplied foreign user is rejected or
-  ignored before query execution.
+- `OPERADOR`: server forces `user_id=authenticated user` before any filter; a supplied different
+  user parameter is silently ignored and results are always scoped to the authenticated operator.
+  The response never reveals whether filtered users exist.
 
 **200 HTML**: rows expose user allowed by policy, startedAt, endedAt, status and endReason. No IP/token
 hash or raw user-agent is exposed.

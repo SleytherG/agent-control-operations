@@ -37,15 +37,17 @@ MySQL/MariaDB y document root en `public/`
 
 **Project Type**: aplicación web monolítica modular, renderizada en servidor
 
-**Performance Goals**: al menos 95% de login, renovación y logout en <=2 s bajo carga interna;
-historial siempre paginado; validación protegida con consultas indexadas y sin relaciones N+1
+**Performance Goals**: al menos 95% de login, renovación y logout en <=2 s bajo carga de 10 usuarios
+concurrentes con una mezcla 80% login, 15% refresh y 5% logout, sobre un historial de hasta 180 días;
+historial siempre paginado (predeterminado 25, máximo 100); validación protegida con consultas
+indexadas y sin relaciones N+1
 
 **Constraints**: sin SPA, sin dependencia obligatoria de Redis, sin WebSockets, workers permanentes ni microservicios,
 contenedores requeridos ni Node.js en runtime; assets compilados antes de desplegar
 
-**Scale/Scope**: una organización en MVP, múltiples tiendas/agentes y sesiones por usuario; el plan
-define el modelo lógico global, pero esta especificación implementa solo Identity/Access y auditoría
-necesaria para autenticación
+**Scale/Scope**: una organización en MVP, múltiples tiendas/agentes y sesiones por usuario; historial
+paginado con 25 registros por defecto y máximo de 100; el plan define el modelo lógico global, pero
+esta especificación implementa solo Identity/Access y auditoría necesaria para autenticación
 
 ## Constitution Check
 
@@ -167,8 +169,9 @@ especificación.
 
 El ES Module calcula `max(0, expiresAt-Date.now())` cada segundo. En `visibilitychange` descarta el
 conteo acumulado y recalcula desde `expiresAt`. A 30 s abre un modal accesible. `Continuar` deshabilita
-el botón para single-flight, renueva explícitamente y reemplaza `expiresAt`; 401/403/419, cero o fallo
-de seguridad limpian estado visual y navegan al login. Ningún token entra en JavaScript.
+el botón para single-flight, renueva explícitamente y reemplaza `expiresAt`; 401, cero o fallo
+de seguridad limpian estado visual y navegan al login; 403 y 419 muestran error sin limpiar
+autenticación. Ningún token entra en JavaScript.
 
 ## Validation Strategy
 
