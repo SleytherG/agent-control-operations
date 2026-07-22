@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+
+.DS_Store
+
+/vendor/
+/node_modules/
+
+/public/build/
+
+/storage/logs/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
