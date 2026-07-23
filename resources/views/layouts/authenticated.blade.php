@@ -16,7 +16,7 @@
             <x-layout.topbar :user="$user ?? null" :role="$role ?? 'operator'" />
             <x-layout.mobile-nav :role="$role ?? 'operator'" />
             <main class="app-content">
-                {{ $slot }}
+                @yield('content')
             </main>
         </div>
     </div>

@@ -1,5 +1,6 @@
 @extends('layouts.authenticated')
 
+@section('content')
 <div class="operator-history">
     <div>
         <h2 class="admin-title" style="margin-bottom:var(--space-xs);">Mis operaciones</h2>
@@ -50,3 +51,4 @@
         />
     </div>
 </div>
+@endsection

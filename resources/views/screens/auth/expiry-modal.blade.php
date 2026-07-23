@@ -1,5 +1,6 @@
 @extends('layouts.guest')
 
+@section('content')
 <x-ui.modal id="expiry-modal" :open="true" wide="true">
     <x-screen.expiry-modal-content
         :expiryState="$expiryState"
@@ -19,3 +20,4 @@
         @endif
     @endslot
 </x-ui.modal>
+@endsection

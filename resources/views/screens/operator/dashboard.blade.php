@@ -4,6 +4,7 @@
     @vite('resources/js/reporting/dashboard-charts.js')
 @endsection
 
+@section('content')
 <div class="operator-dashboard">
     <div class="page-header">
         <h2 class="admin-title" style="margin-bottom:var(--space-xs);">Buen dia, {{ explode(' ', $user['name'])[0] ?? 'Operador' }}.</h2>
@@ -59,6 +60,7 @@
         />
     </div>
 </div>
+@endsection
 
 @push('scripts')
 <script>
@@ -67,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
     import('/resources/js/reporting/dashboard-charts.js?' + Date.now()).then(function(mod) {
         mod.initCharts('operator', @json(['evolution' => $evolution, 'distribution' => $distribution]));
     }).catch(function() {
-        // Chart.js loaded via @vite, init inline
+        // Chart.js loaded via vite, init inline
         if (typeof Chart !== 'undefined') {
             var data = @json(['evolution' => $evolution, 'distribution' => $distribution]);
             window._chartData = data;

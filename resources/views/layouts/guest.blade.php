@@ -11,7 +11,7 @@
 </head>
 <body class="guest-layout">
     <main class="guest-content">
-        {{ $slot }}
+        @yield('content')
     </main>
     @stack('scripts')
 </body>

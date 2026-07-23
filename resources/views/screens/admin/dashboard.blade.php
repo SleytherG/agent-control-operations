@@ -4,6 +4,7 @@
     @vite('resources/js/reporting/dashboard-charts.js')
 @endsection
 
+@section('content')
 <div class="admin-dashboard">
     <div class="admin-page-header">
         <div>
@@ -74,6 +75,7 @@
         <x-screen.operator-comparison :stores="$topStores" :workers="$topWorkers" />
     </div>
 </div>
+@endsection
 
 @push('scripts')
 <script>

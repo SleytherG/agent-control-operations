@@ -40,3 +40,5 @@ class DatabaseSeeder extends Seeder
         $this->call(OperationTypeSeeder::class);
     }
 }
+
+

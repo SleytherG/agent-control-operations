@@ -9,6 +9,7 @@
     };
 @endphp
 
+@section('content')
 <div class="daily-closing">
     <div class="closing-header">
         <div>
@@ -20,7 +21,9 @@
                     @else Cierre Pendiente
                     @endif
                 </span>
-            </div>
+</div>
+@endsection
+
             <h2 class="closing-title">Cierre Diario - {{ $closing['agent'] }}</h2>
         </div>
         <div class="closing-actions">

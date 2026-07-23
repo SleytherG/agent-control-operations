@@ -24,8 +24,10 @@ class DemoOperatorController extends Controller
 
     public function register()
     {
+        $user = require resource_path('demo/user.php');
+
         return view('screens.operator.register', [
-            'user' => require(resource_path('demo/user.php'))['operator'],
+            'user' => $user['operator'],
             'role' => 'operator',
             'title' => 'Registrar Operacion - AgenteFlow',
             'banks' => [

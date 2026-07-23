@@ -31,6 +31,7 @@
     }
 @endphp
 
+@section('content')
 <div class="login-card">
     <div class="login-header">
         <div class="login-logo" aria-hidden="true">AF</div>
@@ -84,3 +85,4 @@
         <p>Necesita acceso? <a href="#">Contacte al administrador</a></p>
     </div>
 </div>
+@endsection

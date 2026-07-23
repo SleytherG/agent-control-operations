@@ -811,3 +811,14 @@ No incluyas todavía:
 * Aplicación móvil.
 * Arquitectura de microservicios.
 * Multiempresa completa.
+
+
+<!-- 
+URL	Vista
+http://localhost:8000/demo/login	Pantalla de login (mock)
+http://localhost:8000/demo/operator/dashboard	Dashboard de operador
+http://localhost:8000/demo/operator/register	Registro de operación
+http://localhost:8000/demo/operator/history	Historial de operaciones
+http://localhost:8000/demo/admin/dashboard	Dashboard de admin
+http://localhost:8000/demo/daily-closing/1	Cierre diario
+http://localhost:8000/demo/expiry?expiry=warning	Modal de expiración -->
