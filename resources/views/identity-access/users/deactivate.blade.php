@@ -3,19 +3,25 @@
 @section('title', 'Desactivar usuario — Control de Operaciones')
 
 @section('content')
-    <h1>Desactivar usuario</h1>
+    <h2 class="admin-title" style="margin-bottom:var(--space-xs);">Desactivar usuario</h2>
 
     @if (session('status'))
-        <div role="alert">{{ session('status') }}</div>
+        <div class="alert alert-success" role="alert" style="margin: var(--space-md) 0;">{{ session('status') }}</div>
     @endif
 
-    <form method="POST" action="{{ route('admin.users.deactivate', $user) }}" novalidate>
-        @csrf
-        @method('PATCH')
-        <div>
-            <label for="reason">Motivo de desactivación</label>
-            <textarea id="reason" name="reason" rows="3" maxlength="500" required></textarea>
-        </div>
-        <button type="submit">Desactivar usuario</button>
-    </form>
+    <div class="card" style="max-width: 500px;">
+        <form method="POST" action="{{ route('admin.users.deactivate', $user) }}" novalidate>
+            @csrf
+            @method('PATCH')
+
+            <div class="form-group">
+                <label class="form-label" for="reason">Motivo de desactivacion</label>
+                <textarea id="reason" name="reason" class="form-input" rows="3" maxlength="500" required placeholder="Describa el motivo..."></textarea>
+            </div>
+
+            <div style="margin-top: var(--space-md);">
+                <x-ui.button variant="danger" type="submit">Desactivar usuario</x-ui.button>
+            </div>
+        </form>
+    </div>
 @endsection

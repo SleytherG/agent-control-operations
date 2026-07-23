@@ -1,64 +1,65 @@
 @extends('layouts.authenticated')
 
-@section('title', $type->exists ? 'Editar Tipo de Operación' : 'Nuevo Tipo de Operación' . ' — Control de Operaciones')
+@section('title', $type->exists ? 'Editar Tipo de Operacion' : 'Nuevo Tipo de Operacion' . ' — Control de Operaciones')
 
 @section('content')
-    <h1>{{ $type->exists ? 'Editar Tipo de Operación' : 'Nuevo Tipo de Operación' }}</h1>
+    <h2 class="admin-title" style="margin-bottom:var(--space-xs);">{{ $type->exists ? 'Editar Tipo de Operacion' : 'Nuevo Tipo de Operacion' }}</h2>
 
     @if(session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
+        <div class="alert alert-success" role="alert" style="margin: var(--space-md) 0;">{{ session('status') }}</div>
     @endif
 
     @if($errors->any())
-        <div class="alert alert-danger">
+        <div class="alert alert-danger" role="alert" style="margin: var(--space-md) 0;">
             @foreach($errors->all() as $error)
                 <p>{{ $error }}</p>
             @endforeach
         </div>
     @endif
 
-    <form method="POST" action="{{ $type->exists ? route('admin.operation-types.update', $type) : route('admin.operation-types.store') }}">
-        @csrf
-        @if($type->exists)
-            @method('PATCH')
-        @endif
+    <div class="card" style="max-width: 600px;">
+        <form method="POST" action="{{ $type->exists ? route('admin.operation-types.update', $type) : route('admin.operation-types.store') }}">
+            @csrf
+            @if($type->exists)
+                @method('PATCH')
+            @endif
 
-        <div>
-            <label for="name">Nombre</label>
-            <input type="text" name="name" id="name" value="{{ old('name', $type->name) }}" required maxlength="160">
-        </div>
+            <x-ui.input
+                label="Nombre"
+                name="name"
+                value="{{ old('name', $type->name) }}"
+                required="true"
+                placeholder="Nombre"
+            />
 
-        <div>
-            <label for="description">Descripción</label>
-            <textarea name="description" id="description" maxlength="500">{{ old('description', $type->description) }}</textarea>
-        </div>
+            <div class="form-group">
+                <label class="form-label" for="description">Descripcion</label>
+                <textarea name="description" id="description" class="form-input" rows="3" maxlength="500" placeholder="Descripcion (opcional)">{{ old('description', $type->description) }}</textarea>
+            </div>
 
-        <div>
-            <label for="bank_id">Banco (vacío = General)</label>
-            <select name="bank_id" id="bank_id">
-                <option value="">General</option>
-                @foreach($banks as $bank)
-                    <option value="{{ $bank->id }}" {{ old('bank_id', $type->bank_id) == $bank->id ? 'selected' : '' }}>
-                        {{ $bank->name }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
+            <x-ui.select
+                label="Banco (vacio = General)"
+                name="bank_id"
+                :options="$banks->pluck('name', 'id')->toArray()"
+                :selected="old('bank_id', $type->bank_id)"
+                placeholder="General"
+            />
 
-        <div>
-            <label for="cash_direction">Dirección de Caja</label>
-            <select name="cash_direction" id="cash_direction" required>
-                <option value="">Seleccione</option>
-                <option value="ENTRADA" {{ old('cash_direction', $type->cash_direction) === 'ENTRADA' ? 'selected' : '' }}>Entrada</option>
-                <option value="SALIDA" {{ old('cash_direction', $type->cash_direction) === 'SALIDA' ? 'selected' : '' }}>Salida</option>
-                <option value="NEUTRA" {{ old('cash_direction', $type->cash_direction) === 'NEUTRA' ? 'selected' : '' }}>Neutra</option>
-                <option value="POR_CONFIRMAR" {{ old('cash_direction', $type->cash_direction) === 'POR_CONFIRMAR' ? 'selected' : '' }}>Por Confirmar</option>
-            </select>
-        </div>
+            <x-ui.select
+                label="Direccion de Caja"
+                name="cash_direction"
+                :options="['ENTRADA' => 'Entrada', 'SALIDA' => 'Salida', 'NEUTRA' => 'Neutra', 'POR_CONFIRMAR' => 'Por Confirmar']"
+                :selected="old('cash_direction', $type->cash_direction)"
+                required="true"
+                placeholder="Seleccione"
+            />
 
-        <div>
-            <a href="{{ route('admin.operation-types.index') }}">Cancelar</a>
-            <button type="submit">{{ $type->exists ? 'Actualizar' : 'Crear' }}</button>
-        </div>
-    </form>
+            <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-md);">
+                <a href="{{ route('admin.operation-types.index') }}" class="btn btn--secondary">Cancelar</a>
+                <x-ui.button variant="primary" type="submit">
+                    {{ $type->exists ? 'Actualizar' : 'Crear' }}
+                </x-ui.button>
+            </div>
+        </form>
+    </div>
 @endsection

@@ -3,12 +3,14 @@
 namespace App\Http\Middleware;
 
 use App\Modules\IdentityAccess\Domain\Enums\AuthSessionStatus;
+use App\Modules\IdentityAccess\Domain\Enums\Role;
 use App\Modules\IdentityAccess\Domain\Enums\UserStatus;
 use App\Modules\IdentityAccess\Models\AuthSession;
 use App\Modules\IdentityAccess\Models\User;
 use App\Modules\IdentityAccess\Services\JwtTokenService;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
 
 class AuthenticateJwtSession
 {
@@ -39,6 +41,10 @@ class AuthenticateJwtSession
         }
 
         auth()->setUser($user);
+
+        View::share('user', $user);
+        View::share('role', $user->role === Role::ADMINISTRADOR_PROPIETARIO ? 'admin' : 'operator');
+        View::share('sessionExpiresAt', $session->access_expires_at);
 
         $request->merge(['auth_session_id' => $session->id]);
         $request->attributes->set('session_expires_at', $session->access_expires_at->toIso8601String());

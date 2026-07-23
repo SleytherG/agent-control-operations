@@ -1,87 +1,93 @@
 @extends('layouts.authenticated')
 
-@section('title', 'Historial de Operaciones — Control de Operaciones')
+@section('title', $title ?? 'Historial de Operaciones — AgenteFlow')
 
 @section('content')
-    <h1>Historial de Operaciones</h1>
+<div class="operator-history">
+    <div>
+        <h2 class="admin-title" style="margin-bottom:var(--space-xs);">Mis operaciones</h2>
+        <p class="admin-subtitle">Historial detallado de transacciones y movimientos financieros.</p>
+    </div>
 
     @if(session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
+        <div class="alert alert-success" role="alert" style="margin: var(--space-md) 0;">{{ session('status') }}</div>
     @endif
 
-    @if($errors->any())
-        <div class="alert alert-danger">
-            @foreach($errors->all() as $error)
-                <p>{{ $error }}</p>
-            @endforeach
-        </div>
-    @endif
+    <x-screen.operation-filters :agents="$agents" :types="$types" />
 
-    <a href="{{ route('operations.create') }}">Registrar Operación</a>
+    <div class="history-summary-grid">
+        <x-ui.metric-card
+            label="Total Operaciones"
+            :value="$summary['total_ops']"
+            icon="&#x1F4CB;"
+        />
+        <x-ui.metric-card
+            label="Monto Bruto"
+            :value="$summary['total_amount']"
+            icon="&#x1F4B0;"
+        />
+        <x-ui.metric-card
+            label="Total Entradas"
+            :value="$summary['total_cash_in']"
+            icon="&#x2198;"
+            variant="accent-green"
+        />
+        <x-ui.metric-card
+            label="Total Salidas"
+            :value="$summary['total_cash_out']"
+            icon="&#x2197;"
+            variant="accent-red"
+        />
+        <x-ui.metric-card
+            label="Movimiento Neto"
+            :value="$summary['net_movement']"
+            icon="&#x1F4BC;"
+            variant="dark"
+        />
+    </div>
 
-    <form method="GET" action="{{ route('operations.index') }}">
-        <select name="bank_agent_id">
-            <option value="">Todos los agentes</option>
-            @foreach($agents as $agent)
-                <option value="{{ $agent->id }}" {{ request('bank_agent_id') == $agent->id ? 'selected' : '' }}>
-                    {{ $agent->code }} — {{ $agent->bank->name ?? 'Sin banco' }}
-                </option>
-            @endforeach
-        </select>
-
-        <select name="operation_type_id">
-            <option value="">Todos los tipos</option>
-            @foreach($types as $type)
-                <option value="{{ $type->id }}" {{ request('operation_type_id') == $type->id ? 'selected' : '' }}>
-                    {{ $type->name }}
-                </option>
-            @endforeach
-        </select>
-
-        <select name="status">
-            <option value="">Todos los estados</option>
-            <option value="ACTIVE" {{ request('status') === 'ACTIVE' ? 'selected' : '' }}>Activas</option>
-            <option value="ANNULLED" {{ request('status') === 'ANNULLED' ? 'selected' : '' }}>Anuladas</option>
-        </select>
-
-        <input type="date" name="date_from" value="{{ request('date_from') }}" placeholder="Desde">
-        <input type="date" name="date_to" value="{{ request('date_to') }}" placeholder="Hasta">
-
-        <button type="submit">Filtrar</button>
-    </form>
-
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Agente</th>
-                <th>Tipo</th>
-                <th>Monto</th>
-                <th>Estado</th>
-                <th>Fecha Efectiva</th>
-                <th>Registrado por</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($operations as $operation)
-                <tr>
-                    <td>{{ $operation->id }}</td>
-                    <td>{{ $operation->bankAgent?->code }} — {{ $operation->bankAgent?->store?->name }}</td>
-                    <td>{{ $operation->operationType?->name }}</td>
-                    <td>{{ $operation->currency }} {{ number_format($operation->amount, 2) }}</td>
-                    <td>{{ $operation->status === 'ACTIVE' ? 'Activa' : 'Anulada' }}</td>
-                    <td>{{ $operation->effective_at?->format('Y-m-d H:i') }}</td>
-                    <td>{{ $operation->user?->username_normalized ?? '—' }}</td>
-                    <td>
-                        <a href="{{ route('operations.show', $operation) }}">Ver</a>
-                    </td>
-                </tr>
-            @empty
-                <tr><td colspan="8">No se encontraron operaciones.</td></tr>
-            @endforelse
-        </tbody>
-    </table>
-
-    {{ $operations->links() }}
+    <div class="card">
+        @if($operations->isEmpty())
+            <x-ui.empty-state
+                icon="&#x1F4ED;"
+                title="Sin operaciones"
+                description="No se encontraron operaciones con los filtros seleccionados."
+            />
+        @else
+            <x-ui.data-table
+                :headers="[
+                    ['label' => 'Fecha/Hora'],
+                    ['label' => 'Banco'],
+                    ['label' => 'Agente'],
+                    ['label' => 'Tipo'],
+                    ['label' => 'Monto', 'align' => 'right'],
+                    ['label' => 'Referencia'],
+                    ['label' => 'Estado', 'align' => 'center'],
+                ]"
+                :rows="$operations->map(function($op) {
+                    $isActive = $op->status === 'ACTIVE' || $op->isActive();
+                    return [
+                        ['value' => $op->effective_at?->format('Y-m-d H:i') ?? '—', 'class' => 'data-mono'],
+                        ['value' => $op->bankAgent?->bank?->name ?? '—'],
+                        ['value' => $op->bankAgent?->code ?? '—'],
+                        ['value' => $op->operationType?->name ?? '—'],
+                        ['value' => ($op->currency ?? 'PEN') . ' ' . number_format((float) $op->amount, 2), 'align' => 'right'],
+                        ['value' => $op->reference ?: '—', 'class' => 'data-mono'],
+                        ['value' => $isActive
+                            ? \"<a href='\" . route('operations.show', $op) . \"'><x-ui.badge variant='active'>Activa</x-ui.badge></a>\"
+                            : \"<a href='\" . route('operations.show', $op) . \"'><x-ui.badge variant='annulled'>Anulada</x-ui.badge></a>\",
+                            'align' => 'center'],
+                    ];
+                })->toArray()"
+            />
+            <x-ui.pagination
+                :currentPage="$operations->currentPage()"
+                :lastPage="$operations->lastPage()"
+                :total="$operations->total()"
+                :from="$operations->firstItem() ?? 0"
+                :to="$operations->lastItem() ?? 0"
+            />
+        @endif
+    </div>
+</div>
 @endsection

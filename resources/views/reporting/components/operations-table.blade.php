@@ -1,38 +1,48 @@
-<div class="operations-table-container">
-    <h2>Operaciones recientes</h2>
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Operaciones recientes</h3>
+    </div>
 
-    @if(count($operations) > 0)
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Tipo</th>
-                    <th>Agente</th>
-                    <th>Tienda</th>
-                    <th>Operador</th>
-                    <th>Monto</th>
-                    <th>Estado</th>
-                    <th>Fecha Efectiva</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($operations as $operation)
-                    <tr>
-                        <td>{{ $operation->id }}</td>
-                        <td>{{ $operation->type_name }}</td>
-                        <td>{{ $operation->agent_code }}</td>
-                        <td>{{ $operation->store_name ?? '—' }}</td>
-                        <td>{{ $operation->username_normalized }}</td>
-                        <td>S/ {{ number_format((float) $operation->amount, 2) }}</td>
-                        <td>{{ $operation->status === 'ACTIVE' ? 'Activa' : 'Anulada' }}</td>
-                        <td>{{ \Carbon\Carbon::parse($operation->effective_at)->setTimezone('America/Lima')->format('Y-m-d H:i') }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-
-        {{ $operations->links() }}
+    @if($operations->isEmpty())
+        <x-ui.empty-state
+            icon="&#x1F50D;"
+            title="Sin resultados"
+            description="No se encontraron operaciones con los filtros aplicados. Intenta ajustar los filtros para ver resultados."
+        />
     @else
-        @include('reporting.components.empty-state', ['context' => 'admin'])
+        <x-ui.data-table
+            :headers="[
+                ['label' => 'ID'],
+                ['label' => 'Tipo'],
+                ['label' => 'Agente'],
+                ['label' => 'Tienda'],
+                ['label' => 'Operador'],
+                ['label' => 'Monto', 'align' => 'right'],
+                ['label' => 'Estado', 'align' => 'center'],
+                ['label' => 'Fecha Efectiva'],
+            ]"
+            :rows="$operations->map(function($operation) {
+                return [
+                    ['value' => '#' . $operation->id, 'class' => 'data-mono'],
+                    ['value' => $operation->type_name ?? '—'],
+                    ['value' => $operation->agent_code ?? '—', 'class' => 'data-mono'],
+                    ['value' => $operation->store_name ?? '—'],
+                    ['value' => $operation->username_normalized ?? '—'],
+                    ['value' => 'S/ ' . number_format((float) $operation->amount, 2), 'align' => 'right'],
+                    ['value' => $operation->status === 'ACTIVE'
+                        ? \"<x-ui.badge variant='active'>Activa</x-ui.badge>\"
+                        : \"<x-ui.badge variant='annulled'>Anulada</x-ui.badge>\",
+                        'align' => 'center'],
+                    ['value' => \Carbon\Carbon::parse($operation->effective_at)->setTimezone('America/Lima')->format('Y-m-d H:i')],
+                ];
+            })->toArray()"
+        />
+        <x-ui.pagination
+            :currentPage="$operations->currentPage()"
+            :lastPage="$operations->lastPage()"
+            :total="$operations->total()"
+            :from="$operations->firstItem() ?? 0"
+            :to="$operations->lastItem() ?? 0"
+        />
     @endif
 </div>

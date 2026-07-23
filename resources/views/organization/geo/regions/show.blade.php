@@ -3,35 +3,39 @@
 @section('title', $region->name . ' — Provincias — Control de Operaciones')
 
 @section('content')
-    <h1>{{ $region->name }}</h1>
+    <h2 class="admin-title" style="margin-bottom:var(--space-xs);">{{ $region->name }}</h2>
 
     @if(session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
+        <div class="alert alert-success" role="alert" style="margin: var(--space-md) 0;">{{ session('status') }}</div>
     @endif
 
-    <a href="{{ route('admin.regions.index') }}">Volver a Regiones</a>
+    <div style="margin-bottom: var(--space-md);">
+        <a href="{{ route('admin.regions.index') }}" class="btn btn--secondary">Volver a Regiones</a>
+    </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($provinces as $province)
-                <tr>
-                    <td>{{ $province->name }}</td>
-                    <td>{{ $province->is_active ? 'Activo' : 'Inactivo' }}</td>
-                    <td>
-                        <a href="{{ route('admin.provinces.districts.index', $province) }}">Ver Distritos</a>
-                    </td>
-                </tr>
-            @empty
-                <tr><td colspan="3">No se encontraron provincias.</td></tr>
-            @endforelse
-        </tbody>
-    </table>
-    {{ $provinces->links() }}
+    <div class="card">
+        <x-ui.data-table
+            :headers="[
+                ['label' => 'Nombre'],
+                ['label' => 'Estado', 'align' => 'center'],
+                ['label' => 'Acciones', 'align' => 'center'],
+            ]"
+            :rows="$provinces->map(function($province) {
+                \$actions = \"<a href='\" . route('admin.provinces.districts.index', \$province) . \"' class='btn btn--secondary'>Ver Distritos</a>\";
+                return [
+                    ['value' => \$province->name],
+                    ['value' => \$province->is_active ? \"<x-ui.badge variant='active'>Activo</x-ui.badge>\" : \"<x-ui.badge variant='inactive'>Inactivo</x-ui.badge>\", 'align' => 'center'],
+                    ['value' => \$actions, 'align' => 'center'],
+                ];
+            })->toArray()"
+            emptyMessage="No se encontraron provincias."
+        />
+        <x-ui.pagination
+            :currentPage="$provinces->currentPage()"
+            :lastPage="$provinces->lastPage()"
+            :total="$provinces->total()"
+            :from="$provinces->firstItem() ?? 0"
+            :to="$provinces->lastItem() ?? 0"
+        />
+    </div>
 @endsection

@@ -1,54 +1,82 @@
-@props(['banks' => [], 'regions' => [], 'stores' => [], 'statuses' => []])
+@props([
+    'regions' => [], 'stores' => [], 'banks' => [], 'bankAgents' => [],
+    'types' => [], 'operators' => [], 'currentFilters' => [],
+    'period' => 'month', 'date' => null,
+])
+
+@php
+    $regionOptions = ['' => 'Todas las regiones'];
+    foreach ($regions as $region) {
+        $regionOptions[$region->id] = $region->name;
+    }
+
+    $storeOptions = ['' => 'Todas las tiendas'];
+    foreach ($stores as $store) {
+        $storeOptions[$store->id] = $store->name;
+    }
+
+    $bankOptions = ['' => 'Todos los bancos'];
+    foreach ($banks as $bank) {
+        $bankOptions[$bank->id] = $bank->name;
+    }
+
+    $agentOptions = ['' => 'Todos los agentes'];
+    foreach ($bankAgents as $agent) {
+        $agentOptions[$agent->id] = ($agent->code ?? '') . ' — ' . ($agent->bank->name ?? '');
+    }
+
+    $typeOptions = ['' => 'Todos los tipos'];
+    foreach ($types as $type) {
+        $typeOptions[$type->id] = $type->name;
+    }
+@endphp
 
 <section class="admin-filters-panel">
-    <div class="admin-filters-header">
-        <span aria-hidden="true">&#x1F50D;</span>
-        <span class="admin-filters-title">Filtros Globales</span>
-    </div>
-    <div class="admin-filters-grid">
-        <div class="form-group">
-            <label class="form-label">Rango de Fechas</label>
-            <select class="form-input form-select">
-                <option>Hoy</option>
-                <option>Ayer</option>
-                <option>Ultimos 7 Dias</option>
-                <option>Este Mes</option>
-            </select>
+    <form method="GET" action="{{ route('admin.dashboard') }}">
+        <div class="admin-filters-header">
+            <span aria-hidden="true">&#x1F50D;</span>
+            <span class="admin-filters-title">Filtros Globales</span>
         </div>
-        <div class="form-group">
-            <label class="form-label">Tienda</label>
-            <select class="form-input form-select">
-                <option>Todas las tiendas</option>
-                @foreach($stores as $store)
-                    <option>{{ $store }}</option>
-                @endforeach
-            </select>
+        <div class="admin-filters-grid">
+            <div class="form-group">
+                <label class="form-label">Periodo</label>
+                <select name="period" class="form-input form-select">
+                    <option value="day" {{ $period === 'day' ? 'selected' : '' }}>Hoy</option>
+                    <option value="week" {{ $period === 'week' ? 'selected' : '' }}>Semana</option>
+                    <option value="month" {{ $period === 'month' ? 'selected' : '' }} selected>Mes</option>
+                    <option value="quarter" {{ $period === 'quarter' ? 'selected' : '' }}>Trimestre</option>
+                    <option value="semester" {{ $period === 'semester' ? 'selected' : '' }}>Semestre</option>
+                    <option value="year" {{ $period === 'year' ? 'selected' : '' }}>Año</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tienda</label>
+                <select name="store_id" class="form-input form-select">
+                    @foreach($storeOptions as $value => $label)
+                        <option value="{{ $value }}" {{ request('store_id') == $value ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Banco</label>
+                <select name="bank_id" class="form-input form-select">
+                    @foreach($bankOptions as $value => $label)
+                        <option value="{{ $value }}" {{ request('bank_id') == $value ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tipo de Operacion</label>
+                <select name="operation_type_id" class="form-input form-select">
+                    @foreach($typeOptions as $value => $label)
+                        <option value="{{ $value }}" {{ request('operation_type_id') == $value ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
         </div>
-        <div class="form-group">
-            <label class="form-label">Banco</label>
-            <select class="form-input form-select">
-                <option>Todos los bancos</option>
-                @foreach($banks as $bank)
-                    <option>{{ $bank }}</option>
-                @endforeach
-            </select>
+        <div style="display:flex;justify-content:flex-end;gap:var(--space-sm);margin-top:var(--space-md);">
+            <a href="{{ route('admin.dashboard') }}" class="btn btn--secondary btn--sm">Limpiar</a>
+            <button type="submit" class="btn btn--primary btn--sm">Aplicar Filtros</button>
         </div>
-        <div class="form-group">
-            <label class="form-label">Estado de Operacion</label>
-            <select class="form-input form-select">
-                <option>Todos los estados</option>
-                @foreach($statuses as $status)
-                    <option>{{ $status }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="form-group">
-            <label class="form-label">ID Agente</label>
-            <input type="text" class="form-input" placeholder="ej. 00124">
-        </div>
-    </div>
-    <div style="display:flex;justify-content:flex-end;gap:var(--space-sm);margin-top:var(--space-md);">
-        <button class="btn btn--secondary btn--sm">Limpiar</button>
-        <button class="btn btn--primary btn--sm">Aplicar Filtros</button>
-    </div>
+    </form>
 </section>

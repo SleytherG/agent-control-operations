@@ -52,7 +52,47 @@ class OperationController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('operations.index', compact('operations', 'agents', 'types'));
+        $summaryBase = DB::table('operations')
+            ->where('operations.organization_id', $user->organization_id)
+            ->where('operations.status', 'ACTIVE');
+
+        if (! $isAdmin) {
+            $summaryBase->where('operations.user_id', $user->id);
+        }
+
+        if ($request->filled('bank_agent_id')) {
+            $summaryBase->where('operations.bank_agent_id', $request->input('bank_agent_id'));
+        }
+        if ($request->filled('operation_type_id')) {
+            $summaryBase->where('operations.operation_type_id', $request->input('operation_type_id'));
+        }
+        if ($request->filled('date_from')) {
+            $summaryBase->whereDate('operations.effective_at', '>=', $request->input('date_from'));
+        }
+        if ($request->filled('date_to')) {
+            $summaryBase->whereDate('operations.effective_at', '<=', $request->input('date_to'));
+        }
+
+        $summaryCount = (clone $summaryBase)->selectRaw(
+            'COUNT(*) as total_ops, COALESCE(SUM(operations.amount), 0) as total_amount'
+        )->first();
+
+        $summaryCash = (clone $summaryBase)
+            ->join('operation_types as ot', 'operations.operation_type_id', '=', 'ot.id')
+            ->selectRaw(
+                "COALESCE(SUM(CASE WHEN ot.cash_direction = 'ENTRADA' THEN operations.amount ELSE 0 END), 0) as total_cash_in,
+                 COALESCE(SUM(CASE WHEN ot.cash_direction = 'SALIDA' THEN operations.amount ELSE 0 END), 0) as total_cash_out"
+            )->first();
+
+        $summary = [
+            'total_ops' => $summaryCount->total_ops ?? 0,
+            'total_amount' => 'S/ ' . number_format((float) ($summaryCount->total_amount ?? 0), 2),
+            'total_cash_in' => 'S/ ' . number_format((float) ($summaryCash->total_cash_in ?? 0), 2),
+            'total_cash_out' => 'S/ ' . number_format((float) ($summaryCash->total_cash_out ?? 0), 2),
+            'net_movement' => 'S/ ' . number_format((float) (($summaryCash->total_cash_in ?? 0) - ($summaryCash->total_cash_out ?? 0)), 2),
+        ];
+
+        return view('operations.index', compact('operations', 'agents', 'types', 'summary'));
     }
 
     public function create(): View

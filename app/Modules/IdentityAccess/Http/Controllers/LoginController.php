@@ -5,7 +5,9 @@ namespace App\Modules\IdentityAccess\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\IdentityAccess\Application\Actions\AuthenticateUser;
 use App\Modules\IdentityAccess\Application\Actions\StartAuthSession;
+use App\Modules\IdentityAccess\Domain\Enums\UserStatus;
 use App\Modules\IdentityAccess\Http\Requests\LoginRequest;
+use App\Modules\IdentityAccess\Models\User;
 use App\Modules\IdentityAccess\Services\AuthCookieService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,7 +25,11 @@ class LoginController extends Controller
 
     public function showLoginForm(Request $request): View
     {
-        return view('identity-access.login');
+        $loginState = session('login_state', 'normal');
+
+        return view('identity-access.login', [
+            'title' => 'AgenteFlow - Iniciar Sesion',
+        ]);
     }
 
     public function login(LoginRequest $request): RedirectResponse
@@ -31,21 +37,33 @@ class LoginController extends Controller
         $key = $this->throttleKey($request);
 
         if (RateLimiter::tooManyAttempts($key, config('session-security.throttle.max_attempts', 5))) {
+            $seconds = RateLimiter::availableIn($key);
+
             return redirect()->route('login')
-                ->withErrors(['identifier' => 'Demasiados intentos. Intente nuevamente en un minuto.'])
+                ->with('login_state', 'throttled')
                 ->withInput($request->only('identifier'));
         }
 
-        $user = $this->authenticateUser->execute(
-            $request->normalizedIdentifier(),
-            $request->input('password'),
-        );
+        $normalizedIdentifier = $request->normalizedIdentifier();
+        $password = $request->input('password');
+
+        $existingUser = User::where('username_normalized', $normalizedIdentifier)
+            ->orWhere('email_normalized', $normalizedIdentifier)
+            ->first();
+
+        if ($existingUser && $existingUser->status !== UserStatus::ACTIVE) {
+            return redirect()->route('login')
+                ->with('login_state', 'disabled')
+                ->withInput($request->only('identifier'));
+        }
+
+        $user = $this->authenticateUser->execute($normalizedIdentifier, $password);
 
         if (! $user) {
             RateLimiter::hit($key, config('session-security.throttle.decay_seconds', 60));
 
             return redirect()->route('login')
-                ->withErrors(['identifier' => 'Credenciales inválidas.'])
+                ->with('login_state', 'error')
                 ->withInput($request->only('identifier'));
         }
 
@@ -78,6 +96,7 @@ class LoginController extends Controller
     public function home(Request $request): View
     {
         return view('identity-access.home', [
+            'title' => 'AgenteFlow - Inicio',
             'expiresAt' => $request->attributes->get('session_expires_at'),
         ]);
     }

@@ -1,71 +1,107 @@
 @extends('layouts.authenticated')
 
-@section('title', 'Dashboard — Control de Operaciones')
+@section('title', $title ?? 'Dashboard — AgenteFlow')
+
+@section('head')
+    @vite('resources/js/reporting/dashboard-charts.js')
+@endsection
 
 @section('content')
-    <h1>Mi Dashboard</h1>
-
     @if($metrics->operation_count === 0)
-        @include('reporting.components.empty-state', ['context' => 'operator'])
+        <x-ui.empty-state
+            icon="&#x1F4CA;"
+            title="Sin operaciones en este periodo"
+            description="Registre operaciones para ver sus metricas y graficos aqui."
+        />
     @else
-        <div class="dashboard-cards">
-            <div class="card">
-                <h3>Cantidad de operaciones</h3>
-                <p class="metric-value">{{ number_format($metrics->operation_count, 0) }}</p>
+        <div class="operator-dashboard">
+            <div class="page-header">
+                <h2 class="admin-title" style="margin-bottom:var(--space-xs);">Buen dia, {{ $user->name ?? 'Operador' }}.</h2>
+                <p class="admin-subtitle">Resumen operativo para <strong>{{ $user->store ?? 'Tienda' }}</strong> al corte actual.</p>
             </div>
-            <div class="card">
-                <h3>Monto bruto operado</h3>
-                <p class="metric-value">S/ {{ number_format((float) $metrics->gross_amount, 2) }}</p>
-            </div>
-            <div class="card">
-                <h3>Entradas de efectivo</h3>
-                <p class="metric-value">S/ {{ number_format((float) $metrics->cash_in, 2) }}</p>
-            </div>
-            <div class="card">
-                <h3>Salidas de efectivo</h3>
-                <p class="metric-value">S/ {{ number_format((float) $metrics->cash_out, 2) }}</p>
-            </div>
-            <div class="card">
-                <h3>Movimiento neto</h3>
-                <p class="metric-value">S/ {{ number_format((float) $metrics->net_movement, 2) }}</p>
-            </div>
-        </div>
 
-        <div class="dashboard-period-selector">
-            <form method="GET" action="{{ route('dashboard.operator') }}">
-                <select name="period">
-                    <option value="day" {{ $period === 'day' ? 'selected' : '' }}>Día</option>
-                    <option value="week" {{ $period === 'week' ? 'selected' : '' }}>Semana</option>
-                    <option value="month" {{ $period === 'month' ? 'selected' : '' }}>Mes</option>
-                    <option value="quarter" {{ $period === 'quarter' ? 'selected' : '' }}>Trimestre</option>
-                    <option value="semester" {{ $period === 'semester' ? 'selected' : '' }}>Semestre</option>
-                    <option value="year" {{ $period === 'year' ? 'selected' : '' }}>Año</option>
-                </select>
-                <input type="date" name="date" value="{{ $date }}">
-                <button type="submit">Actualizar</button>
-            </form>
-        </div>
+            <x-screen.operator-metrics :metrics="$metrics" />
 
-        <div class="dashboard-charts">
-            <div class="chart-container">
-                <h2>Distribución por tipo de operación</h2>
-                <canvas id="typeDistributionChart"></canvas>
+            <div class="operator-charts-grid">
+                <x-ui.chart-container title="Volumen Operativo por Hora" height="300px">
+                    <canvas id="opsByHourChart"></canvas>
+                </x-ui.chart-container>
+
+                <x-ui.chart-container title="Distribucion por Tipo" height="280px">
+                    <canvas id="opsByTypeChart"></canvas>
+                    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;margin-top:24px;">
+                        <span style="font-size:var(--font-size-label);color:var(--color-on-surface-variant);">TOTAL</span>
+                        <span style="font-size:var(--font-size-headline-sm);font-weight:var(--font-weight-bold);color:var(--color-on-surface);">{{ $metrics->operation_count ?? '0' }}</span>
+                    </div>
+                </x-ui.chart-container>
             </div>
-            <div class="chart-container">
-                <h2>Evolución temporal</h2>
-                <canvas id="timeEvolutionChart"></canvas>
+
+            @if(isset($recentOperations) && count($recentOperations) > 0)
+            <div class="card operator-recent-table">
+                <div class="card-header">
+                    <h3 class="card-title">Ultimas Operaciones</h3>
+                    <a href="{{ route('operations.index') }}" style="font-size:var(--font-size-label);font-weight:var(--font-weight-bold);color:var(--color-primary);">VER TODAS</a>
+                </div>
+                <x-ui.data-table
+                    :headers="[
+                        ['label' => 'Hora'],
+                        ['label' => 'Agente'],
+                        ['label' => 'Tipo'],
+                        ['label' => 'Monto', 'align' => 'right'],
+                        ['label' => 'Estado', 'align' => 'center'],
+                    ]"
+                    :rows="$recentOperations"
+                />
             </div>
+            @endif
         </div>
     @endif
 
     @push('scripts')
-        @if($metrics->operation_count > 0)
-            @vite(['resources/js/reporting/dashboard-charts.js'])
-            <script>
-                document.addEventListener('DOMContentLoaded', function () {
-                    initOperatorDashboard({!! json_encode($typeDistribution, JSON_UNESCAPED_UNICODE) !!}, {!! json_encode($timeEvolution, JSON_UNESCAPED_UNICODE) !!});
-                });
-            </script>
-        @endif
+    <script>
+    (function() {
+        var hasData = {{ $metrics->operation_count > 0 ? 'true' : 'false' }};
+        if (!hasData) return;
+
+        var typeDist = @json($typeDistribution);
+        var timeEvo = @json($timeEvolution);
+        var attempts = 0;
+
+        var interval = setInterval(function() {
+            attempts++;
+            if (typeof Chart !== 'undefined' && document.getElementById('opsByHourChart')) {
+                clearInterval(interval);
+
+                var ctx = document.getElementById('opsByHourChart');
+                if (ctx) {
+                    new Chart(ctx.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: timeEvo.labels || [],
+                            datasets: [
+                                { label: 'Entradas', data: timeEvo.entradas || [], backgroundColor: '#4edea3', borderRadius: 4, barPercentage: 0.6 },
+                                { label: 'Salidas', data: timeEvo.salidas || [], backgroundColor: '#ba1a1a', borderRadius: 4, barPercentage: 0.6 }
+                            ]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, border: { display: false }, beginAtZero: true } } }
+                    });
+                }
+
+                var dc = document.getElementById('opsByTypeChart');
+                if (dc && typeDist.length > 0) {
+                    new Chart(dc.getContext('2d'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: typeDist.map(function(d) { return d.type || d.name || ''; }),
+                            datasets: [{ data: typeDist.map(function(d) { return d.count || 0; }), backgroundColor: ['#4edea3', '#ba1a1a', '#bec6e0', '#505f76', '#eae7e9'], borderWidth: 0, hoverOffset: 4 }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false } } }
+                    });
+                }
+            }
+            if (attempts > 50) clearInterval(interval);
+        }, 100);
+    })();
+    </script>
     @endpush
 @endsection

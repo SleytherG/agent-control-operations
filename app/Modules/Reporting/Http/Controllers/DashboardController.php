@@ -7,6 +7,7 @@ use App\Modules\BankingNetwork\Models\Bank;
 use App\Modules\BankingNetwork\Models\BankAgent;
 use App\Modules\IdentityAccess\Domain\Enums\Role;
 use App\Modules\IdentityAccess\Models\User;
+use App\Modules\Operations\Models\Operation;
 use App\Modules\Operations\Models\OperationType;
 use App\Modules\Organization\Models\District;
 use App\Modules\Organization\Models\Province;
@@ -41,15 +42,19 @@ class DashboardController extends Controller
             return view('reporting.operator-dashboard', [
                 'metrics' => (object) [
                     'operation_count' => 0,
-                    'gross_amount' => '0.00',
-                    'cash_in' => '0.00',
-                    'cash_out' => '0.00',
-                    'net_movement' => '0.00',
+                    'gross_amount' => 'S/ 0.00',
+                    'cash_in' => 'S/ 0.00',
+                    'cash_out' => 'S/ 0.00',
+                    'net_movement' => 'S/ 0.00',
+                    'cash_in_ops' => 0,
+                    'cash_out_ops' => 0,
                 ],
                 'typeDistribution' => [],
-                'timeEvolution' => [],
+                'timeEvolution' => ['labels' => [], 'entradas' => [], 'salidas' => []],
+                'recentOperations' => [],
                 'period' => $period,
                 'date' => $dateStr,
+                'title' => 'Dashboard — AgenteFlow',
             ]);
         }
 
@@ -58,9 +63,39 @@ class DashboardController extends Controller
         $groupBy = in_array($period, ['day', 'week']) ? 'day' : 'month';
         $timeEvolution = $this->queryService->getTimeEvolution($user, $startUtc, $endUtc, $groupBy);
 
-        return view('reporting.operator-dashboard', compact(
-            'metrics', 'typeDistribution', 'timeEvolution', 'period',
-        ) + ['date' => $dateStr]);
+        $recentOps = Operation::with(['bankAgent', 'operationType'])
+            ->where('user_id', $user->id)
+            ->whereBetween('effective_at', [$startUtc, $endUtc])
+            ->orderBy('effective_at', 'desc')
+            ->limit(10)
+            ->get()
+            ->map(function ($op) {
+                return [
+                    ['value' => $op->effective_at->format('H:i'), 'class' => 'data-mono'],
+                    ['value' => $op->bankAgent->code ?? '—'],
+                    ['value' => $op->operationType->name ?? '—'],
+                    ['value' => 'S/ ' . number_format((float) $op->amount, 2), 'align' => 'right'],
+                    ['value' => $op->isActive()
+                        ? "<x-ui.badge variant='active'>Activa</x-ui.badge>"
+                        : "<x-ui.badge variant='annulled'>Anulada</x-ui.badge>",
+                        'align' => 'center'],
+                ];
+            })
+            ->toArray();
+
+        $evolution = $timeEvolution && is_array($timeEvolution)
+            ? ['labels' => $timeEvolution['labels'] ?? [], 'entradas' => $timeEvolution['entradas'] ?? [], 'salidas' => $timeEvolution['salidas'] ?? []]
+            : ['labels' => [], 'entradas' => [], 'salidas' => []];
+
+        return view('reporting.operator-dashboard', [
+            'metrics' => $metrics,
+            'typeDistribution' => $typeDistribution,
+            'timeEvolution' => $evolution,
+            'recentOperations' => $recentOps,
+            'period' => $period,
+            'date' => $dateStr,
+            'title' => 'Dashboard — AgenteFlow',
+        ]);
     }
 
     public function adminDashboard(DashboardFilterRequest $request): View

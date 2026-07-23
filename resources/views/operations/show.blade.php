@@ -3,109 +3,97 @@
 @section('title', 'Detalle de Operación — Control de Operaciones')
 
 @section('content')
-    <h1>Detalle de Operación #{{ $operation->id }}</h1>
+<div class="operation-detail">
+    <div style="margin-bottom:var(--space-lg);">
+        <h2 class="admin-title" style="margin-bottom:var(--space-xs);">Detalle de Operación #{{ $operation->id }}</h2>
+        <p class="admin-subtitle">Información completa de la transacción registrada.</p>
+    </div>
 
     @if(session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
+        <div class="alert alert-success" role="alert" style="margin-bottom:var(--space-md);">{{ session('status') }}</div>
     @endif
 
     @if($errors->any())
-        <div class="alert alert-danger">
+        <div class="alert alert-danger" role="alert" style="margin-bottom:var(--space-md);">
             @foreach($errors->all() as $error)
                 <p>{{ $error }}</p>
             @endforeach
         </div>
     @endif
 
-    <table>
-        <tr>
-            <th>ID</th>
-            <td>{{ $operation->id }}</td>
-        </tr>
-        <tr>
-            <th>Estado</th>
-            <td>{{ $operation->status === 'ACTIVE' ? 'Activa' : 'Anulada' }}</td>
-        </tr>
-        <tr>
-            <th>Agente</th>
-            <td>{{ $operation->bankAgent?->bank?->name }} — {{ $operation->bankAgent?->store?->name }} ({{ $operation->bankAgent?->code }})</td>
-        </tr>
-        <tr>
-            <th>Tipo</th>
-            <td>{{ $operation->operationType?->name }} ({{ $operation->operationType?->cash_direction }})</td>
-        </tr>
-        <tr>
-            <th>Monto</th>
-            <td>{{ $operation->currency }} {{ number_format($operation->amount, 2) }}</td>
-        </tr>
-        <tr>
-            <th>Fecha Efectiva</th>
-            <td>{{ $operation->effective_at?->format('Y-m-d H:i') }}</td>
-        </tr>
-        <tr>
-            <th>Fecha de Registro</th>
-            <td>{{ $operation->recorded_at?->format('Y-m-d H:i') }}</td>
-        </tr>
-        <tr>
-            <th>Registrado por</th>
-            <td>{{ $operation->user?->username_normalized ?? '—' }}</td>
-        </tr>
-        <tr>
-            <th>Referencia</th>
-            <td>{{ $operation->reference ?? '—' }}</td>
-        </tr>
-        <tr>
-            <th>Observación</th>
-            <td>{{ $operation->observation ?? '—' }}</td>
-        </tr>
-        <tr>
-            <th>Clave de Idempotencia</th>
-            <td><code>{{ $operation->idempotency_key }}</code></td>
-        </tr>
-        @if($operation->isAnnulled())
-            <tr>
-                <th>Anulado por</th>
-                <td>{{ $operation->annulledBy?->username_normalized ?? '—' }}</td>
-            </tr>
-            <tr>
-                <th>Fecha de Anulación</th>
-                <td>{{ $operation->annulled_at?->format('Y-m-d H:i') }}</td>
-            </tr>
-            <tr>
-                <th>Motivo de Anulación</th>
-                <td>{{ $operation->annulment_reason }}</td>
-            </tr>
-        @endif
-    </table>
+    <div class="card" style="margin-bottom:var(--space-lg);">
+        <x-ui.data-table
+            :headers="[
+                ['label' => 'Campo'],
+                ['label' => 'Valor'],
+            ]"
+            :rows="[
+                [['value' => 'ID'], ['value' => '#' . $operation->id, 'class' => 'data-mono']],
+                [['value' => 'Estado'], ['value' => $operation->status === 'ACTIVE'
+                    ? \"<x-ui.badge variant='active'>Activa</x-ui.badge>\"
+                    : \"<x-ui.badge variant='annulled'>Anulada</x-ui.badge>\"]],
+                [['value' => 'Agente'], ['value' => ($operation->bankAgent?->bank?->name ?? '—') . ' — ' . ($operation->bankAgent?->store?->name ?? '—') . ' (' . ($operation->bankAgent?->code ?? '—') . ')']],
+                [['value' => 'Tipo'], ['value' => ($operation->operationType?->name ?? '—') . ' (' . ($operation->operationType?->cash_direction ?? '—') . ')']],
+                [['value' => 'Monto'], ['value' => ($operation->currency ?? 'PEN') . ' ' . number_format((float) $operation->amount, 2), 'align' => 'right']],
+                [['value' => 'Fecha Efectiva'], ['value' => $operation->effective_at?->format('Y-m-d H:i') ?? '—', 'class' => 'data-mono']],
+                [['value' => 'Fecha de Registro'], ['value' => $operation->recorded_at?->format('Y-m-d H:i') ?? '—', 'class' => 'data-mono']],
+                [['value' => 'Registrado por'], ['value' => $operation->user?->username_normalized ?? '—']],
+                [['value' => 'Referencia'], ['value' => $operation->reference ?? '—', 'class' => 'data-mono']],
+                [['value' => 'Observación'], ['value' => $operation->observation ?? '—']],
+                [['value' => 'Clave de Idempotencia'], ['value' => '<code>' . $operation->idempotency_key . '</code>', 'class' => 'data-mono']],
+            ]"
+        />
+    </div>
 
-    <p>
-        <a href="{{ route('operations.index') }}">Volver al Historial</a>
+    @if($operation->isAnnulled())
+    <div class="card" style="margin-bottom:var(--space-lg);">
+        <div class="card-header"><h3 class="card-title">Información de Anulación</h3></div>
+        <x-ui.data-table
+            :headers="[
+                ['label' => 'Campo'],
+                ['label' => 'Valor'],
+            ]"
+            :rows="[
+                [['value' => 'Anulado por'], ['value' => $operation->annulledBy?->username_normalized ?? '—']],
+                [['value' => 'Fecha de Anulación'], ['value' => $operation->annulled_at?->format('Y-m-d H:i') ?? '—', 'class' => 'data-mono']],
+                [['value' => 'Motivo de Anulación'], ['value' => $operation->annulment_reason ?? '—']],
+            ]"
+        />
+    </div>
+    @endif
+
+    <div style="display:flex;gap:var(--space-sm);align-items:center;">
+        <a href="{{ route('operations.index') }}" class="btn btn--secondary btn--sm">Volver al Historial</a>
 
         @if($operation->isActive())
             @can('annul', $operation)
-                <a href="{{ route('operations.annul', $operation) }}" onclick="event.preventDefault(); if(confirm('¿Anular esta operación?')) { document.getElementById('annul-form-{{ $operation->id }}').submit(); }">
+                <button type="button" class="btn btn--warning btn--sm" onclick="if(confirm('¿Anular esta operación?')) { document.getElementById('annul-form-{{ $operation->id }}').submit(); }">
                     Anular Operación
-                </a>
+                </button>
                 <form id="annul-form-{{ $operation->id }}" action="{{ route('operations.annul', $operation) }}" method="POST" style="display:none;">
                     @csrf
                     <input type="hidden" name="reason" value="Anulación desde vista de detalle">
                 </form>
             @endcan
         @endif
-    </p>
+    </div>
 
     @if($operation->isActive())
         @can('annul', $operation)
-            <hr>
-            <h2>Anular Operación</h2>
-            <form method="POST" action="{{ route('operations.annul', $operation) }}">
-                @csrf
-                <div>
-                    <label for="reason">Motivo de Anulación</label>
-                    <textarea name="reason" id="reason" required maxlength="500" placeholder="Explique el motivo de la anulación"></textarea>
-                </div>
-                <button type="submit">Confirmar Anulación</button>
-            </form>
+            <div class="card" style="margin-top:var(--space-lg);">
+                <div class="card-header"><h3 class="card-title">Anular Operación</h3></div>
+                <form method="POST" action="{{ route('operations.annul', $operation) }}" style="padding:var(--space-md);">
+                    @csrf
+                    <div class="form-group">
+                        <label class="form-label" for="reason">Motivo de Anulación</label>
+                        <textarea name="reason" id="reason" class="form-input" rows="3" required maxlength="500" placeholder="Explique el motivo de la anulación"></textarea>
+                    </div>
+                    <div style="margin-top:var(--space-md);">
+                        <x-ui.button variant="danger" type="submit">Confirmar Anulación</x-ui.button>
+                    </div>
+                </form>
+            </div>
         @endcan
     @endif
+</div>
 @endsection

@@ -3,50 +3,60 @@
 @section('title', $province->name . ' — Distritos — Control de Operaciones')
 
 @section('content')
-    <h1>{{ $province->name }} — Distritos</h1>
+    <h2 class="admin-title" style="margin-bottom:var(--space-xs);">{{ $province->name }} — Distritos</h2>
 
     @if(session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
+        <div class="alert alert-success" role="alert" style="margin: var(--space-md) 0;">{{ session('status') }}</div>
     @endif
 
-    <a href="{{ route('admin.regions.provinces.index', $province->region) }}">Volver a Provincias</a>
+    <div style="margin-bottom: var(--space-md);">
+        <a href="{{ route('admin.regions.provinces.index', $province->region) }}" class="btn btn--secondary">Volver a Provincias</a>
+    </div>
 
-    <form method="POST" action="{{ route('admin.provinces.districts.store', $province) }}">
-        @csrf
-        <div>
-            <label for="name">Nuevo Distrito</label>
-            <input type="text" name="name" id="name" required maxlength="160">
-            <button type="submit">Crear</button>
-        </div>
-    </form>
+    <div class="card" style="max-width: 500px; margin-bottom: var(--space-lg);">
+        <h3 style="margin-bottom: var(--space-sm);">Nuevo Distrito</h3>
+        <form method="POST" action="{{ route('admin.provinces.districts.store', $province) }}" style="display: flex; gap: var(--space-sm); align-items: flex-end;">
+            @csrf
+            <x-ui.input
+                label="Nombre"
+                name="name"
+                value="{{ old('name') }}"
+                required="true"
+                placeholder="Nombre del distrito"
+            />
+            <x-ui.button variant="primary" type="submit">Crear</x-ui.button>
+        </form>
+    </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($districts as $district)
-                <tr>
-                    <td>{{ $district->name }}</td>
-                    <td>{{ $district->is_active ? 'Activo' : 'Inactivo' }}</td>
-                    <td>
-                        @if($district->is_active)
-                            <form action="{{ route('admin.districts.deactivate', $district) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Desactivar este distrito?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit">Desactivar</button>
-                            </form>
-                        @endif
-                    </td>
-                </tr>
-            @empty
-                <tr><td colspan="3">No se encontraron distritos.</td></tr>
-            @endforelse
-        </tbody>
-    </table>
-    {{ $districts->links() }}
+    <div class="card">
+        <x-ui.data-table
+            :headers="[
+                ['label' => 'Nombre'],
+                ['label' => 'Estado', 'align' => 'center'],
+                ['label' => 'Acciones', 'align' => 'center'],
+            ]"
+            :rows="$districts->map(function($district) {
+                \$actions = '';
+                if (\$district->is_active) {
+                    \$actions .= \"<form action='\" . route('admin.districts.deactivate', \$district) . \"' method='POST' style='display:inline;' onsubmit=\\\"return confirm('Desactivar este distrito?');\\\">\";
+                    \$actions .= \"<input type='hidden' name='_token' value='\" . csrf_token() . \"'>\";
+                    \$actions .= \"<input type='hidden' name='_method' value='DELETE'>\";
+                    \$actions .= \"<button type='submit' class='btn btn--danger'>Desactivar</button></form>\";
+                }
+                return [
+                    ['value' => \$district->name],
+                    ['value' => \$district->is_active ? \"<x-ui.badge variant='active'>Activo</x-ui.badge>\" : \"<x-ui.badge variant='inactive'>Inactivo</x-ui.badge>\", 'align' => 'center'],
+                    ['value' => \$actions, 'align' => 'center'],
+                ];
+            })->toArray()"
+            emptyMessage="No se encontraron distritos."
+        />
+        <x-ui.pagination
+            :currentPage="$districts->currentPage()"
+            :lastPage="$districts->lastPage()"
+            :total="$districts->total()"
+            :from="$districts->firstItem() ?? 0"
+            :to="$districts->lastItem() ?? 0"
+        />
+    </div>
 @endsection

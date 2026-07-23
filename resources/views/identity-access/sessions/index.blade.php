@@ -3,57 +3,62 @@
 @section('title', 'Historial de sesiones — Control de Operaciones')
 
 @section('content')
-    <h1>Historial de sesiones</h1>
+    <h2 class="admin-title" style="margin-bottom:var(--space-xs);">Historial de sesiones</h2>
+    <p class="admin-subtitle">Registro de accesos y actividad de usuarios en el sistema.</p>
 
-    <form method="GET" action="{{ route('sessions.index') }}">
-        <div>
-            <label for="status">Estado</label>
-            <select id="status" name="status">
-                <option value="">Todos</option>
-                <option value="ACTIVE" {{ request('status') === 'ACTIVE' ? 'selected' : '' }}>Activa</option>
-                <option value="EXPIRED" {{ request('status') === 'EXPIRED' ? 'selected' : '' }}>Expirada</option>
-                <option value="REVOKED" {{ request('status') === 'REVOKED' ? 'selected' : '' }}>Revocada</option>
-            </select>
-        </div>
-        <div>
-            <label for="from">Desde</label>
-            <input type="date" id="from" name="from" value="{{ request('from') }}">
-        </div>
-        <div>
-            <label for="to">Hasta</label>
-            <input type="date" id="to" name="to" value="{{ request('to') }}">
-        </div>
-        <button type="submit">Filtrar</button>
-    </form>
+    <div class="card" style="margin-bottom: var(--space-lg);">
+        <form method="GET" action="{{ route('sessions.index') }}" style="display: flex; gap: var(--space-sm); align-items: flex-end; flex-wrap: wrap;">
+            <x-ui.select
+                label="Estado"
+                name="status"
+                :options="['ACTIVE' => 'Activa', 'EXPIRED' => 'Expirada', 'REVOKED' => 'Revocada']"
+                :selected="request('status')"
+                placeholder="Todos"
+            />
+            <x-ui.input
+                label="Desde"
+                name="from"
+                type="date"
+                value="{{ request('from') }}"
+            />
+            <x-ui.input
+                label="Hasta"
+                name="to"
+                type="date"
+                value="{{ request('to') }}"
+            />
+            <x-ui.button variant="secondary" type="submit">Filtrar</x-ui.button>
+        </form>
+    </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>ID Público</th>
-                <th>Usuario</th>
-                <th>Estado</th>
-                <th>Inicio</th>
-                <th>Fin</th>
-                <th>Motivo de fin</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse ($sessions as $session)
-                <tr>
-                    <td>{{ $session->public_id }}</td>
-                    <td>{{ $session->user->username_normalized ?? 'N/A' }}</td>
-                    <td>{{ $session->status->value }}</td>
-                    <td>{{ $session->started_at?->format('Y-m-d H:i:s') }}</td>
-                    <td>{{ $session->ended_at?->format('Y-m-d H:i:s') ?? '—' }}</td>
-                    <td>{{ $session->end_reason?->value ?? '—' }}</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="6">No se encontraron sesiones.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-
-    {{ $sessions->appends(request()->query())->links() }}
+    <div class="card">
+        <x-ui.data-table
+            :headers="[
+                ['label' => 'ID Publico'],
+                ['label' => 'Usuario'],
+                ['label' => 'Estado', 'align' => 'center'],
+                ['label' => 'Inicio'],
+                ['label' => 'Fin'],
+                ['label' => 'Motivo de fin'],
+            ]"
+            :rows="$sessions->map(function($session) {
+                return [
+                    ['value' => \$session->public_id],
+                    ['value' => \$session->user->username_normalized ?? 'N/A'],
+                    ['value' => \"<x-ui.badge variant='active'>\" . \$session->status->value . \"</x-ui.badge>\", 'align' => 'center'],
+                    ['value' => \$session->started_at?->format('Y-m-d H:i:s') ?? '—'],
+                    ['value' => \$session->ended_at?->format('Y-m-d H:i:s') ?? '—'],
+                    ['value' => \$session->end_reason?->value ?? '—'],
+                ];
+            })->toArray()"
+            emptyMessage="No se encontraron sesiones."
+        />
+        <x-ui.pagination
+            :currentPage="$sessions->currentPage()"
+            :lastPage="$sessions->lastPage()"
+            :total="$sessions->total()"
+            :from="$sessions->firstItem() ?? 0"
+            :to="$sessions->lastItem() ?? 0"
+        />
+    </div>
 @endsection

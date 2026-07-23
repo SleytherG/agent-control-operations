@@ -1,39 +1,44 @@
-@props(['metrics' => []])
+@props(['metrics' => null])
+
+@php
+    $count = is_object($metrics) ? ($metrics->operation_count ?? 0) : ($metrics['operation_count'] ?? 0);
+    $gross = is_object($metrics) ? ($metrics->gross_amount ?? 'S/ 0.00') : ($metrics['gross_amount'] ?? 'S/ 0.00');
+    $cashIn = is_object($metrics) ? ($metrics->cash_in ?? 'S/ 0.00') : ($metrics['cash_in'] ?? 'S/ 0.00');
+    $cashOut = is_object($metrics) ? ($metrics->cash_out ?? 'S/ 0.00') : ($metrics['cash_out'] ?? 'S/ 0.00');
+    $net = is_object($metrics) ? ($metrics->net_movement ?? 'S/ 0.00') : ($metrics['net_movement'] ?? 'S/ 0.00');
+    $cashInOps = is_object($metrics) ? ($metrics->cash_in_ops ?? 0) : ($metrics['cash_in_ops'] ?? 0);
+    $cashOutOps = is_object($metrics) ? ($metrics->cash_out_ops ?? 0) : ($metrics['cash_out_ops'] ?? 0);
+@endphp
 
 <div class="operator-kpi-grid">
     <x-ui.metric-card
         label="Ops. del Dia"
-        :value="$metrics['operation_count'] ?? '0'"
+        :value="$count"
         icon="&#x1F4CB;"
-        trend="up"
-        :trendLabel="$metrics['operation_count_trend'] ?? ''"
     />
     <x-ui.metric-card
         label="Monto Bruto"
-        :value="$metrics['gross_amount'] ?? 'S/ 0.00'"
+        :value="$gross"
         icon="&#x1F4B0;"
-        trend="up"
-        :trendLabel="$metrics['gross_amount_trend'] ?? ''"
     />
     <x-ui.metric-card
         label="Entradas"
-        :value="$metrics['cash_in'] ?? 'S/ 0.00'"
+        :value="$cashIn"
         icon="&#x2198;"
-        :sub="($metrics['cash_in_ops'] ?? 0) . ' operaciones'"
+        :sub="($cashInOps ? $cashInOps . ' operaciones' : '')"
         variant="accent-green"
     />
     <x-ui.metric-card
         label="Salidas"
-        :value="$metrics['cash_out'] ?? 'S/ 0.00'"
+        :value="$cashOut"
         icon="&#x2197;"
-        :sub="($metrics['cash_out_ops'] ?? 0) . ' operaciones'"
+        :sub="($cashOutOps ? $cashOutOps . ' operaciones' : '')"
         variant="accent-red"
     />
     <x-ui.metric-card
         label="Movimiento Neto"
-        :value="$metrics['net_movement'] ?? 'S/ 0.00'"
+        :value="$net"
         icon="&#x1F4BC;"
-        :sub="$metrics['net_label'] ?? ''"
         variant="dark"
     />
 </div>
