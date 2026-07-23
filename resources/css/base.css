@@ -1,0 +1,106 @@
+/* ============================================================
+   AgenteFlow Base Styles
+   ============================================================ */
+
+html {
+  font-family: var(--font-family-sans);
+  font-size: 14px;
+  color: var(--color-on-surface);
+  background-color: var(--color-background);
+}
+
+body {
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-body-md);
+  line-height: var(--line-height-body-md);
+  color: var(--color-on-surface);
+  background-color: var(--color-background);
+}
+
+h1 {
+  font-size: var(--font-size-headline-lg);
+  line-height: var(--line-height-headline-lg);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-headline-lg);
+  color: var(--color-on-surface);
+}
+
+h2 {
+  font-size: var(--font-size-headline-md);
+  line-height: var(--line-height-headline-md);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-headline-md);
+  color: var(--color-on-surface);
+}
+
+h3 {
+  font-size: var(--font-size-headline-sm);
+  line-height: var(--line-height-headline-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-on-surface);
+}
+
+a {
+  color: var(--color-primary);
+  transition: color 0.15s ease;
+}
+
+a:hover {
+  color: var(--color-primary-hover);
+}
+
+strong {
+  font-weight: var(--font-weight-bold);
+}
+
+/* Focus visible for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Selection */
+::selection {
+  background-color: var(--st-secondary-container);
+  color: var(--st-on-secondary-container);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-outline-variant);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-outline);
+}
+
+/* Hide number input spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Monospace for financial data */
+.data-mono {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+}

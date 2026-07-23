@@ -1,0 +1,191 @@
+/* ============================================================
+   AgenteFlow Design Tokens
+   Phase 2: Stitch → Semantic CSS Custom Properties
+   No external dependencies. Based on docs/design/stitch/v1/DESIGN.md
+   ============================================================ */
+
+/* --- Stitch Raw Color Tokens (from DESIGN.md) --- */
+:root {
+  --st-primary: #000000;
+  --st-on-primary: #ffffff;
+  --st-primary-container: #131b2e;
+  --st-on-primary-container: #7c839b;
+  --st-inverse-primary: #bec6e0;
+
+  --st-secondary: #505f76;
+  --st-on-secondary: #ffffff;
+  --st-secondary-container: #d0e1fb;
+  --st-on-secondary-container: #54647a;
+
+  --st-tertiary: #000000;
+  --st-on-tertiary: #ffffff;
+  --st-tertiary-container: #002113;
+  --st-on-tertiary-container: #009668;
+
+  --st-error: #ba1a1a;
+  --st-on-error: #ffffff;
+  --st-error-container: #ffdad6;
+  --st-on-error-container: #93000a;
+
+  --st-surface: #fcf8fa;
+  --st-surface-dim: #dcd9db;
+  --st-surface-bright: #fcf8fa;
+  --st-surface-container-lowest: #ffffff;
+  --st-surface-container-low: #f6f3f5;
+  --st-surface-container: #f0edef;
+  --st-surface-container-high: #eae7e9;
+  --st-surface-container-highest: #e4e2e4;
+  --st-on-surface: #1b1b1d;
+  --st-on-surface-variant: #45464d;
+  --st-inverse-surface: #303032;
+  --st-inverse-on-surface: #f3f0f2;
+
+  --st-outline: #76777d;
+  --st-outline-variant: #c6c6cd;
+  --st-surface-tint: #565e74;
+  --st-background: #fcf8fa;
+  --st-on-background: #1b1b1d;
+  --st-surface-variant: #e4e2e4;
+
+  --st-primary-fixed: #dae2fd;
+  --st-primary-fixed-dim: #bec6e0;
+  --st-on-primary-fixed: #131b2e;
+  --st-on-primary-fixed-variant: #3f465c;
+
+  --st-secondary-fixed: #d3e4fe;
+  --st-secondary-fixed-dim: #b7c8e1;
+  --st-on-secondary-fixed: #0b1c30;
+  --st-on-secondary-fixed-variant: #38485d;
+
+  --st-tertiary-fixed: #6ffbbe;
+  --st-tertiary-fixed-dim: #4edea3;
+  --st-on-tertiary-fixed: #002113;
+  --st-on-tertiary-fixed-variant: #005236;
+
+  /* --- Semantic Color Tokens --- */
+  --color-primary: var(--st-primary);
+  --color-primary-hover: var(--st-on-primary-fixed-variant);
+  --color-primary-container: var(--st-primary-container);
+  --color-on-primary: var(--st-on-primary);
+  --color-on-primary-container: var(--st-on-primary-container);
+
+  --color-surface: var(--st-surface);
+  --color-surface-container: var(--st-surface-container);
+  --color-surface-container-low: var(--st-surface-container-low);
+  --color-surface-container-lowest: var(--st-surface-container-lowest);
+  --color-surface-container-high: var(--st-surface-container-high);
+  --color-on-surface: var(--st-on-surface);
+  --color-on-surface-variant: var(--st-on-surface-variant);
+
+  --color-background: var(--st-background);
+  --color-on-background: var(--st-on-background);
+
+  --color-error: var(--st-error);
+  --color-error-container: var(--st-error-container);
+  --color-on-error: var(--st-on-error);
+  --color-on-error-container: var(--st-on-error-container);
+
+  --color-success-text: #0d6b3e;
+  --color-success-bg: #d9f2e4;
+  --color-success-border: #b7e4c7;
+
+  --color-warning-text: #8a5c0a;
+  --color-warning-bg: #fdf0d0;
+  --color-warning-border: #fce096;
+
+  --color-info-text: #1a5f8a;
+  --color-info-bg: #d6ebf7;
+  --color-info-border: #b3d7f0;
+
+  --color-cash-in: #0d6b3e;
+  --color-cash-out: var(--st-error);
+  --color-net-positive: #0d6b3e;
+  --color-net-negative: var(--st-error);
+
+  --color-status-active: #0d6b3e;
+  --color-status-active-bg: #d9f2e4;
+  --color-status-annulled: var(--st-on-surface-variant);
+  --color-status-annulled-bg: var(--st-surface-container-high);
+  --color-status-pending: #8a5c0a;
+  --color-status-pending-bg: #fdf0d0;
+  --color-status-blue: #1a4f8a;
+  --color-status-blue-bg: #d6ebf7;
+  --color-status-amber: #8a5c0a;
+  --color-status-amber-bg: #fdf0d0;
+
+  --color-outline: var(--st-outline);
+  --color-outline-variant: var(--st-outline-variant);
+
+  --color-sidebar-bg: var(--st-primary-container);
+  --color-sidebar-text: var(--st-on-primary-container);
+  --color-sidebar-active-bg: rgba(255, 255, 255, 0.08);
+  --color-sidebar-active-border: var(--st-on-primary-container);
+
+  /* --- Typography --- */
+  --font-family-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-family-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+
+  --font-size-headline-lg: 30px;
+  --font-size-headline-md: 24px;
+  --font-size-headline-sm: 20px;
+  --font-size-body-lg: 16px;
+  --font-size-body-md: 14px;
+  --font-size-body-sm: 12px;
+  --font-size-data-mono: 14px;
+  --font-size-label: 12px;
+
+  --font-weight-bold: 600;
+  --font-weight-semibold: 600;
+  --font-weight-medium: 500;
+  --font-weight-regular: 400;
+
+  --line-height-headline-lg: 36px;
+  --line-height-headline-md: 32px;
+  --line-height-headline-sm: 28px;
+  --line-height-body-lg: 24px;
+  --line-height-body-md: 20px;
+  --line-height-body-sm: 16px;
+  --line-height-data-mono: 20px;
+  --line-height-label: 16px;
+
+  --letter-spacing-headline-lg: -0.02em;
+  --letter-spacing-headline-md: -0.01em;
+  --letter-spacing-label: 0.05em;
+
+  /* --- Spacing Scale (8px base) --- */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-gutter: 20px;
+  --space-margin: 24px;
+
+  /* --- Border Radius --- */
+  --radius-sm: 2px;
+  --radius-df: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-full: 9999px;
+
+  /* --- Borders --- */
+  --border-thin: 1px solid var(--color-outline-variant);
+
+  /* --- Shadows --- */
+  --shadow-card: 0px 1px 3px rgba(15, 23, 42, 0.06);
+  --shadow-modal: 0px 8px 24px rgba(15, 23, 42, 0.12);
+  --shadow-dropdown: 0px 4px 12px rgba(15, 23, 42, 0.08);
+
+  /* --- Breakpoints (informative) --- */
+  --bp-sm: 375px;
+  --bp-md: 768px;
+  --bp-lg: 1280px;
+  --bp-xl: 1440px;
+
+  /* --- Layout --- */
+  --sidebar-width: 256px;
+  --sidebar-collapsed-width: 64px;
+  --topbar-height: 64px;
+  --content-max-width: 1440px;
+}

@@ -1,0 +1,127 @@
+/* ============================================================
+   AgenteFlow Button Styles
+   ============================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: 10px 20px;
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-label);
+  border-radius: var(--radius-lg);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  border-color: var(--color-primary);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+}
+
+.btn--secondary {
+  background-color: transparent;
+  color: var(--color-primary);
+  border-color: var(--color-outline);
+}
+
+.btn--secondary:hover:not(:disabled) {
+  background-color: var(--color-surface-container-low);
+}
+
+.btn--danger {
+  background-color: var(--color-error);
+  color: var(--color-on-error);
+  border-color: var(--color-error);
+}
+
+.btn--danger:hover:not(:disabled) {
+  background-color: #a11717;
+}
+
+.btn--ghost {
+  background-color: transparent;
+  color: var(--color-on-surface-variant);
+  border-color: transparent;
+}
+
+.btn--ghost:hover:not(:disabled) {
+  background-color: var(--color-surface-container-low);
+}
+
+.btn--success {
+  background-color: var(--color-success-text);
+  color: #ffffff;
+  border-color: var(--color-success-text);
+}
+
+.btn--success:hover:not(:disabled) {
+  background-color: #0a5c30;
+}
+
+.btn--warning {
+  background-color: var(--color-warning-text);
+  color: #ffffff;
+  border-color: var(--color-warning-text);
+}
+
+.btn--warning:hover:not(:disabled) {
+  background-color: #7a4e08;
+}
+
+.btn--sm {
+  padding: 6px 12px;
+  font-size: 11px;
+}
+
+.btn--lg {
+  padding: 14px 28px;
+  font-size: var(--font-size-body-md);
+}
+
+.btn--full {
+  width: 100%;
+}
+
+.btn--loading .btn-text {
+  visibility: hidden;
+}
+
+.btn--loading .btn-spinner {
+  display: inline-block;
+}
+
+.btn-spinner {
+  display: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  position: absolute;
+}
+
+.btn--loading {
+  position: relative;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

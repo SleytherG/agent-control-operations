@@ -1,0 +1,62 @@
+/* ============================================================
+   AgenteFlow Pagination Styles
+   ============================================================ */
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md);
+  border-top: var(--border-thin);
+  font-size: var(--font-size-body-sm);
+  color: var(--color-on-surface-variant);
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.pagination-info {
+  white-space: nowrap;
+}
+
+.pagination-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pagination-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  font-size: var(--font-size-body-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-on-surface);
+  border: var(--border-thin);
+  border-radius: var(--radius-df);
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.pagination-link:hover:not(.pagination-link--active):not(.pagination-link--disabled) {
+  background-color: var(--color-surface-container-low);
+}
+
+.pagination-link--active {
+  background-color: var(--color-surface-container-low);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+.pagination-link--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.pagination-ellipsis {
+  padding: 0 4px;
+  color: var(--color-on-surface-variant);
+}

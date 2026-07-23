@@ -1,0 +1,136 @@
+/* ============================================================
+   AgenteFlow Operator Screens
+   ============================================================ */
+
+/* Dashboard Grid */
+.operator-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.operator-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-md);
+}
+
+.operator-charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-lg);
+}
+
+.operator-recent-table {
+  grid-column: 1 / -1;
+}
+
+/* Registration Form */
+.registration-page {
+  max-width: 900px;
+}
+
+.registration-card {
+  background-color: var(--color-surface-container-lowest);
+  border: var(--border-thin);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.registration-context-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-lg);
+  padding: var(--space-sm) var(--space-lg);
+  background-color: var(--color-surface-container-low);
+  border-bottom: var(--border-thin);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  font-size: var(--font-size-body-sm);
+  color: var(--color-on-surface-variant);
+}
+
+.registration-context-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.registration-form {
+  padding: var(--space-xl);
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--space-gutter);
+}
+
+.registration-hero {
+  grid-column: 1 / -1;
+}
+
+.registration-direction-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+}
+
+.registration-direction-label {
+  cursor: pointer;
+  position: relative;
+}
+
+.registration-direction-label input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.registration-direction-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: 10px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  color: var(--color-on-surface-variant);
+  font-weight: var(--font-weight-medium);
+  transition: all 0.15s ease;
+}
+
+.registration-direction-label input:checked + .registration-direction-display {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  border-color: var(--color-primary);
+}
+
+/* History Page */
+.operator-history {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.history-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-md);
+}
+
+/* Responsive */
+@media (max-width: 1280px) {
+  .operator-kpi-grid { grid-template-columns: repeat(3, 1fr); }
+  .operator-charts-grid { grid-template-columns: 1fr; }
+  .history-summary-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .operator-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .history-summary-grid { grid-template-columns: repeat(2, 1fr); }
+  .registration-form { grid-template-columns: 1fr; padding: var(--space-md); }
+  .registration-direction-group { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 375px) {
+  .operator-kpi-grid { grid-template-columns: 1fr; }
+  .history-summary-grid { grid-template-columns: 1fr; }
+}

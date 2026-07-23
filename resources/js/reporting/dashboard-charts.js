@@ -1,167 +1,190 @@
-import {
-    Chart,
-    ArcElement,
-    Tooltip,
-    Legend,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    LineElement,
-    PointElement,
-    DoughnutController,
-    BarController,
-    LineController,
-} from 'chart.js';
+import Chart from 'chart.js/auto';
 
-Chart.register(
-    ArcElement,
-    Tooltip,
-    Legend,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    LineElement,
-    PointElement,
-    DoughnutController,
-    BarController,
-    LineController,
-);
+const CHART_COLORS = {
+    primary: '#000000',
+    tertiaryFixed: '#4edea3',
+    error: '#ba1a1a',
+    primaryFixed: '#bec6e0',
+    surfaceVariant: '#e4e2e4',
+    onSurfaceVariant: '#45464d',
+    secondary: '#505f76',
+    surfaceContainerHigh: '#eae7e9',
+    primaryFixedDim: '#bec6e0',
+    secondaryContainer: '#d0e1fb',
+    onSecondaryFixed: '#0b1c30',
+};
 
-window.initOperatorDashboard = function (typeDistribution, timeEvolution) {
-    if (!typeDistribution || typeDistribution.length === 0) return;
-    if (!timeEvolution || timeEvolution.length === 0) return;
+Chart.defaults.font.family = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
+Chart.defaults.color = CHART_COLORS.onSurfaceVariant;
+Chart.defaults.scale.grid.color = CHART_COLORS.surfaceVariant;
+Chart.defaults.plugins.tooltip.backgroundColor = '#1b1b1d';
+Chart.defaults.plugins.tooltip.padding = 12;
+Chart.defaults.plugins.tooltip.cornerRadius = 4;
 
-    const doughnutCtx = document.getElementById('typeDistributionChart');
-    if (doughnutCtx) {
-        new Chart(doughnutCtx, {
-            type: 'doughnut',
-            data: {
-                labels: typeDistribution.map(item => item.name),
-                datasets: [{
-                    data: typeDistribution.map(item => parseFloat(item.total_amount)),
-                    backgroundColor: [
-                        '#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f',
-                        '#edc948', '#b07aa1', '#ff9da7', '#9c755f', '#bab0ac',
-                    ],
-                }],
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'bottom' },
-                    tooltip: {
-                        callbacks: {
-                            label: function (ctx) {
-                                const value = parseFloat(ctx.parsed).toFixed(2);
-                                return `${ctx.label}: S/ ${value}`;
-                            },
-                        },
-                    },
-                },
-            },
-        });
+export function initCharts(dashboardType, data) {
+    if (dashboardType === 'operator') {
+        initOperatorCharts(data);
+    } else if (dashboardType === 'admin') {
+        initAdminCharts(data);
     }
+}
 
-    const lineCtx = document.getElementById('timeEvolutionChart');
-    if (lineCtx) {
-        new Chart(lineCtx, {
-            type: 'line',
+function initOperatorCharts(data) {
+    const barCtx = document.getElementById('opsByHourChart');
+    if (barCtx) {
+        new Chart(barCtx.getContext('2d'), {
+            type: 'bar',
             data: {
-                labels: timeEvolution.map(item => item.date_label),
+                labels: data.evolution?.labels || [],
                 datasets: [
                     {
-                        label: 'Monto bruto operado',
-                        data: timeEvolution.map(item => parseFloat(item.total_amount)),
-                        borderColor: '#4e79a7',
-                        backgroundColor: 'rgba(78, 121, 167, 0.1)',
-                        fill: true,
-                        tension: 0.3,
+                        label: 'Entradas',
+                        data: data.evolution?.entradas || [],
+                        backgroundColor: CHART_COLORS.tertiaryFixed,
+                        borderRadius: 4,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.8,
                     },
                     {
-                        label: 'Cantidad de operaciones',
-                        data: timeEvolution.map(item => parseInt(item.count)),
-                        borderColor: '#f28e2b',
-                        backgroundColor: 'rgba(242, 142, 43, 0.1)',
-                        fill: true,
-                        tension: 0.3,
-                        yAxisID: 'y1',
+                        label: 'Salidas',
+                        data: data.evolution?.salidas || [],
+                        backgroundColor: CHART_COLORS.error,
+                        borderRadius: 4,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.8,
                     },
                 ],
             },
             options: {
                 responsive: true,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'bottom' },
-                    tooltip: {
-                        callbacks: {
-                            label: function (ctx) {
-                                if (ctx.dataset.label === 'Monto bruto operado') {
-                                    return `Monto bruto operado: S/ ${parseFloat(ctx.parsed.y).toFixed(2)}`;
-                                }
-                                return `${ctx.dataset.label}: ${ctx.parsed.y}`;
-                            },
-                        },
-                    },
-                },
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
                 scales: {
-                    y: {
-                        type: 'linear',
-                        position: 'left',
-                        title: { display: true, text: 'Monto bruto operado (S/)' },
-                    },
-                    y1: {
-                        type: 'linear',
-                        position: 'right',
-                        title: { display: true, text: 'Cantidad de operaciones' },
-                        grid: { drawOnChartArea: false },
-                    },
+                    x: { stacked: true, grid: { display: false } },
+                    y: { stacked: true, border: { display: false }, beginAtZero: true },
                 },
             },
         });
     }
-};
 
-window.initAdminDashboard = function (typeDistribution, timeEvolution) {
-    window.initOperatorDashboard(typeDistribution, timeEvolution);
-};
-
-window.initOperatorComparison = function (operators) {
-    if (!operators || operators.length === 0) return;
-
-    const barCtx = document.getElementById('comparisonBarChart');
-    if (barCtx) {
-        new Chart(barCtx, {
-            type: 'bar',
+    const doughnutCtx = document.getElementById('opsByTypeChart');
+    if (doughnutCtx) {
+        new Chart(doughnutCtx.getContext('2d'), {
+            type: 'doughnut',
             data: {
-                labels: operators.map(op => op.username_normalized),
+                labels: (data.distribution || []).map(function(d) { return d.type; }),
                 datasets: [{
-                    label: 'Monto bruto operado',
-                    data: operators.map(op => parseFloat(op.gross_amount)),
-                    backgroundColor: '#4e79a7',
-                    borderColor: '#396a93',
-                    borderWidth: 1,
+                    data: (data.distribution || []).map(function(d) { return d.count; }),
+                    backgroundColor: [CHART_COLORS.tertiaryFixed, CHART_COLORS.error, CHART_COLORS.primaryFixed],
+                    borderWidth: 0,
+                    hoverOffset: 4,
                 }],
             },
             options: {
-                indexAxis: 'y',
                 responsive: true,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function (ctx) {
-                                return `Monto bruto operado: S/ ${parseFloat(ctx.parsed.x).toFixed(2)}`;
-                            },
-                        },
-                    },
-                },
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: { legend: { display: false } },
+            },
+        });
+    }
+}
+
+function initAdminCharts(data) {
+    const evolutionCtx = document.getElementById('evolutionChart');
+    if (evolutionCtx) {
+        new Chart(evolutionCtx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: data.evolution?.labels || [],
+                datasets: [{
+                    label: 'Volumen de Transacciones',
+                    data: data.evolution?.data || [],
+                    borderColor: CHART_COLORS.onSecondaryFixed,
+                    backgroundColor: CHART_COLORS.secondaryContainer + '66',
+                    borderWidth: 2,
+                    pointBackgroundColor: CHART_COLORS.onSecondaryFixed,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    fill: true,
+                    tension: 0.4,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
                 scales: {
-                    x: {
-                        title: { display: true, text: 'Monto bruto operado (S/)' },
-                    },
+                    y: { beginAtZero: true, border: { display: false }, ticks: { maxTicksLimit: 6 } },
+                    x: { grid: { display: false }, border: { display: false } },
                 },
             },
         });
     }
-};
+
+    const doughnutCtx = document.getElementById('bankDoughnutChart');
+    if (doughnutCtx) {
+        new Chart(doughnutCtx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: (data.bankDistribution || []).map(function(d) { return d.bank; }),
+                datasets: [{
+                    data: (data.bankDistribution || []).map(function(d) { return d.percentage; }),
+                    backgroundColor: [
+                        CHART_COLORS.onSecondaryFixed,
+                        CHART_COLORS.secondary,
+                        CHART_COLORS.primaryFixedDim,
+                        CHART_COLORS.surfaceContainerHigh,
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 4,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: { legend: { display: false } },
+            },
+        });
+    }
+
+    const barCtx = document.getElementById('flowBarChart');
+    if (barCtx) {
+        new Chart(barCtx.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: data.flowByRegion?.labels || [],
+                datasets: [
+                    {
+                        label: 'Entradas',
+                        data: data.flowByRegion?.cash_in || [],
+                        backgroundColor: CHART_COLORS.tertiaryFixed,
+                        borderRadius: 2,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.8,
+                    },
+                    {
+                        label: 'Salidas',
+                        data: data.flowByRegion?.cash_out || [],
+                        backgroundColor: CHART_COLORS.surfaceContainerHigh,
+                        borderRadius: 2,
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.8,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 8, boxHeight: 8 } },
+                },
+                scales: {
+                    y: { beginAtZero: true, border: { display: false }, ticks: { maxTicksLimit: 5 } },
+                    x: { grid: { display: false }, border: { display: false } },
+                },
+            },
+        });
+    }
+}

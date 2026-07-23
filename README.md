@@ -26,8 +26,32 @@ El servidor web DEBE exponer **únicamente** el directorio `public/` como docume
 
 Procedimiento documentado en `docs/deployment.md`.
 
-## Documentación
+## Rutas Demo (Revision Visual)
+
+Las siguientes rutas muestran las maquetas visuales con datos de demostracion:
+
+| Ruta | Descripcion |
+|---|---|
+| `/demo/login` | Login (normal) |
+| `/demo/login?state=error` | Login con error de credenciales |
+| `/demo/login?state=disabled` | Login con usuario desactivado |
+| `/demo/login?state=throttled` | Login con limite de intentos |
+| `/demo/login?state=network-error` | Login con error de red |
+| `/demo/login?state=loading` | Login en carga |
+| `/demo/expiry?expiry=warning` | Modal de expiracion (30s) |
+| `/demo/expiry?expiry=renewing` | Modal renovando |
+| `/demo/expiry?expiry=expired` | Modal sesion expirada |
+| `/demo/expiry?expiry=revoked` | Modal sesion revocada |
+| `/demo/operator/dashboard` | Dashboard del operador |
+| `/demo/operator/register` | Registro de operacion |
+| `/demo/operator/history` | Historial de operaciones |
+| `/demo/admin/dashboard` | Dashboard administrativo |
+| `/demo/daily-closing/1` | Cierre diario ACTIVO |
+| `/demo/daily-closing/1?status=confirmed` | Cierre diario CONFIRMADO |
+| `/demo/daily-closing/1?status=reopened` | Cierre diario REABIERTO |
+
+## Documentacion
 
 - [Product Brief](docs/product-brief.md)
-- [Backup y Restauración](docs/backup-restore.md)
-- [Guía de Despliegue](docs/deployment.md)
+- [Backup y Restauracion](docs/backup-restore.md)
+- [Guia de Despliegue](docs/deployment.md)

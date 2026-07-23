@@ -1,0 +1,127 @@
+/* ============================================================
+   AgenteFlow Input Styles
+   ============================================================ */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.form-label {
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-label);
+  color: var(--color-on-surface-variant);
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: var(--font-size-body-md);
+  line-height: var(--line-height-body-md);
+  color: var(--color-on-surface);
+  background-color: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-input::placeholder {
+  color: var(--color-outline);
+}
+
+.form-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+  outline: none;
+}
+
+.form-input--error {
+  border-color: var(--color-error);
+}
+
+.form-input--error:focus {
+  box-shadow: 0 0 0 1px var(--color-error);
+}
+
+.form-input:disabled {
+  opacity: 0.6;
+  background-color: var(--color-surface-container-low);
+  cursor: not-allowed;
+}
+
+.form-hint {
+  font-size: var(--font-size-body-sm);
+  color: var(--color-on-surface-variant);
+}
+
+.form-error {
+  font-size: var(--font-size-body-sm);
+  color: var(--color-error);
+  font-weight: var(--font-weight-medium);
+}
+
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2376777d' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+/* Currency Input */
+.currency-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface-container-lowest);
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.currency-input-wrapper:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.currency-prefix {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  background-color: var(--color-surface-container-low);
+  border-right: 1px solid var(--color-outline-variant);
+  font-size: var(--font-size-body-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-on-surface-variant);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.currency-input {
+  flex: 1;
+  border: none;
+  padding: 10px 14px;
+  font-size: var(--font-size-body-md);
+  color: var(--color-on-surface);
+  background: transparent;
+  text-align: right;
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.currency-input:focus {
+  outline: none;
+}
+
+.currency-input--large {
+  font-size: 48px;
+  padding: 16px 20px;
+}
+
+.currency-input--large + .currency-prefix {
+  font-size: 24px;
+}

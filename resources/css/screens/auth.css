@@ -1,0 +1,180 @@
+/* ============================================================
+   AgenteFlow Auth Screens
+   ============================================================ */
+
+/* Login Card */
+.login-card {
+  background-color: var(--color-surface-container-lowest);
+  border: var(--border-thin);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.login-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-sm);
+}
+
+.login-logo {
+  width: 64px;
+  height: 64px;
+  background-color: var(--color-primary);
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-on-primary);
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: var(--space-sm);
+}
+
+.login-title {
+  font-size: var(--font-size-headline-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-on-surface);
+}
+
+.login-subtitle {
+  font-size: var(--font-size-body-md);
+  color: var(--color-on-surface-variant);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.login-error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  background-color: var(--color-error-container);
+  border: 1px solid rgba(186, 26, 26, 0.2);
+  border-radius: var(--radius-lg);
+}
+
+.login-error-icon {
+  font-size: 20px;
+  color: var(--color-error);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.login-error-title {
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-on-error-container);
+  margin-bottom: 2px;
+}
+
+.login-error-message {
+  font-size: var(--font-size-body-sm);
+  color: var(--color-on-error-container);
+  opacity: 0.8;
+}
+
+.login-footer {
+  text-align: center;
+  font-size: var(--font-size-body-sm);
+  color: var(--color-on-surface-variant);
+}
+
+.login-footer a {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Expiry Modal Content */
+.expiry-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.expiry-icon-wrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: rgba(186, 26, 26, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-lg);
+  position: relative;
+}
+
+.expiry-icon {
+  font-size: 32px;
+  color: var(--color-error);
+}
+
+.expiry-title {
+  font-size: var(--font-size-headline-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-on-surface);
+  margin-bottom: var(--space-sm);
+}
+
+.expiry-description {
+  font-size: var(--font-size-body-md);
+  color: var(--color-on-surface-variant);
+  margin-bottom: var(--space-lg);
+  padding: 0 var(--space-md);
+}
+
+.expiry-timer {
+  background-color: var(--color-surface-container-low);
+  border: var(--border-thin);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+}
+
+.expiry-timer-label {
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-label);
+  color: var(--color-on-surface-variant);
+}
+
+.expiry-timer-value {
+  font-size: 40px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-error);
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.expiry-actions {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.expiry-actions button,
+.expiry-actions a {
+  padding: 10px 24px;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+}

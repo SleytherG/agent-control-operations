@@ -1,0 +1,134 @@
+/* ============================================================
+   AgenteFlow Card Styles
+   ============================================================ */
+
+.metric-card {
+  background-color: var(--color-surface-container-lowest);
+  border: var(--border-thin);
+  border-radius: var(--radius-xl);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-card--dark {
+  background-color: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+  border-color: var(--color-primary-container);
+}
+
+.metric-card--dark .metric-card-label {
+  color: var(--color-on-primary-container);
+  opacity: 0.8;
+}
+
+.metric-card--dark .metric-card-value {
+  color: var(--color-on-primary-container);
+}
+
+.metric-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.metric-card-icon {
+  font-size: 20px;
+  color: var(--color-on-surface-variant);
+  flex-shrink: 0;
+}
+
+.metric-card--dark .metric-card-icon {
+  color: var(--color-on-primary-container);
+  opacity: 0.6;
+}
+
+.metric-card-label {
+  font-size: var(--font-size-label);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-label);
+  color: var(--color-on-surface-variant);
+}
+
+.metric-card-value {
+  font-size: var(--font-size-headline-lab);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-on-surface);
+  line-height: 1.2;
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-card-trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-body-sm);
+  font-weight: var(--font-weight-medium);
+  margin-top: auto;
+}
+
+.metric-card-trend--up {
+  color: var(--color-cash-in);
+}
+
+.metric-card-trend--down {
+  color: var(--color-cash-out);
+}
+
+.metric-card-sub {
+  font-size: var(--font-size-body-sm);
+  color: var(--color-on-surface-variant);
+}
+
+/* Card generic */
+.card {
+  background-color: var(--color-surface-container-lowest);
+  border: var(--border-thin);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.card--flat {
+  background-color: var(--color-surface);
+}
+
+.card-header {
+  padding: var(--space-md);
+  border-bottom: var(--border-thin);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--color-surface-container-lowest);
+}
+
+.card-body {
+  padding: var(--space-md);
+}
+
+.card-title {
+  font-size: var(--font-size-headline-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-on-surface);
+}
+
+/* Accent bars for metric cards */
+.metric-card-accent {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+}
+
+.metric-card-accent--green {
+  background-color: var(--color-cash-in);
+}
+
+.metric-card-accent--red {
+  background-color: var(--color-error);
+}

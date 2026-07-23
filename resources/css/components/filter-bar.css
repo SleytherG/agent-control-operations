@@ -1,0 +1,83 @@
+/* ============================================================
+   AgenteFlow Filter Bar Styles
+   ============================================================ */
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  align-items: flex-end;
+  padding: var(--space-md);
+  background-color: var(--color-surface-container-lowest);
+  border: var(--border-thin);
+  border-radius: var(--radius-xl);
+}
+
+.filter-bar .form-group {
+  flex: 1;
+  min-width: 180px;
+}
+
+.filter-bar-actions {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.filter-bar-toggle {
+  display: none;
+}
+
+/* Off-canvas filter panel for mobile */
+.filter-offcanvas {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .filter-bar {
+    display: none;
+  }
+
+  .filter-bar-toggle {
+    display: inline-flex;
+  }
+
+  .filter-offcanvas {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 300px;
+    background: var(--color-surface);
+    z-index: 70;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    overflow-y: auto;
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-modal);
+  }
+
+  .filter-offcanvas.is-open {
+    transform: translateX(0);
+  }
+
+  .filter-offcanvas-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+    border-bottom: var(--border-thin);
+  }
+
+  .filter-offcanvas-title {
+    font-size: var(--font-size-headline-sm);
+    font-weight: var(--font-weight-bold);
+  }
+
+  .filter-offcanvas-close {
+    font-size: 24px;
+    color: var(--color-on-surface-variant);
+  }
+}

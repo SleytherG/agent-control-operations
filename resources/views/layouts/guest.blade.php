@@ -9,17 +9,10 @@
     @vite('resources/js/app.js')
     @stack('head')
 </head>
-<body class="authenticated-layout">
-    <div class="app-shell">
-        <x-layout.sidebar :role="$role ?? 'operator'" />
-        <div class="app-main">
-            <x-layout.topbar :user="$user ?? null" :role="$role ?? 'operator'" />
-            <x-layout.mobile-nav :role="$role ?? 'operator'" />
-            <main class="app-content">
-                {{ $slot }}
-            </main>
-        </div>
-    </div>
+<body class="guest-layout">
+    <main class="guest-content">
+        {{ $slot }}
+    </main>
     @stack('scripts')
 </body>
 </html>
