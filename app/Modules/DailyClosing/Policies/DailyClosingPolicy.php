@@ -5,7 +5,7 @@ namespace App\Modules\DailyClosing\Policies;
 use App\Modules\DailyClosing\Models\DailyClosure;
 use App\Modules\IdentityAccess\Domain\Enums\Role;
 use App\Modules\IdentityAccess\Models\User;
-use App\Modules\BankingNetwork\Models\UserBankAgentAssignment;
+use App\Modules\Agents\Models\UserAgentAssignment;
 
 class DailyClosingPolicy
 {
@@ -24,20 +24,20 @@ class DailyClosingPolicy
             return true;
         }
 
-        return UserBankAgentAssignment::where('user_id', $actor->id)
-            ->where('bank_agent_id', $closure->bank_agent_id)
+        return UserAgentAssignment::where('user_id', $actor->id)
+            ->where('agent_id', $closure->agent_id)
             ->where('is_active', true)
             ->exists();
     }
 
-    public function generate(User $actor, int $bankAgentId): bool
+    public function generate(User $actor, int $agentId): bool
     {
         if ($actor->role === Role::ADMINISTRADOR_PROPIETARIO) {
             return true;
         }
 
-        return UserBankAgentAssignment::where('user_id', $actor->id)
-            ->where('bank_agent_id', $bankAgentId)
+        return UserAgentAssignment::where('user_id', $actor->id)
+            ->where('agent_id', $agentId)
             ->where('is_active', true)
             ->exists();
     }

@@ -11,7 +11,7 @@ description: "Task list template for feature implementation"
 
 **Tests**: Automated tests are REQUIRED for every acceptance scenario. Applicable positive and
 negative authorization, monetary boundary/rounding, full JWT lifecycle, operation audit, dashboard,
-migration, recovery, and database tests are also required. For a defect, add the failing regression
+PostgreSQL migration, recovery, and database tests are also required. For a defect, add the failing regression
 test before the correction task.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
@@ -64,12 +64,13 @@ test before the correction task.
 
 Examples of foundational tasks (adjust based on your project):
 
-- [ ] T004 Setup database schema, reversible migrations, and database constraints
+- [ ] T004 Setup PostgreSQL schema, versioned reversible migrations, FK constraints, and transactions
 - [ ] T005 [P] Implement server-side authentication, Policies/Gates, and operator ownership authorization
 - [ ] T006 [P] Configure JWT expiry, explicit renewal, rotating hashed refresh tokens, revocation, HTTPS, and throttling
-- [ ] T007 Create distinct domain models and bank-specific operation catalogs
+- [ ] T007 Create domain models and operation type catalogs
 - [ ] T008 Configure non-destructive operation correction and before/after sensitive-action audits
-- [ ] T009 Setup secret-safe logs, health route, backups, and shared-hosting-compatible services
+- [ ] T009 Setup secret-safe logs, health route, PostgreSQL backup/restore, secure environment
+  credentials, and economic PHP-hosting-compatible services without coupling to optional Supabase services
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -156,8 +157,8 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] TXXX Code cleanup and refactoring
 - [ ] TXXX Performance optimization across all stories
 - [ ] TXXX [P] Verify operation pagination, filter indexes, server aggregation, and N+1 prevention
-- [ ] TXXX [P] Validate health checks and documented database/file backup recovery
-- [ ] TXXX [P] Complete acceptance, authorization, monetary, authentication, migration, and regression test coverage in tests/
+- [ ] TXXX [P] Validate health checks and documented PostgreSQL/file backup recovery
+- [ ] TXXX [P] Complete acceptance, authorization, monetary, authentication, real PostgreSQL migration, and regression test coverage in tests/
 - [ ] TXXX Security hardening
 - [ ] TXXX Verify production assets are precompiled, debug is disabled, and only Laravel public is exposed
 - [ ] TXXX Run quickstart.md validation

@@ -9,6 +9,7 @@ use App\Modules\IdentityAccess\Models\AuthSession;
 use App\Modules\IdentityAccess\Models\AuthRefreshToken;
 use App\Modules\IdentityAccess\Models\SessionEvent;
 use App\Modules\IdentityAccess\Models\User;
+use App\Modules\IdentityAccess\Models\PasswordReset;
 use App\Modules\IdentityAccess\Services\JwtTokenService;
 use App\Modules\IdentityAccess\Services\RefreshTokenService;
 use Illuminate\Support\Facades\DB;
@@ -21,16 +22,32 @@ class StartAuthSession
         private RefreshTokenService $refreshService,
     ) {}
 
-    public function execute(User $user, ?string $ipHash = null, ?string $userAgent = null): array
+    public function execute(
+        User $user,
+        ?string $ipHash = null,
+        ?string $userAgent = null,
+        ?PasswordReset $passwordReset = null,
+        SessionEventType $eventType = SessionEventType::LOGIN,
+    ): array
     {
         $now = now();
         $ttl = config('session-security.jwt.access_ttl', 300);
         $absoluteTtl = config('session-security.session.absolute_ttl', 28800);
 
-        return DB::transaction(function () use ($user, $now, $ttl, $absoluteTtl, $ipHash, $userAgent) {
+        return DB::transaction(function () use (
+            $user,
+            $now,
+            $ttl,
+            $absoluteTtl,
+            $ipHash,
+            $userAgent,
+            $passwordReset,
+            $eventType,
+        ) {
             $session = AuthSession::create([
                 'public_id' => (string) Str::uuid(),
                 'user_id' => $user->id,
+                'password_reset_id' => $passwordReset?->id,
                 'status' => AuthSessionStatus::ACTIVE,
                 'started_at' => $now,
                 'access_expires_at' => $now->copy()->addSeconds($ttl),
@@ -58,7 +75,7 @@ class StartAuthSession
             SessionEvent::create([
                 'auth_session_id' => $session->id,
                 'user_id' => $user->id,
-                'type' => SessionEventType::LOGIN->value,
+                'type' => $eventType->value,
                 'occurred_at' => $now,
                 'created_at' => $now,
             ]);
@@ -70,6 +87,7 @@ class StartAuthSession
                 'refresh_token' => $refreshToken,
                 'expires_at' => $jwt['expires_at'],
                 'ttl' => $ttl,
+                'session' => $session,
             ];
         });
     }

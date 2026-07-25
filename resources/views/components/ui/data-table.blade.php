@@ -5,7 +5,8 @@
         <thead>
             <tr>
                 @foreach($headers as $index => $header)
-                    <th scope="col" class="{{ $header['align'] ?? '' === 'right' ? 'table-th-right' : '' }} {{ ($header['align'] ?? '') === 'center' ? 'table-th-center' : '' }}" @if($sortable) data-sort="{{ $index }}" @endif>
+                    @php($align = $header['align'] ?? 'center')
+                    <th scope="col" class="{{ $align === 'right' ? 'table-th-right' : '' }} {{ $align === 'center' ? 'table-th-center' : '' }}" @if($sortable) data-sort="{{ $index }}" @endif>
                         {{ $header['label'] ?? $header }}
                         @if($sortable)
                             <span class="sort-indicator" aria-hidden="true"></span>
@@ -18,7 +19,8 @@
             @forelse($rows as $row)
                 <tr class="{{ isset($row['annulled']) && $row['annulled'] ? 'row--annulled' : '' }}">
                     @foreach($row as $cell)
-                        <td class="{{ ($cell['align'] ?? '') === 'right' ? 'table-td-right' : '' }} {{ ($cell['align'] ?? '') === 'center' ? 'table-td-center' : '' }} {{ $cell['class'] ?? '' }}">
+                        @php($align = is_array($cell) ? ($cell['align'] ?? 'center') : 'center')
+                        <td class="{{ $align === 'right' ? 'table-td-right' : '' }} {{ $align === 'center' ? 'table-td-center' : '' }} {{ is_array($cell) ? ($cell['class'] ?? '') : '' }}">
                             {!! $cell['value'] ?? $cell !!}
                         </td>
                     @endforeach

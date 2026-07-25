@@ -3,6 +3,7 @@
 namespace App\Modules\IdentityAccess\Policies;
 
 use App\Modules\IdentityAccess\Domain\Enums\Role;
+use App\Modules\IdentityAccess\Domain\Enums\UserStatus;
 use App\Modules\IdentityAccess\Models\User;
 
 class UserPolicy
@@ -48,6 +49,21 @@ class UserPolicy
         }
 
         return $actor->organization_id === $target->organization_id
+            && $target->role === Role::OPERADOR;
+    }
+
+    public function resetPassword(User $actor, User $target): bool
+    {
+        return $actor->role === Role::ADMINISTRADOR_PROPIETARIO
+            && $actor->organization_id === $target->organization_id
+            && $target->role === Role::OPERADOR
+            && $target->status === UserStatus::ACTIVE;
+    }
+
+    public function viewPasswordResetAudit(User $actor, User $target): bool
+    {
+        return $actor->role === Role::ADMINISTRADOR_PROPIETARIO
+            && $actor->organization_id === $target->organization_id
             && $target->role === Role::OPERADOR;
     }
 }

@@ -84,3 +84,140 @@
   from { transform: translateY(10px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+
+/* Session Expiry Modal — Stitch design */
+.session-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(48, 48, 50, 0.4);
+  backdrop-filter: blur(2px);
+  padding: var(--space-gutter);
+}
+.session-modal-overlay[hidden] { display: none; }
+
+.session-modal-box {
+  background-color: var(--color-surface, #fcf8fa);
+  width: 100%;
+  max-width: 440px;
+  border-radius: var(--radius-xl, 0.75rem);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  border: 1px solid var(--color-outline-variant, #c6c6cd);
+  overflow: hidden;
+}
+
+.session-modal-body {
+  padding: var(--space-lg, 24px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.session-modal-icon-wrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: rgba(186, 26, 26, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-lg, 24px);
+  position: relative;
+}
+.session-modal-icon-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--color-error, #ba1a1a);
+  opacity: 0.5;
+  animation: session-pulse 2s infinite;
+}
+@keyframes session-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.15); opacity: 0; }
+}
+.session-modal-icon {
+  font-size: 32px;
+  color: var(--color-error, #ba1a1a);
+}
+
+.session-modal-title {
+  font-size: var(--font-size-headline-md, 24px);
+  font-weight: var(--font-weight-bold, 600);
+  color: var(--color-on-surface, #1b1b1d);
+  margin-bottom: var(--space-sm, 8px);
+}
+
+.session-modal-desc {
+  font-size: var(--font-size-body-md, 14px);
+  color: var(--color-on-surface-variant, #45464d);
+  margin-bottom: var(--space-lg, 24px);
+  padding: 0 var(--space-md, 16px);
+}
+
+.session-modal-timer-box {
+  background-color: var(--color-surface-container-low, #f6f3f5);
+  border: 1px solid var(--color-outline-variant, #c6c6cd);
+  border-radius: var(--radius-lg, 0.5rem);
+  padding: var(--space-md, 16px);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.session-modal-timer-label {
+  font-size: var(--font-size-label, 12px);
+  font-weight: var(--font-weight-bold, 600);
+  color: var(--color-secondary, #505f76);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.session-modal-timer-value {
+  font-size: 40px;
+  font-weight: var(--font-weight-bold, 600);
+  font-family: var(--font-family-mono);
+  color: var(--color-error, #ba1a1a);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.session-modal-footer {
+  padding: var(--space-md, 16px) var(--space-lg, 24px);
+  border-top: 1px solid var(--color-surface-variant, #e4e2e4);
+  background-color: var(--color-surface-container-lowest, #ffffff);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-sm, 8px);
+}
+
+.session-modal-btn {
+  padding: 10px 24px;
+  border-radius: var(--radius-lg, 0.5rem);
+  font-size: var(--font-size-label, 12px);
+  font-weight: var(--font-weight-bold, 600);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.session-modal-btn--secondary {
+  border: 1px solid var(--color-outline, #76777d);
+  color: var(--color-on-surface, #1b1b1d);
+  background: transparent;
+}
+.session-modal-btn--secondary:hover {
+  background-color: var(--color-surface-container-low, #f6f3f5);
+}
+.session-modal-btn--primary {
+  border: none;
+  background-color: var(--color-on-surface, #1b1b1d);
+  color: var(--color-surface, #fcf8fa);
+}
+.session-modal-btn--primary:hover {
+  background-color: var(--color-on-primary-fixed-variant, #3f465c);
+}

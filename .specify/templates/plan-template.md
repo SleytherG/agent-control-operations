@@ -22,7 +22,12 @@
 
 **Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
 
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+**Storage**: [PostgreSQL in production; Supabase is the initial managed provider; relational
+integrity, versioned migrations, transactions, backup/recovery, and provider portability]
+
+**Data Platform Boundary**: [Confirm Laravel owns authentication, JWT/refresh tokens, authorization,
+business rules, validation, audit, and data access; no coupling to Supabase Auth, Storage, Realtime,
+Edge Functions, or Data API]
 
 **Time & Money**: [storage convention, America/Lima presentation, period boundaries, decimal money types]
 
@@ -51,16 +56,23 @@
   implementation correction, new capability, architectural change, or non-functional technical
   work; new capability has its own independently demonstrable specification.
 - **Security and privacy**: `ADMINISTRADOR_PROPIETARIO` and `OPERADOR` access is enforced on the
-  server, including negative ownership tests; prohibited customer, banking, secret, and log data
-  are absent.
+  server, including negative ownership tests; optional minimal customer references are scope-
+  limited; prohibited banking, secret, and log data are absent.
 - **Session safety**: Five-minute configurable JWT access tokens, server-provided expiry, explicit
   renewal, hashed rotating refresh tokens, revocation, logout, and invalid-token cleanup are
   designed and testable.
 - **Operation integrity**: Required operation fields, non-destructive correction, and audit records
   containing actor, timestamp, action, entity, before/after values, and reason are designed.
-- **Deployment compatibility**: Conventional PHP hosting with MySQL/MariaDB remains viable;
-  production requires no prohibited infrastructure or Node.js request runtime, uses HTTPS, and
-  exposes only Laravel `public`.
+- **Deployment compatibility**: Economic conventional PHP hosting with secure TLS access to managed
+  PostgreSQL remains viable; Supabase is replaceable by another PostgreSQL provider; production
+  requires no prohibited infrastructure or Node.js request runtime, uses HTTPS, and exposes only
+  Laravel `public`.
+- **Database governance**: PostgreSQL is the canonical production database; FK constraints,
+  transactions, versioned Laravel migrations, `DECIMAL`/`NUMERIC` money, real PostgreSQL migration
+  tests, backups, and restoration are planned.
+- **Supabase boundary**: Supabase is used only as managed PostgreSQL; Laravel retains authentication,
+  JWT/refresh tokens, authorization, business rules, validation, audit, and data access, with all
+  credentials supplied through secure environment variables.
 - **Minimal interface**: Blade server rendering, semantic HTML, custom CSS, modular page-scoped
   JavaScript, minimal auditable dependencies, and computer/tablet/phone usability are preserved.
 - **Money and time**: Decimal money, distinct operational aggregates, no gross-as-profit display,

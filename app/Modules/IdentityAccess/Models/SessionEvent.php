@@ -14,7 +14,7 @@ class SessionEvent extends Model
     ];
 
     protected $fillable = [
-        'auth_session_id', 'user_id', 'type', 'occurred_at', 'context',
+        'auth_session_id', 'user_id', 'type', 'occurred_at', 'context', 'created_at',
     ];
 
     public function session()

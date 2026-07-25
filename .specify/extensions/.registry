@@ -12,6 +12,11 @@
           "speckit.bug.assess",
           "speckit.bug.fix",
           "speckit.bug.test"
+        ],
+        "codex": [
+          "speckit.bug.assess",
+          "speckit.bug.fix",
+          "speckit.bug.test"
         ]
       },
       "registered_skills": [],

@@ -15,7 +15,6 @@
                 ['label' => 'ID'],
                 ['label' => 'Tipo'],
                 ['label' => 'Agente'],
-                ['label' => 'Tienda'],
                 ['label' => 'Operador'],
                 ['label' => 'Monto', 'align' => 'right'],
                 ['label' => 'Estado', 'align' => 'center'],
@@ -25,8 +24,7 @@
                 return [
                     ['value' => '#' . $operation->id, 'class' => 'data-mono'],
                     ['value' => $operation->type_name ?? '—'],
-                    ['value' => $operation->agent_code ?? '—', 'class' => 'data-mono'],
-                    ['value' => $operation->store_name ?? '—'],
+                    ['value' => $operation->agent_code ?? $operation->agent_name ?? '—', 'class' => 'data-mono'],
                     ['value' => $operation->username_normalized ?? '—'],
                     ['value' => 'S/ ' . number_format((float) $operation->amount, 2), 'align' => 'right'],
                     ['value' => $operation->status === 'ACTIVE'

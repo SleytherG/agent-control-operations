@@ -3,8 +3,13 @@
 @section('title', 'Tipos de Operacion — Control de Operaciones')
 
 @section('content')
-    <h2 class="admin-title" style="margin-bottom:var(--space-xs);">Tipos de Operacion</h2>
-    <p class="admin-subtitle">Clasificacion de transacciones segun su naturaleza y flujo de caja.</p>
+    <div class="admin-page-header">
+        <div>
+            <h1 class="admin-title">Tipos de Operacion</h1>
+            <p class="admin-subtitle">Clasificacion de transacciones segun su naturaleza y efecto monetario.</p>
+        </div>
+        <a href="{{ route('admin.operation-types.create') }}" class="btn btn--primary">Nuevo Tipo</a>
+    </div>
 
     @if(session('status'))
         <div class="alert alert-success" role="alert" style="margin: var(--space-md) 0;">{{ session('status') }}</div>
@@ -18,58 +23,62 @@
         </div>
     @endif
 
-    <div style="margin-bottom: var(--space-md); display: flex; justify-content: space-between; align-items: flex-end; gap: var(--space-md); flex-wrap: wrap;">
-        <a href="{{ route('admin.operation-types.create') }}" class="btn btn--primary">Nuevo Tipo</a>
-
-        <form method="GET" action="{{ route('admin.operation-types.index') }}" style="display: flex; gap: var(--space-sm); align-items: flex-end; flex-wrap: wrap;">
-            <x-ui.select
-                label="Banco"
-                name="bank_id"
-                :options="$banks->pluck('name', 'id')->toArray()"
-                :selected="request('bank_id')"
-                placeholder="Todos los bancos"
-            />
-            <x-ui.select
-                label="Estado"
-                name="is_active"
-                :options="['1' => 'Activo', '0' => 'Inactivo']"
-                :selected="request('is_active')"
-                placeholder="Todos los estados"
-            />
+    <form method="GET" action="{{ route('admin.operation-types.index') }}" class="filter-bar filter-bar--standalone">
+        <x-ui.input
+            label="Nombre"
+            name="name"
+            value="{{ request('name') }}"
+            placeholder="Filtrar por nombre"
+        />
+        <x-ui.input
+            label="Descripción"
+            name="description"
+            value="{{ request('description') }}"
+            placeholder="Filtrar por descripción"
+        />
+        <x-ui.select
+            label="Efectivo"
+            name="cash_multiplier"
+            :options="['1' => 'Entrada', '-1' => 'Salida', '0' => 'Neutro']"
+            :selected="request('cash_multiplier')"
+            placeholder="Todos"
+        />
+        <x-ui.select
+            label="Digital"
+            name="digital_multiplier"
+            :options="['1' => 'Entrada', '-1' => 'Salida', '0' => 'Neutro']"
+            :selected="request('digital_multiplier')"
+            placeholder="Todos"
+        />
+        <x-ui.input
+            label="Orden"
+            name="sort_order"
+            value="{{ request('sort_order') }}"
+            placeholder="Filtrar por orden"
+            type="number"
+        />
+        <x-ui.select
+            label="Estado"
+            name="is_active"
+            :options="['1' => 'Activo', '0' => 'Inactivo']"
+            :selected="request('is_active')"
+            placeholder="Todos los estados"
+        />
+        <div class="filter-bar-actions">
+            <a href="{{ route('admin.operation-types.index') }}" class="btn btn--secondary">Limpiar</a>
             <x-ui.button variant="secondary" type="submit">Filtrar</x-ui.button>
-            <a href="{{ route('admin.operation-types.index', ['general' => 1]) }}" class="btn btn--secondary">Solo Generales</a>
-        </form>
-    </div>
+        </div>
+    </form>
 
     <div class="card">
-        <x-ui.data-table
-            :headers="[
-                ['label' => 'Nombre'],
-                ['label' => 'Descripcion'],
-                ['label' => 'Direccion'],
-                ['label' => 'Banco'],
-                ['label' => 'Estado', 'align' => 'center'],
-                ['label' => 'Acciones', 'align' => 'center'],
-            ]"
-            :rows="$types->map(function($type) {
-                \$actions = \"<a href='\" . route('admin.operation-types.edit', \$type) . \"' class='btn btn--primary'>Editar</a>\";
-                if (\$type->is_active) {
-                    \$actions .= \"<form action='\" . route('admin.operation-types.destroy', \$type) . \"' method='POST' style='display:inline;' onsubmit=\\\"return confirm('Desactivar este tipo?');\\\">\";
-                    \$actions .= \"<input type='hidden' name='_token' value='\" . csrf_token() . \"'>\";
-                    \$actions .= \"<input type='hidden' name='_method' value='DELETE'>\";
-                    \$actions .= \"<button type='submit' class='btn btn--danger'>Desactivar</button></form>\";
-                }
-                return [
-                    ['value' => \$type->name],
-                    ['value' => \$type->description ?? '—'],
-                    ['value' => \$type->cash_direction],
-                    ['value' => \$type->bank?->name ?? 'General'],
-                    ['value' => \$type->is_active ? \"<x-ui.badge variant='active'>Activo</x-ui.badge>\" : \"<x-ui.badge variant='inactive'>Inactivo</x-ui.badge>\", 'align' => 'center'],
-                    ['value' => \$actions, 'align' => 'center'],
-                ];
-            })->toArray()"
-            emptyMessage="No se encontraron tipos de operacion."
-        />
+        <div class="table-responsive"><table class="data-table">
+            <thead><tr><th>Nombre</th><th>Descripción</th><th>Efectivo</th><th>Digital</th><th>Orden</th><th class="table-th-center">Estado</th><th class="table-th-center">Acciones</th></tr></thead>
+            <tbody>@forelse($types as $type)<tr>
+                <td>{{ $type->name }}</td><td>{{ $type->description ?? '—' }}</td><td>{{ $type->cash_multiplier === 1 ? 'Entrada' : ($type->cash_multiplier === -1 ? 'Salida' : 'Neutro') }}</td><td>{{ $type->digital_multiplier === 1 ? 'Entrada' : ($type->digital_multiplier === -1 ? 'Salida' : 'Neutro') }}</td><td>{{ $type->sort_order }}</td>
+                <td class="table-td-center"><x-ui.badge :variant="$type->is_active ? 'active' : 'inactive'">{{ $type->is_active ? 'Activo' : 'Inactivo' }}</x-ui.badge></td>
+                <td class="table-td-center"><a href="{{ route('admin.operation-types.edit', $type) }}" class="btn btn--primary">Editar</a>@if($type->is_active)<form action="{{ route('admin.operation-types.destroy', $type) }}" method="POST" style="display:inline" data-confirm="¿Desactivar este tipo?">@csrf @method('DELETE')<button type="submit" class="btn btn--danger">Desactivar</button></form>@endif</td>
+            </tr>@empty<tr><td colspan="7" class="table-empty"><div class="table-empty-icon" aria-hidden="true">&#x1F4CB;</div>No se encontraron tipos de operación.</td></tr>@endforelse</tbody>
+        </table></div>
         <x-ui.pagination
             :currentPage="$types->currentPage()"
             :lastPage="$types->lastPage()"

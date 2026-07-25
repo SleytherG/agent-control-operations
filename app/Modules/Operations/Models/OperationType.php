@@ -14,11 +14,14 @@ class OperationType extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'deactivated_at' => 'datetime',
+        'cash_multiplier' => 'integer',
+        'digital_multiplier' => 'integer',
     ];
 
     protected $fillable = [
-        'organization_id', 'bank_id', 'name', 'description',
-        'cash_direction', 'is_active', 'deactivated_at',
+        'organization_id', 'name', 'description',
+        'cash_multiplier', 'digital_multiplier', 'sort_order',
+        'is_active', 'deactivated_at',
     ];
 
     protected static function newFactory(): OperationTypeFactory
@@ -29,10 +32,5 @@ class OperationType extends Model
     public function organization()
     {
         return $this->belongsTo(\App\Modules\Organization\Models\Organization::class);
-    }
-
-    public function bank()
-    {
-        return $this->belongsTo(\App\Modules\BankingNetwork\Models\Bank::class);
     }
 }

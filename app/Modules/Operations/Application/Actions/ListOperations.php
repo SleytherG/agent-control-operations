@@ -9,15 +9,27 @@ class ListOperations
 {
     public function execute(array $filters, bool $isAdmin, int $userId, int $organizationId): LengthAwarePaginator
     {
-        $query = Operation::with(['bankAgent.store', 'bankAgent.bank', 'operationType', 'user'])
+        $query = Operation::with(['agent', 'operationType', 'user'])
             ->where('organization_id', $organizationId);
 
         if (! $isAdmin) {
             $query->where('user_id', $userId);
         }
 
-        if (! empty($filters['bank_agent_id'])) {
-            $query->where('bank_agent_id', $filters['bank_agent_id']);
+        if (! empty($filters['code'])) {
+            $query->where('internal_code', 'LIKE', '%' . $filters['code'] . '%');
+        }
+
+        if (! empty($filters['customer_name'])) {
+            $query->where('customer_name', 'LIKE', '%' . $filters['customer_name'] . '%');
+        }
+
+        if (! empty($filters['amount'])) {
+            $query->where('amount', (float) $filters['amount']);
+        }
+
+        if (! empty($filters['agent_id'])) {
+            $query->where('agent_id', $filters['agent_id']);
         }
 
         if (! empty($filters['operation_type_id'])) {

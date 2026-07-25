@@ -2,9 +2,9 @@
 
 @section('title', $title ?? 'Dashboard — AgenteFlow')
 
-@section('head')
+@push('head')
     @vite('resources/js/reporting/dashboard-charts.js')
-@endsection
+@endpush
 
 @section('content')
     @if($metrics->operation_count === 0)

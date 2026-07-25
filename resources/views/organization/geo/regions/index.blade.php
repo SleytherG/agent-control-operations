@@ -34,30 +34,32 @@
     </div>
 
     <div class="card">
-        <x-ui.data-table
-            :headers="[
-                ['label' => 'Nombre'],
-                ['label' => 'Provincias', 'align' => 'center'],
-                ['label' => 'Estado', 'align' => 'center'],
-                ['label' => 'Acciones', 'align' => 'center'],
-            ]"
-            :rows="$regions->map(function($region) {
-                \$actions = \"<a href='\" . route('admin.regions.show', \$region) . \"' class='btn btn--secondary'>Ver Provincias</a>\";
-                if (\$region->is_active) {
-                    \$actions .= \"<form action='\" . route('admin.regions.deactivate', \$region) . \"' method='POST' style='display:inline;' onsubmit=\\\"return confirm('Desactivar esta region?');\\\">\";
-                    \$actions .= \"<input type='hidden' name='_token' value='\" . csrf_token() . \"'>\";
-                    \$actions .= \"<input type='hidden' name='_method' value='DELETE'>\";
-                    \$actions .= \"<button type='submit' class='btn btn--danger'>Desactivar</button></form>\";
-                }
-                return [
-                    ['value' => \$region->name],
-                    ['value' => \$region->provinces_count, 'align' => 'center'],
-                    ['value' => \$region->is_active ? \"<x-ui.badge variant='active'>Activo</x-ui.badge>\" : \"<x-ui.badge variant='inactive'>Inactivo</x-ui.badge>\", 'align' => 'center'],
-                    ['value' => \$actions, 'align' => 'center'],
-                ];
-            })->toArray()"
-            emptyMessage="No se encontraron regiones."
-        />
+        <div class="table-responsive"><table class="data-table">
+            <thead><tr><th>Nombre</th><th class="table-th-center">Provincias</th><th class="table-th-center">Estado</th><th class="table-th-center">Acciones</th></tr></thead>
+            <tbody>
+                @forelse($regions as $region)
+                    <tr>
+                        <td>{{ $region->name }}</td>
+                        <td class="table-td-center">{{ $region->provinces_count }}</td>
+                        <td class="table-td-center">
+                            <x-ui.badge :variant="$region->is_active ? 'active' : 'inactive'">{{ $region->is_active ? 'Activo' : 'Inactivo' }}</x-ui.badge>
+                        </td>
+                        <td class="table-td-center">
+                            <a href="{{ route('admin.regions.show', $region) }}" class="btn btn--secondary">Ver Provincias</a>
+                            @if($region->is_active)
+                                <form action="{{ route('admin.regions.deactivate', $region) }}" method="POST" style="display:inline;" data-confirm="¿Desactivar esta región?">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn--danger">Desactivar</button>
+                                </form>
+                            @endif
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="4" class="table-empty"><div class="table-empty-icon" aria-hidden="true">&#x1F30D;</div>No se encontraron regiones.</td></tr>
+                @endforelse
+            </tbody>
+        </table></div>
         <x-ui.pagination
             :currentPage="$regions->currentPage()"
             :lastPage="$regions->lastPage()"

@@ -13,15 +13,79 @@
   border-radius: var(--radius-xl);
 }
 
+.filter-bar--standalone {
+  margin-bottom: var(--space-lg);
+}
+
+.page-toolbar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: end;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.page-toolbar__primary {
+  justify-self: start;
+  align-self: end;
+  flex-shrink: 0;
+}
+
+.page-toolbar .filter-bar {
+  width: 100%;
+  min-width: 0;
+}
+
 .filter-bar .form-group {
-  flex: 1;
+  flex: 1 1 180px;
   min-width: 180px;
 }
 
-.filter-bar-actions {
+.filter-bar-actions,
+.filter-form-actions {
   display: flex;
   gap: var(--space-sm);
   align-items: center;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.filter-panel {
+  padding: var(--space-md);
+  background-color: var(--color-surface-container-lowest);
+  border: var(--border-thin);
+  border-radius: var(--radius-xl);
+}
+
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  align-items: flex-end;
+}
+
+.filter-form .form-group {
+  flex: 1 1 180px;
+  min-width: 180px;
+}
+
+.filter-form--grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-md);
+  align-items: end;
+}
+
+.filter-form--grid .filter-form-actions {
+  grid-column: 1 / -1;
+  margin-left: 0;
+  justify-content: flex-end;
+}
+
+.filter-bar-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
 }
 
 .filter-bar-toggle {
@@ -34,8 +98,37 @@
 }
 
 @media (max-width: 768px) {
+  .page-toolbar {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .page-toolbar__primary {
+    width: 100%;
+    text-align: center;
+  }
+
   .filter-bar {
     display: none;
+  }
+
+  .filter-form,
+  .filter-form--grid {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-bar-actions,
+  .filter-form-actions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .filter-bar-actions > *,
+  .filter-form-actions > * {
+    flex: 1 1 100%;
+    text-align: center;
   }
 
   .filter-bar-toggle {
@@ -79,5 +172,12 @@
   .filter-offcanvas-close {
     font-size: 24px;
     color: var(--color-on-surface-variant);
+  }
+
+  .filter-offcanvas-body .filter-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    align-items: stretch;
   }
 }

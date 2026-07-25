@@ -55,36 +55,34 @@
     </div>
 
     <div class="card">
-        <x-ui.data-table
-            :headers="[
-                ['label' => 'Agente'],
-                ['label' => 'Tienda'],
-                ['label' => 'Banco'],
-                ['label' => 'Asignado'],
-                ['label' => 'Desasignado'],
-                ['label' => 'Estado', 'align' => 'center'],
-                ['label' => 'Acciones', 'align' => 'center'],
-            ]"
-            :rows="$assignments->map(function($assignment) {
-                \$actions = '';
-                if (\$assignment->is_active) {
-                    \$actions .= \"<form action='\" . route('admin.assignments.destroy', \$assignment) . \"' method='POST' style='display:inline;' onsubmit=\\\"return confirm('Desasignar este operador?');\\\">\";
-                    \$actions .= \"<input type='hidden' name='_token' value='\" . csrf_token() . \"'>\";
-                    \$actions .= \"<input type='hidden' name='_method' value='DELETE'>\";
-                    \$actions .= \"<button type='submit' class='btn btn--danger'>Desasignar</button></form>\";
-                }
-                return [
-                    ['value' => \$assignment->bankAgent->code],
-                    ['value' => \$assignment->bankAgent->store?->name ?? '—'],
-                    ['value' => \$assignment->bankAgent->bank?->name ?? '—'],
-                    ['value' => \$assignment->assigned_at->format('d/m/Y H:i')],
-                    ['value' => \$assignment->unassigned_at?->format('d/m/Y H:i') ?? '—'],
-                    ['value' => \$assignment->is_active ? \"<x-ui.badge variant='active'>Activo</x-ui.badge>\" : \"<x-ui.badge variant='inactive'>Inactivo</x-ui.badge>\", 'align' => 'center'],
-                    ['value' => \$actions, 'align' => 'center'],
-                ];
-            })->toArray()"
-            emptyMessage="No se encontraron asignaciones."
-        />
+        <div class="table-responsive"><table class="data-table">
+            <thead><tr><th>Agente</th><th>Tienda</th><th>Banco</th><th>Asignado</th><th>Desasignado</th><th class="table-th-center">Estado</th><th class="table-th-center">Acciones</th></tr></thead>
+            <tbody>
+                @forelse($assignments as $assignment)
+                    <tr>
+                        <td>{{ $assignment->bankAgent->code }}</td>
+                        <td>{{ $assignment->bankAgent->store?->name ?? '—' }}</td>
+                        <td>{{ $assignment->bankAgent->bank?->name ?? '—' }}</td>
+                        <td>{{ $assignment->assigned_at->format('d/m/Y H:i') }}</td>
+                        <td>{{ $assignment->unassigned_at?->format('d/m/Y H:i') ?? '—' }}</td>
+                        <td class="table-td-center">
+                            <x-ui.badge :variant="$assignment->is_active ? 'active' : 'inactive'">{{ $assignment->is_active ? 'Activo' : 'Inactivo' }}</x-ui.badge>
+                        </td>
+                        <td class="table-td-center">
+                            @if($assignment->is_active)
+                                <form action="{{ route('admin.assignments.destroy', $assignment) }}" method="POST" style="display:inline;" data-confirm="¿Desasignar este operador?">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn--danger">Desasignar</button>
+                                </form>
+                            @endif
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="7" class="table-empty"><div class="table-empty-icon" aria-hidden="true">&#x1F4CB;</div>No se encontraron asignaciones.</td></tr>
+                @endforelse
+            </tbody>
+        </table></div>
         <x-ui.pagination
             :currentPage="$assignments->currentPage()"
             :lastPage="$assignments->lastPage()"

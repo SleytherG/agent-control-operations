@@ -3,10 +3,15 @@
 @section('title', $bank->exists ? 'Editar Banco' : 'Nuevo Banco — Control de Operaciones')
 
 @section('content')
-    <h2 class="admin-title" style="margin-bottom:var(--space-xs);">{{ $bank->exists ? 'Editar Banco' : 'Nuevo Banco' }}</h2>
+    <div class="form-page form-page--compact">
+        <div class="form-page-header">
+            <h2 class="admin-title">{{ $bank->exists ? 'Editar Banco' : 'Nuevo Banco' }}</h2>
+            <p class="form-page-subtitle">Cree o actualice bancos bajo el mismo lenguaje visual del resto de formularios administrativos.</p>
+        </div>
 
-    <div class="card" style="max-width: 600px;">
-        <form method="POST" action="{{ $bank->exists ? route('admin.banks.update', $bank) : route('admin.banks.store') }}">
+        <div class="card form-shell">
+            <div class="card-body">
+                <form method="POST" action="{{ $bank->exists ? route('admin.banks.update', $bank) : route('admin.banks.store') }}" class="form-layout form-layout--single">
             @csrf
             @if($bank->exists)
                 @method('PATCH')
@@ -30,12 +35,14 @@
                 placeholder="Nombre"
             />
 
-            <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-md);">
+            <div class="form-actions">
+                <a href="{{ route('admin.banks.index') }}" class="btn btn--secondary">Cancelar</a>
                 <x-ui.button variant="primary" type="submit">
                     {{ $bank->exists ? 'Actualizar' : 'Crear' }}
                 </x-ui.button>
-                <a href="{{ route('admin.banks.index') }}" class="btn btn--secondary">Cancelar</a>
             </div>
         </form>
+            </div>
+        </div>
     </div>
 @endsection

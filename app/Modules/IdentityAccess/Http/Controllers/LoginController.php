@@ -3,8 +3,7 @@
 namespace App\Modules\IdentityAccess\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\IdentityAccess\Application\Actions\AuthenticateUser;
-use App\Modules\IdentityAccess\Application\Actions\StartAuthSession;
+use App\Modules\IdentityAccess\Application\Actions\AuthenticateAndStartSession;
 use App\Modules\IdentityAccess\Domain\Enums\UserStatus;
 use App\Modules\IdentityAccess\Http\Requests\LoginRequest;
 use App\Modules\IdentityAccess\Models\User;
@@ -18,8 +17,7 @@ use Illuminate\View\View;
 class LoginController extends Controller
 {
     public function __construct(
-        private AuthenticateUser $authenticateUser,
-        private StartAuthSession $startAuthSession,
+        private AuthenticateAndStartSession $authenticateAndStartSession,
         private AuthCookieService $cookieService,
     ) {}
 
@@ -57,9 +55,15 @@ class LoginController extends Controller
                 ->withInput($request->only('identifier'));
         }
 
-        $user = $this->authenticateUser->execute($normalizedIdentifier, $password);
+        $result = $this->authenticateAndStartSession->execute(
+            $normalizedIdentifier,
+            $password,
+            $request->ip(),
+            $request->userAgent(),
+            $request->header('X-Correlation-ID'),
+        );
 
-        if (! $user) {
+        if (! $result) {
             RateLimiter::hit($key, config('session-security.throttle.decay_seconds', 60));
 
             return redirect()->route('login')
@@ -69,13 +73,15 @@ class LoginController extends Controller
 
         RateLimiter::clear($key);
 
-        $result = $this->startAuthSession->execute(
-            $user,
-            $request->ip(),
-            $request->userAgent(),
-        );
+        $user = $result['user'];
 
-        $response = redirect()->route('home');
+        $redirectRoute = $result['restricted'] || is_null($user->password_changed_at)
+            ? 'password.change'
+            : ($user->role->value === 'ADMINISTRADOR_PROPIETARIO'
+            ? 'admin.dashboard'
+            : 'dashboard.operator');
+
+        $response = redirect()->route($redirectRoute);
 
         return $this->cookieService->withAuthCookies(
             $response,

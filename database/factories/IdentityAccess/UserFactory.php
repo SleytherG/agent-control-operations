@@ -22,6 +22,7 @@ class UserFactory extends Factory
             'username_normalized' => Str::lower(fake()->unique()->userName()),
             'email_normalized' => Str::lower(fake()->unique()->safeEmail()),
             'password' => Hash::make('password'),
+            'password_changed_at' => now(),
             'role' => Role::OPERADOR,
             'status' => UserStatus::ACTIVE,
             'created_at' => now(),
@@ -33,6 +34,7 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => Role::ADMINISTRADOR_PROPIETARIO,
+            'password_changed_at' => now(),
         ]);
     }
 

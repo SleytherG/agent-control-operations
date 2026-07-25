@@ -39,7 +39,7 @@ class DashboardAuthorizationTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_admin_can_access_operator_dashboard(): void
+    public function test_admin_cannot_access_operator_dashboard(): void
     {
         $org = Organization::factory()->create();
         $admin = User::factory()->create([
@@ -52,7 +52,7 @@ class DashboardAuthorizationTest extends TestCase
         $this->actingAsJwt($admin);
 
         $response = $this->get(route('dashboard.operator'));
-        $response->assertStatus(200);
+        $response->assertForbidden();
     }
 
     public function test_admin_can_access_admin_dashboard(): void
@@ -68,7 +68,8 @@ class DashboardAuthorizationTest extends TestCase
         $this->actingAsJwt($admin);
 
         $response = $this->get(route('admin.dashboard'));
-        $response->assertStatus(200);
+        $response->assertStatus(200)
+            ->assertDontSee(route('dashboard.operator'), false);
     }
 
     public function test_operator_cannot_access_admin_dashboard(): void

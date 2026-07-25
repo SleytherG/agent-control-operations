@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('operations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('organization_id')->constrained('organizations')->restrictOnDelete();
-            $table->foreignId('store_id')->constrained('stores')->restrictOnDelete();
-            $table->foreignId('bank_agent_id')->constrained('bank_agents')->restrictOnDelete();
+            $table->foreignId('store_id')->nullable()->constrained('stores')->restrictOnDelete();
+            $table->foreignId('bank_agent_id')->nullable()->constrained('bank_agents')->restrictOnDelete();
             $table->foreignId('operation_type_id')->constrained('operation_types')->restrictOnDelete();
             $table->foreignId('user_id')->constrained('users')->restrictOnDelete();
             $table->decimal('amount', 18, 2);

@@ -1,7 +1,8 @@
-@props(['label' => null, 'name' => '', 'options' => [], 'value' => null, 'placeholder' => null, 'error' => null, 'disabled' => false, 'required' => false, 'id' => null])
+@props(['label' => null, 'name' => '', 'options' => [], 'value' => null, 'selected' => null, 'placeholder' => null, 'error' => null, 'disabled' => false, 'required' => false, 'id' => null])
 
 @php
     $selectId = $id ?? 'select-' . $name;
+    $selectedValue = $value ?? $selected;
     $errorId = $error ? $selectId . '-error' : null;
 @endphp
 
@@ -19,10 +20,10 @@
         {{ $attributes->except('class') }}
     >
         @if($placeholder)
-            <option value="" disabled {{ $value === null ? 'selected' : '' }}>{{ $placeholder }}</option>
+            <option value="" {{ $selectedValue === null || $selectedValue === '' ? 'selected' : '' }}>{{ $placeholder }}</option>
         @endif
         @foreach($options as $optValue => $optLabel)
-            <option value="{{ $optValue }}" {{ (string)$optValue === (string)$value ? 'selected' : '' }}>
+            <option value="{{ $optValue }}" {{ (string)$optValue === (string)$selectedValue ? 'selected' : '' }}>
                 {{ $optLabel }}
             </option>
         @endforeach

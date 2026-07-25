@@ -24,7 +24,7 @@ class LoginWithEmailTest extends TestCase
         $this->post('/login', [
             'identifier' => '  ana@EXAMPLE.com  ',
             'password' => 'secret123',
-        ])->assertRedirect('/home');
+        ])->assertRedirect(route('dashboard.operator'));
     }
 
     public function test_login_with_space_padded_email(): void
@@ -39,6 +39,6 @@ class LoginWithEmailTest extends TestCase
         $this->post('/login', [
             'identifier' => ' luis@example.com ',
             'password' => 'secret123',
-        ])->assertRedirect('/home');
+        ])->assertRedirect(route('dashboard.operator'));
     }
 }

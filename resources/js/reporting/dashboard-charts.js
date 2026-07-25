@@ -1,5 +1,7 @@
 import Chart from 'chart.js/auto';
 
+window.Chart = Chart;
+
 const CHART_COLORS = {
     primary: '#000000',
     tertiaryFixed: '#4edea3',

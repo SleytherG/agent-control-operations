@@ -118,7 +118,7 @@ Given that feature description, do this:
     1. Parse user description from arguments
        If empty: ERROR "No feature description provided"
     2. Extract key concepts from description
-       Identify: actors, actions, data, constraints, business rules, and explicit exclusions
+       Identify: actors, actions, data, constraints
     3. For unclear aspects:
        - Make informed guesses based on context and industry standards
        - Only mark with [NEEDS CLARIFICATION: specific question] if:
@@ -129,10 +129,9 @@ Given that feature description, do this:
        - Prioritize clarifications by impact: scope > security/privacy > user experience > technical details
     4. Fill User Scenarios & Testing section
        If no clear user flow: ERROR "Cannot determine user scenarios"
-     5. Generate Problem & Actors, Functional Requirements, Business Rules,
-        Data/Authorization/Audit Constraints, and Operational Quality Constraints
-        Each requirement must be testable
-        Use reasonable defaults for unspecified details (document assumptions in Assumptions section)
+    5. Generate Functional Requirements
+       Each requirement must be testable
+       Use reasonable defaults for unspecified details (document assumptions in Assumptions section)
     6. Define Success Criteria
        Create measurable, technology-agnostic outcomes
        Include both quantitative metrics (time, performance, volume) and qualitative measures (user satisfaction, task completion)
@@ -156,8 +155,7 @@ Given that feature description, do this:
       ## Content Quality
 
       - [ ] No implementation details (languages, frameworks, APIs)
-       - [ ] Problem, rationale, actors, and change classification are explicit
-       - [ ] Focused on user value and business needs
+      - [ ] Focused on user value and business needs
       - [ ] Written for non-technical stakeholders
       - [ ] All mandatory sections completed
 
@@ -167,18 +165,10 @@ Given that feature description, do this:
       - [ ] Requirements are testable and unambiguous
       - [ ] Success criteria are measurable
       - [ ] Success criteria are technology-agnostic (no implementation details)
-       - [ ] All acceptance scenarios are defined
-       - [ ] Edge cases are identified
-       - [ ] Scope is clearly bounded
-       - [ ] Explicit out-of-scope items are documented
-       - [ ] Business rules use canonical domain terminology
-        - [ ] Server-side ADMINISTRADOR_PROPIETARIO/OPERADOR authorization and negative ownership cases are specified
-        - [ ] Data minimization, operation fields, and before/after auditability are specified
-        - [ ] JWT expiry, explicit renewal, refresh rotation/revocation, and invalid-token behavior are specified when applicable
-        - [ ] Decimal monetary meanings, America/Lima display, and period boundaries are specified
-        - [ ] Pagination, indexes, server aggregation, observability, health, and recovery needs are specified
-        - [ ] Conventional hosting, server-rendered responsive UI, and non-official system boundaries are preserved
-       - [ ] Dependencies and assumptions identified
+      - [ ] All acceptance scenarios are defined
+      - [ ] Edge cases are identified
+      - [ ] Scope is clearly bounded
+      - [ ] Dependencies and assumptions identified
 
       ## Feature Readiness
 

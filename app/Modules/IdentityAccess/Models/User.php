@@ -44,6 +44,21 @@ class User extends Authenticatable
         return $this->hasMany(AuthSession::class);
     }
 
+    public function passwordResets()
+    {
+        return $this->hasMany(PasswordReset::class);
+    }
+
+    public function initiatedPasswordResets()
+    {
+        return $this->hasMany(PasswordReset::class, 'initiated_by_user_id');
+    }
+
+    public function latestPasswordReset()
+    {
+        return $this->hasOne(PasswordReset::class)->latestOfMany('issued_at');
+    }
+
     public function isActive(): bool
     {
         return $this->status === UserStatus::ACTIVE;

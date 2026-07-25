@@ -40,6 +40,12 @@
   padding: var(--space-md);
 }
 
+.admin-filters-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
 .admin-filters-header {
   display: flex;
   align-items: center;
@@ -60,6 +66,14 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: var(--space-md);
+}
+
+.admin-filters-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
 }
 
 .admin-kpi-grid {
@@ -190,4 +204,5 @@
   .admin-kpi-grid { grid-template-columns: 1fr; }
   .admin-secondary-metrics { grid-template-columns: repeat(2, 1fr); }
   .admin-filters-grid { grid-template-columns: 1fr; }
+  .admin-filters-actions > * { flex: 1 1 100%; text-align: center; }
 }

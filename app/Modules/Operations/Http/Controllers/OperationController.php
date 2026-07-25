@@ -10,8 +10,7 @@ use App\Modules\Operations\Http\Requests\RegisterOperationRequest;
 use App\Modules\Operations\Http\Requests\AnnulOperationRequest;
 use App\Modules\Operations\Models\Operation;
 use App\Modules\Operations\Models\OperationType;
-use App\Modules\BankingNetwork\Models\BankAgent;
-use App\Modules\BankingNetwork\Models\UserBankAgentAssignment;
+use App\Modules\Agents\Models\UserAgentAssignment;
 use App\Modules\Audit\Models\AuditLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,7 +29,7 @@ class OperationController extends Controller
         $isAdmin = $user->role->value === 'ADMINISTRADOR_PROPIETARIO';
 
         $operations = $listOperations->execute(
-            $request->only(['bank_agent_id', 'operation_type_id', 'status', 'user_id', 'date_from', 'date_to']),
+            $request->only(['code', 'customer_name', 'amount', 'agent_id', 'operation_type_id', 'status', 'user_id', 'date_from', 'date_to']),
             $isAdmin,
             $user->id,
             $user->organization_id,
@@ -40,9 +39,9 @@ class OperationController extends Controller
         $types = collect();
 
         if ($isAdmin) {
-            $agents = BankAgent::where('organization_id', $user->organization_id)->orderBy('code')->get();
+            $agents = \App\Modules\Agents\Models\Agent::where('organization_id', $user->organization_id)->orderBy('code')->get();
         } else {
-            $agents = BankAgent::whereHas('activeAssignments', function ($q) use ($user) {
+            $agents = \App\Modules\Agents\Models\Agent::whereHas('activeAssignments', function ($q) use ($user) {
                 $q->where('user_id', $user->id);
             })->orderBy('code')->get();
         }
@@ -60,8 +59,17 @@ class OperationController extends Controller
             $summaryBase->where('operations.user_id', $user->id);
         }
 
-        if ($request->filled('bank_agent_id')) {
-            $summaryBase->where('operations.bank_agent_id', $request->input('bank_agent_id'));
+        if ($request->filled('code')) {
+            $summaryBase->where('operations.internal_code', 'LIKE', '%' . $request->input('code') . '%');
+        }
+        if ($request->filled('customer_name')) {
+            $summaryBase->where('operations.customer_name', 'LIKE', '%' . $request->input('customer_name') . '%');
+        }
+        if ($request->filled('amount')) {
+            $summaryBase->where('operations.amount', (float) $request->input('amount'));
+        }
+        if ($request->filled('agent_id')) {
+            $summaryBase->where('operations.agent_id', $request->input('agent_id'));
         }
         if ($request->filled('operation_type_id')) {
             $summaryBase->where('operations.operation_type_id', $request->input('operation_type_id'));
@@ -78,10 +86,11 @@ class OperationController extends Controller
         )->first();
 
         $summaryCash = (clone $summaryBase)
-            ->join('operation_types as ot', 'operations.operation_type_id', '=', 'ot.id')
             ->selectRaw(
-                "COALESCE(SUM(CASE WHEN ot.cash_direction = 'ENTRADA' THEN operations.amount ELSE 0 END), 0) as total_cash_in,
-                 COALESCE(SUM(CASE WHEN ot.cash_direction = 'SALIDA' THEN operations.amount ELSE 0 END), 0) as total_cash_out"
+                "COALESCE(SUM(CASE WHEN operations.cash_delta > 0 THEN operations.cash_delta ELSE 0 END), 0) as total_cash_in,
+                 COALESCE(SUM(CASE WHEN operations.cash_delta < 0 THEN ABS(operations.cash_delta) ELSE 0 END), 0) as total_cash_out,
+                 COALESCE(SUM(CASE WHEN operations.digital_delta > 0 THEN operations.digital_delta ELSE 0 END), 0) as total_digital_in,
+                 COALESCE(SUM(CASE WHEN operations.digital_delta < 0 THEN ABS(operations.digital_delta) ELSE 0 END), 0) as total_digital_out"
             )->first();
 
         $summary = [
@@ -101,29 +110,21 @@ class OperationController extends Controller
 
         $user = auth()->user();
 
-        $assignments = UserBankAgentAssignment::with(['bankAgent.store', 'bankAgent.bank'])
+        $assignments = UserAgentAssignment::with('agent')
             ->where('user_id', $user->id)
             ->where('is_active', true)
             ->get();
 
-        $agentIds = $assignments->pluck('bank_agent_id');
-
-        $bankIds = $assignments->map(function ($assignment) {
-            return $assignment->bankAgent->bank_id;
-        })->unique()->toArray();
-
         $types = OperationType::where('organization_id', $user->organization_id)
             ->where('is_active', true)
-            ->where(function ($query) use ($bankIds) {
-                $query->whereNull('bank_id')
-                    ->orWhereIn('bank_id', $bankIds);
-            })
-            ->orderBy('name')
+            ->orderBy('sort_order')->orderBy('name')
             ->get();
 
         $idempotencyKey = hash('sha256', Str::uuid()->toString() . microtime());
 
-        return view('operations.create', compact('assignments', 'types', 'idempotencyKey'));
+        $agent = $assignments->count() === 1 ? $assignments->first()->agent : null;
+
+        return view('operations.create', compact('assignments', 'types', 'idempotencyKey', 'agent'));
     }
 
     public function store(RegisterOperationRequest $request, RegisterOperation $registerOperation): RedirectResponse
@@ -175,7 +176,7 @@ class OperationController extends Controller
     {
         Gate::authorize('view', $operation);
 
-        $operation->load(['bankAgent.store', 'bankAgent.bank', 'operationType', 'user', 'annulledBy']);
+        $operation->load(['agent', 'operationType', 'user', 'annulledBy']);
 
         return view('operations.show', compact('operation'));
     }

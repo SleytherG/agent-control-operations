@@ -23,16 +23,27 @@ class DailyClosure extends Model
     ];
 
     protected $fillable = [
-        'organization_id', 'store_id', 'bank_agent_id', 'business_date',
-        'status', 'operation_count', 'gross_amount', 'cash_in', 'cash_out',
-        'net_movement', 'has_pending_confirm',
+        'organization_id', 'store_id', 'bank_agent_id', 'agent_id',
+        'business_date', 'status', 'operation_count', 'gross_amount',
+        'total_cash_in', 'total_cash_out', 'total_digital_in', 'total_digital_out',
+        'opening_cash', 'opening_digital',
+        'expected_closing_cash', 'expected_closing_digital',
+        'actual_closing_cash', 'actual_closing_digital',
+        'cash_difference', 'digital_difference', 'has_inconsistencies',
+        'cash_in', 'cash_out', 'net_movement', 'has_pending_confirm',
         'confirmed_by', 'confirmed_at',
         'reopened_by', 'reopened_at', 'reopen_reason',
+        'opened_by', 'submitted_by', 'opened_at', 'submitted_at', 'notes',
     ];
 
     public function organization()
     {
         return $this->belongsTo(\App\Modules\Organization\Models\Organization::class);
+    }
+
+    public function agent()
+    {
+        return $this->belongsTo(\App\Modules\Agents\Models\Agent::class);
     }
 
     public function store()

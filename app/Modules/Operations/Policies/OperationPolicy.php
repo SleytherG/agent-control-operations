@@ -25,7 +25,7 @@ class OperationPolicy
 
     public function register(User $actor): bool
     {
-        return $actor->role === Role::OPERADOR;
+        return in_array($actor->role, [Role::ADMINISTRADOR_PROPIETARIO, Role::OPERADOR]);
     }
 
     public function annul(User $actor, Operation $operation): bool

@@ -31,6 +31,13 @@ return [
         'decay_seconds' => 60,
     ],
 
+    'password_reset' => [
+        'ttl_seconds' => (int) env('PASSWORD_RESET_TTL_SECONDS', 3600),
+        'temporary_length' => (int) env('PASSWORD_RESET_TEMPORARY_LENGTH', 20),
+        'step_up_max_attempts' => (int) env('PASSWORD_RESET_STEP_UP_MAX_ATTEMPTS', 5),
+        'step_up_decay_seconds' => (int) env('PASSWORD_RESET_STEP_UP_DECAY_SECONDS', 60),
+    ],
+
     'history' => [
         'default_page_size' => 25,
         'max_page_size' => 100,

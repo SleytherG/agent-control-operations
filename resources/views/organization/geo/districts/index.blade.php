@@ -29,28 +29,30 @@
     </div>
 
     <div class="card">
-        <x-ui.data-table
-            :headers="[
-                ['label' => 'Nombre'],
-                ['label' => 'Estado', 'align' => 'center'],
-                ['label' => 'Acciones', 'align' => 'center'],
-            ]"
-            :rows="$districts->map(function($district) {
-                \$actions = '';
-                if (\$district->is_active) {
-                    \$actions .= \"<form action='\" . route('admin.districts.deactivate', \$district) . \"' method='POST' style='display:inline;' onsubmit=\\\"return confirm('Desactivar este distrito?');\\\">\";
-                    \$actions .= \"<input type='hidden' name='_token' value='\" . csrf_token() . \"'>\";
-                    \$actions .= \"<input type='hidden' name='_method' value='DELETE'>\";
-                    \$actions .= \"<button type='submit' class='btn btn--danger'>Desactivar</button></form>\";
-                }
-                return [
-                    ['value' => \$district->name],
-                    ['value' => \$district->is_active ? \"<x-ui.badge variant='active'>Activo</x-ui.badge>\" : \"<x-ui.badge variant='inactive'>Inactivo</x-ui.badge>\", 'align' => 'center'],
-                    ['value' => \$actions, 'align' => 'center'],
-                ];
-            })->toArray()"
-            emptyMessage="No se encontraron distritos."
-        />
+        <div class="table-responsive"><table class="data-table">
+            <thead><tr><th>Nombre</th><th class="table-th-center">Estado</th><th class="table-th-center">Acciones</th></tr></thead>
+            <tbody>
+                @forelse($districts as $district)
+                    <tr>
+                        <td>{{ $district->name }}</td>
+                        <td class="table-td-center">
+                            <x-ui.badge :variant="$district->is_active ? 'active' : 'inactive'">{{ $district->is_active ? 'Activo' : 'Inactivo' }}</x-ui.badge>
+                        </td>
+                        <td class="table-td-center">
+                            @if($district->is_active)
+                                <form action="{{ route('admin.districts.deactivate', $district) }}" method="POST" style="display:inline;" data-confirm="¿Desactivar este distrito?">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn--danger">Desactivar</button>
+                                </form>
+                            @endif
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="3" class="table-empty"><div class="table-empty-icon" aria-hidden="true">&#x1F30D;</div>No se encontraron distritos.</td></tr>
+                @endforelse
+            </tbody>
+        </table></div>
         <x-ui.pagination
             :currentPage="$districts->currentPage()"
             :lastPage="$districts->lastPage()"

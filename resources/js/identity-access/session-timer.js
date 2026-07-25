@@ -1,6 +1,7 @@
 let expiresAt = null;
 let timerInterval = null;
 let refreshInFlight = false;
+let countdownPaused = false;
 
 function getExpiresAt() {
     const meta = document.querySelector('meta[name="session-expires-at"]');
@@ -9,12 +10,20 @@ function getExpiresAt() {
 
 function updateTimer() {
     if (!expiresAt) return;
+    if (countdownPaused) return;
     const remaining = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
     const el = document.getElementById('session-timer');
     if (el) {
         const m = Math.floor(remaining / 60);
         const s = remaining % 60;
-        el.textContent = `${m}:${String(s).padStart(2, '0')}`;
+        el.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }
+
+    const modalDisplay = document.getElementById('modal-timer-display');
+    if (modalDisplay) {
+        const m = Math.floor(remaining / 60);
+        const s = remaining % 60;
+        modalDisplay.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
     }
 
     const modal = document.getElementById('session-expiry-modal');
@@ -41,6 +50,7 @@ function hideModal() {
 async function continueSession() {
     if (refreshInFlight) return;
     refreshInFlight = true;
+    countdownPaused = true;
     const continueBtn = document.getElementById('continue-session');
     if (continueBtn) continueBtn.disabled = true;
 
@@ -48,19 +58,27 @@ async function continueSession() {
     try {
         const res = await fetch('/auth/refresh', {
             method: 'POST',
-            headers: { 'X-CSRF-TOKEN': token, 'Accept': 'application/json' },
+            credentials: 'same-origin',
+            headers: {
+                'X-CSRF-TOKEN': token,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
         });
 
         if (res.ok) {
             const data = await res.json();
             expiresAt = new Date(data.expiresAt).getTime();
-            hideModal();
+            countdownPaused = false;
             updateTimer();
+            hideModal();
         } else {
+            countdownPaused = false;
             cleanupAndLogin();
         }
-    } catch {
-        // keep modal open until timer zero
+    } catch (e) {
+        countdownPaused = false;
     } finally {
         refreshInFlight = false;
         if (continueBtn) continueBtn.disabled = false;

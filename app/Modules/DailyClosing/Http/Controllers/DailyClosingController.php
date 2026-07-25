@@ -3,9 +3,10 @@
 namespace App\Modules\DailyClosing\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Agents\Models\Agent;
+use App\Modules\Agents\Models\UserAgentAssignment;
 use App\Modules\Audit\Models\AuditLog;
-use App\Modules\BankingNetwork\Models\BankAgent;
-use App\Modules\BankingNetwork\Models\UserBankAgentAssignment;
+use App\Modules\DailyClosing\Application\Actions\CalculateClosing;
 use App\Modules\DailyClosing\Http\Requests\GenerateClosingRequest;
 use App\Modules\DailyClosing\Http\Requests\ReopenClosingRequest;
 use App\Modules\DailyClosing\Models\DailyClosure;
@@ -27,19 +28,19 @@ class DailyClosingController extends Controller
         $user = auth()->user();
         $isAdmin = $user->role->value === 'ADMINISTRADOR_PROPIETARIO';
 
-        $query = DailyClosure::with(['bankAgent.store', 'bankAgent.bank', 'confirmedBy', 'reopenedBy'])
+        $query = DailyClosure::with(['agent', 'confirmedBy', 'reopenedBy'])
             ->where('organization_id', $user->organization_id);
 
         if (! $isAdmin) {
-            $assignedAgentIds = UserBankAgentAssignment::where('user_id', $user->id)
+            $assignedAgentIds = UserAgentAssignment::where('user_id', $user->id)
                 ->where('is_active', true)
-                ->pluck('bank_agent_id');
+                ->pluck('agent_id');
 
-            $query->whereIn('bank_agent_id', $assignedAgentIds);
+            $query->whereIn('agent_id', $assignedAgentIds);
         }
 
-        if ($request->filled('bank_agent_id')) {
-            $query->where('bank_agent_id', $request->bank_agent_id);
+        if ($request->filled('agent_id')) {
+            $query->where('agent_id', $request->agent_id);
         }
 
         if ($request->filled('date_from')) {
@@ -60,10 +61,10 @@ class DailyClosingController extends Controller
             ->withQueryString();
 
         if ($isAdmin) {
-            $agents = BankAgent::where('organization_id', $user->organization_id)
+            $agents = Agent::where('organization_id', $user->organization_id)
                 ->orderBy('code')->get();
         } else {
-            $agents = BankAgent::whereHas('activeAssignments', function ($q) use ($user) {
+            $agents = Agent::whereHas('activeAssignments', function ($q) use ($user) {
                 $q->where('user_id', $user->id);
             })->orderBy('code')->get();
         }
@@ -79,16 +80,14 @@ class DailyClosingController extends Controller
         $isAdmin = $user->role->value === 'ADMINISTRADOR_PROPIETARIO';
 
         if ($isAdmin) {
-            $agents = BankAgent::with('store', 'bank')
-                ->where('organization_id', $user->organization_id)
+            $agents = Agent::where('organization_id', $user->organization_id)
                 ->where('is_active', true)
                 ->orderBy('code')
                 ->get();
         } else {
-            $agents = BankAgent::with('store', 'bank')
-                ->whereHas('activeAssignments', function ($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                })
+            $agents = Agent::whereHas('activeAssignments', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })->where('is_active', true)
                 ->orderBy('code')
                 ->get();
         }
@@ -98,123 +97,75 @@ class DailyClosingController extends Controller
 
     public function store(GenerateClosingRequest $request): RedirectResponse
     {
-        $bankAgentId = (int) $request->input('bank_agent_id');
+        $agentId = (int) $request->input('agent_id', $request->input('bank_agent_id'));
 
-        Gate::authorize('generate', [DailyClosure::class, $bankAgentId]);
+        Gate::authorize('generate', [DailyClosure::class, $agentId]);
 
         $businessDate = $request->input('business_date');
-        $regenerate = $request->boolean('regenerate');
         $user = auth()->user();
         $organizationId = (int) $user->organization_id;
 
-        $existingClosure = DailyClosure::where('bank_agent_id', $bankAgentId)
+        $openingCash = $request->input('opening_cash', 0);
+        $openingDigital = $request->input('opening_digital', 0);
+
+        $existingClosure = DailyClosure::where('agent_id', $agentId)
             ->where('business_date', $businessDate)
-            ->where('status', DailyClosure::STATUS_ACTIVO)
+            ->whereIn('status', [DailyClosure::STATUS_ACTIVO, 'BORRADOR'])
             ->first();
 
-        if ($existingClosure && ! $regenerate) {
+        if ($existingClosure) {
             return redirect()->route('daily-closures.show', $existingClosure)
-                ->with('status', 'Ya existe un cierre activo para este agente y fecha.');
+                ->with('status', 'Ya existe un cierre activo o borrador para este agente y fecha.');
         }
 
         try {
-            return $this->executeStore($bankAgentId, $businessDate, $regenerate, $existingClosure, $organizationId);
+            return DB::transaction(function () use ($agentId, $businessDate, $openingCash, $openingDigital, $user, $organizationId) {
+                $closure = DailyClosure::create([
+                    'organization_id' => $organizationId,
+                    'agent_id' => $agentId,
+                    'business_date' => $businessDate,
+                    'status' => 'BORRADOR',
+                    'opening_cash' => $openingCash,
+                    'opening_digital' => $openingDigital,
+                ]);
+
+                AuditLog::create([
+                    'correlation_id' => (string) Str::uuid(),
+                    'created_at' => now(),
+                    'organization_id' => $organizationId,
+                    'actor_user_id' => $user->id,
+                    'action' => 'daily_closure.created',
+                    'entity_type' => DailyClosure::class,
+                    'entity_id' => $closure->id,
+                    'after_values' => $closure->only(['agent_id', 'business_date', 'opening_cash', 'opening_digital', 'status']),
+                    'occurred_at' => now(),
+                ]);
+
+                return redirect()->route('daily-closures.show', $closure)
+                    ->with('status', 'Apertura diaria registrada correctamente.');
+            });
         } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
             return redirect()->route('daily-closures.index')
                 ->withErrors(['store' => 'Violación de restricción única. Ya existe un cierre activo para este agente y fecha.']);
         }
     }
 
-    private function executeStore(int $bankAgentId, string $businessDate, bool $regenerate, ?DailyClosure $existingClosure, int $organizationId): RedirectResponse
-    {
-        $agent = BankAgent::with('store')->findOrFail($bankAgentId);
-        $user = auth()->user();
-
-        return DB::transaction(function () use ($bankAgentId, $businessDate, $regenerate, $existingClosure, $user, $organizationId, $agent) {
-            if ($existingClosure && $regenerate) {
-                DailyClosureOperation::where('daily_closure_id', $existingClosure->id)->delete();
-                $closure = $existingClosure;
-            } else {
-                $closure = DailyClosure::create([
-                    'organization_id' => $organizationId,
-                    'store_id' => $agent->store_id,
-                    'bank_agent_id' => $bankAgentId,
-                    'business_date' => $businessDate,
-                    'status' => DailyClosure::STATUS_ACTIVO,
-                ]);
-            }
-
-            $startDate = $businessDate . ' 00:00:00';
-            $endDate = date('Y-m-d', strtotime($businessDate . ' +1 day')) . ' 00:00:00';
-
-            DB::statement('
-                INSERT INTO daily_closure_operations (daily_closure_id, operation_id, created_at)
-                SELECT ?, o.id, ?
-                FROM operations o
-                WHERE o.bank_agent_id = ?
-                  AND o.status = ?
-                  AND o.effective_at >= ?
-                  AND o.effective_at < ?
-            ', [$closure->id, now()->format('Y-m-d H:i:s.u'), $bankAgentId, Operation::STATUS_ACTIVE, $startDate, $endDate]);
-
-            $metrics = DB::select('
-                SELECT
-                    COUNT(*) as operation_count,
-                    COALESCE(SUM(o.amount), 0) as gross_amount,
-                    COALESCE(SUM(CASE WHEN ot.cash_direction = ? THEN o.amount ELSE 0 END), 0) as cash_in,
-                    COALESCE(SUM(CASE WHEN ot.cash_direction = ? THEN o.amount ELSE 0 END), 0) as cash_out,
-                    CAST(COALESCE(SUM(CASE WHEN ot.cash_direction = ? THEN 1 ELSE 0 END), 0) AS INTEGER) as pending_confirm_count
-                FROM operations o
-                JOIN operation_types ot ON o.operation_type_id = ot.id
-                WHERE o.bank_agent_id = ?
-                  AND o.status = ?
-                  AND o.effective_at >= ?
-                  AND o.effective_at < ?
-            ', ['ENTRADA', 'SALIDA', 'POR_CONFIRMAR', $bankAgentId, Operation::STATUS_ACTIVE, $startDate, $endDate]);
-
-            $m = $metrics[0];
-            $hasPendingConfirm = $m->pending_confirm_count > 0;
-            $netMovement = bcsub((string) $m->cash_in, (string) $m->cash_out, 2);
-
-            $closure->update([
-                'operation_count' => $m->operation_count,
-                'gross_amount' => $m->gross_amount,
-                'cash_in' => $m->cash_in,
-                'cash_out' => $m->cash_out,
-                'net_movement' => $netMovement,
-                'has_pending_confirm' => $hasPendingConfirm,
-            ]);
-
-            AuditLog::create([
-                'correlation_id' => (string) Str::uuid(),
-                'created_at' => now(),
-                'organization_id' => $organizationId,
-                'actor_user_id' => $user->id,
-                'action' => $regenerate ? 'daily_closure.regenerated' : 'daily_closure.generated',
-                'entity_type' => DailyClosure::class,
-                'entity_id' => $closure->id,
-                'before_values' => null,
-                'after_values' => $closure->only(['bank_agent_id', 'business_date', 'operation_count', 'gross_amount', 'cash_in', 'cash_out', 'net_movement', 'status', 'has_pending_confirm']),
-                'occurred_at' => now(),
-            ]);
-
-            return redirect()->route('daily-closures.show', $closure)
-                ->with('status', $regenerate ? 'Cierre regenerado correctamente.' : 'Cierre generado correctamente.');
-        });
-    }
-
-    public function show(DailyClosure $closure): View
+    public function show(DailyClosure $closure, CalculateClosing $calculateClosing): View
     {
         Gate::authorize('view', $closure);
 
-        $closure->load(['bankAgent.store', 'bankAgent.bank', 'confirmedBy', 'reopenedBy']);
+        $closure->load(['agent', 'confirmedBy', 'reopenedBy']);
+
+        $calculateClosing->execute($closure);
+
+        $closure->refresh();
 
         $breakdownByType = DB::table('daily_closure_operations as dco')
             ->join('operations as o', 'dco.operation_id', '=', 'o.id')
             ->join('operation_types as ot', 'o.operation_type_id', '=', 'ot.id')
             ->where('dco.daily_closure_id', $closure->id)
-            ->select('ot.name', 'ot.cash_direction', DB::raw('COUNT(*) as operation_count'), DB::raw('COALESCE(SUM(o.amount), 0) as total_amount'))
-            ->groupBy('ot.name', 'ot.cash_direction')
+            ->select('ot.name', DB::raw('COUNT(*) as operation_count'), DB::raw('COALESCE(SUM(o.amount), 0) as total_amount'))
+            ->groupBy('ot.name')
             ->orderBy('ot.name')
             ->get();
 
@@ -227,13 +178,6 @@ class DailyClosingController extends Controller
             ->orderBy('u.username_normalized')
             ->get();
 
-        $annulledOperations = Operation::with(['operationType', 'user', 'annulledBy'])
-            ->where('bank_agent_id', $closure->bank_agent_id)
-            ->where('status', Operation::STATUS_ANNULLED)
-            ->whereDate('effective_at', $closure->business_date)
-            ->orderBy('annulled_at', 'desc')
-            ->get();
-
         $closureOperations = Operation::with(['operationType', 'user'])
             ->whereIn('id', function ($query) use ($closure) {
                 $query->select('operation_id')
@@ -244,24 +188,34 @@ class DailyClosingController extends Controller
             ->get();
 
         return view('daily-closing.show', compact(
-            'closure', 'breakdownByType', 'breakdownByOperator',
-            'annulledOperations', 'closureOperations'
+            'closure', 'breakdownByType', 'breakdownByOperator', 'closureOperations'
         ));
     }
 
-    public function confirm(DailyClosure $closure): RedirectResponse
+    public function confirm(Request $request, DailyClosure $closure): RedirectResponse
     {
         Gate::authorize('confirm', $closure);
 
-        if (! $closure->isActivo() && ! $closure->isReabierto()) {
+        if (! in_array($closure->status, [DailyClosure::STATUS_ACTIVO, DailyClosure::STATUS_REABIERTO, 'BORRADOR', 'PRESENTADO'])) {
             return redirect()->route('daily-closures.show', $closure)
-                ->withErrors(['confirm' => 'Solo se puede confirmar un cierre en estado ACTIVO o REABIERTO.']);
+                ->withErrors(['confirm' => 'El cierre no se puede confirmar en su estado actual.']);
+        }
+
+        $hasDifferences = ($closure->cash_difference != 0 || $closure->digital_difference != 0);
+
+        if ($hasDifferences && ! $request->filled('confirm_reason')) {
+            return redirect()->route('daily-closures.show', $closure)
+                ->withErrors(['confirm' => 'Debe proporcionar un motivo para confirmar con diferencias.']);
         }
 
         $user = auth()->user();
         $beforeStatus = $closure->status;
 
-        $closure->confirm($user->id);
+        $closure->update([
+            'status' => DailyClosure::STATUS_CONFIRMADO,
+            'confirmed_by' => $user->id,
+            'confirmed_at' => now(),
+        ]);
 
         AuditLog::create([
             'correlation_id' => (string) Str::uuid(),
@@ -273,6 +227,7 @@ class DailyClosingController extends Controller
             'entity_id' => $closure->id,
             'before_values' => ['status' => $beforeStatus],
             'after_values' => $closure->only(['status', 'confirmed_by', 'confirmed_at']),
+            'reason' => $request->input('confirm_reason'),
             'occurred_at' => now(),
         ]);
 
@@ -293,7 +248,12 @@ class DailyClosingController extends Controller
         $reason = $request->input('reason');
         $beforeStatus = $closure->status;
 
-        $closure->reopen($user->id, $reason);
+        $closure->update([
+            'status' => DailyClosure::STATUS_REABIERTO,
+            'reopened_by' => $user->id,
+            'reopened_at' => now(),
+            'reopen_reason' => $reason,
+        ]);
 
         AuditLog::create([
             'correlation_id' => (string) Str::uuid(),

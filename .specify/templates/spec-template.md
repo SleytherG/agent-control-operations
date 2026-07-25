@@ -132,7 +132,8 @@ capability | Architectural change | Technical work without functional change]
 
 - **Authorization**: [State server-side ADMINISTRADOR_PROPIETARIO/OPERADOR, ownership, and
   assigned-agent restrictions, including prohibited cross-operator access]
-- **Data minimization**: [State data used and confirm prohibited customer/banking data is absent]
+- **Data minimization**: [State data used and confirm prohibited banking/sensitive data is absent;
+  if minimal customer reference is stored, state visibility, purpose, and absence of catalog]
 - **Auditability**: [State operation fields, non-destructive correction, and before/after audit data]
 - **Time and money**: [State America/Lima display, period boundaries, decimal money, and aggregate
   meanings; gross operated amount is not profit]

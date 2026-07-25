@@ -811,27 +811,3 @@ No incluyas todavía:
 * Aplicación móvil.
 * Arquitectura de microservicios.
 * Multiempresa completa.
-
-
-<!--
-URL	Vista
-http://localhost:8000/demo/login	Pantalla de login (mock)
-http://localhost:8000/demo/operator/dashboard	Dashboard de operador
-http://localhost:8000/demo/operator/register	Registro de operación
-http://localhost:8000/demo/operator/history	Historial de operaciones
-http://localhost:8000/demo/admin/dashboard	Dashboard de admin
-http://localhost:8000/demo/daily-closing/1	Cierre diario
-http://localhost:8000/demo/expiry?expiry=warning	Modal de expiración -->
-
-Story	Tasks	Priority
-US2 (Layout)	T001–T007 (7)	P1
-US1 (Login)	T008–T016 (9)	P1
-US3 (Dashboard Op)	T017–T022 (6)	P2
-US4 (Registro)	T023–T028 (6)	P2
-US5 (Historial)	T029–T033 (5)	P3
-US6 (Dashboard Admin)	T034–T039 (6)	P3
-US7 (Admin CRUD)	T040–T050 (11)	P4
-US8 (Cierre Diario)	T051–T057 (7)	P4
-US5+US7 (Restantes)	T058–T062 (5)	P4
-US10 (Limpieza)	T063–T068 (6)	P5
-Polish	T069–T076 (8)	—

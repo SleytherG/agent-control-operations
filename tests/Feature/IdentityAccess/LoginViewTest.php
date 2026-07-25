@@ -41,8 +41,6 @@ class LoginViewTest extends TestCase
 
     public function test_login_with_valid_credentials_redirects_to_home(): void
     {
-        $this->markTestSkipped('Requires MySQL for session_events.created_at auto-population.');
-
         User::factory()->create([
             'username_normalized' => 'testuser',
             'password' => bcrypt('password'),
@@ -53,7 +51,7 @@ class LoginViewTest extends TestCase
             'password' => 'password',
         ]);
 
-        $response->assertRedirect(route('home'));
+        $response->assertRedirect(route('dashboard.operator'));
     }
 
     public function test_login_with_invalid_credentials_shows_error(): void

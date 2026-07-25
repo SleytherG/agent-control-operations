@@ -2,8 +2,7 @@
 
 namespace App\Modules\Operations\Http\Requests;
 
-use App\Modules\BankingNetwork\Models\BankAgent;
-use App\Modules\BankingNetwork\Models\UserBankAgentAssignment;
+use App\Modules\Agents\Models\UserAgentAssignment;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RegisterOperationRequest extends FormRequest
@@ -16,10 +15,12 @@ class RegisterOperationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'bank_agent_id' => ['required', 'exists:bank_agents,id'],
+            'agent_id' => ['nullable', 'exists:agents,id,is_active,1'],
             'operation_type_id' => ['required', 'exists:operation_types,id,is_active,1'],
             'amount' => ['required', 'numeric', 'gt:0'],
             'currency' => ['nullable', 'string', 'size:3'],
+            'customer_name' => ['nullable', 'string', 'max:200'],
+            'notes' => ['nullable', 'string', 'max:500'],
             'effective_at' => [
                 'required',
                 'date',
@@ -31,8 +32,6 @@ class RegisterOperationRequest extends FormRequest
                     }
                 },
             ],
-            'reference' => ['nullable', 'string', 'max:100'],
-            'observation' => ['nullable', 'string', 'max:500'],
             'idempotency_key' => ['required', 'string', 'max:64'],
         ];
     }
@@ -41,7 +40,7 @@ class RegisterOperationRequest extends FormRequest
     {
         return [
             'amount.gt' => 'El monto debe ser mayor a cero.',
-            'bank_agent_id.exists' => 'El agente bancario seleccionado no existe.',
+            'agent_id.exists' => 'El agente seleccionado no existe o está inactivo.',
             'operation_type_id.exists' => 'El tipo de operación no está activo o no existe.',
             'effective_at.before_or_equal' => 'La fecha efectiva no puede ser futura.',
         ];

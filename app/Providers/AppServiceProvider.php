@@ -2,9 +2,12 @@
 
 namespace App\Providers;
 
+use App\Modules\Agents\Models\Agent;
+use App\Modules\Agents\Policies\AgentPolicy;
 use App\Modules\DailyClosing\Models\DailyClosure;
 use App\Modules\DailyClosing\Policies\DailyClosingPolicy;
 use App\Modules\IdentityAccess\Services\JwtTokenService;
+use App\Modules\IdentityAccess\Services\PasswordPolicy;
 use App\Modules\IdentityAccess\Services\RefreshTokenService;
 use App\Modules\Reporting\Policies\DashboardPolicy;
 use Illuminate\Support\Facades\Gate;
@@ -42,10 +45,13 @@ class AppServiceProvider extends ServiceProvider
                 pepper: config('session-security.refresh.pepper', ''),
             );
         });
+
+        $this->app->singleton(PasswordPolicy::class);
     }
 
     public function boot(): void
     {
+        Gate::policy(Agent::class, AgentPolicy::class);
         Gate::policy(DailyClosure::class, DailyClosingPolicy::class);
 
         Gate::define('viewOperatorDashboard', [DashboardPolicy::class, 'viewOperatorDashboard']);

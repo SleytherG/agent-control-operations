@@ -22,7 +22,16 @@ class OperatorController extends Controller
         Gate::authorize('viewAny', User::class);
 
         $query = User::where('organization_id', auth()->user()->organization_id)
-            ->where('role', Role::OPERADOR);
+            ->where('role', Role::OPERADOR)
+            ->with('latestPasswordReset');
+
+        if ($request->filled('username')) {
+            $query->where('username_normalized', 'LIKE', '%' . $request->input('username') . '%');
+        }
+
+        if ($request->filled('email')) {
+            $query->where('email_normalized', 'LIKE', '%' . $request->input('email') . '%');
+        }
 
         if ($request->filled('status')) {
             $query->where('status', $request->input('status'));

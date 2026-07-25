@@ -34,6 +34,11 @@ server {
 
 - `APP_ENV=production`
 - `APP_DEBUG=false`
+- `DB_CONNECTION=pgsql`
+- Variables `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME` y `DB_PASSWORD` suministradas desde el
+  gestor seguro de secretos del entorno, sin valores reales en el repositorio.
+- Conexión TLS a PostgreSQL administrado por Supabase; no usar Supabase Auth, Storage, Realtime,
+  Edge Functions ni Data API para responsabilidades de Laravel.
 - Compilar assets: `npm run build`
 - Asegurar que `public/build/manifest.json` existe después del build.
 

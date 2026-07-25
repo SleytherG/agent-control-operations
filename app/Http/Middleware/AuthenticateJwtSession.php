@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Modules\IdentityAccess\Domain\Enums\AuthSessionStatus;
 use App\Modules\IdentityAccess\Domain\Enums\Role;
+use App\Modules\IdentityAccess\Domain\Enums\PasswordResetStatus;
 use App\Modules\IdentityAccess\Domain\Enums\UserStatus;
 use App\Modules\IdentityAccess\Models\AuthSession;
 use App\Modules\IdentityAccess\Models\User;
@@ -30,7 +31,7 @@ class AuthenticateJwtSession
         }
 
         $user = User::find($claims['sub']);
-        $session = AuthSession::where('public_id', $claims['sid'])->first();
+        $session = AuthSession::with('passwordReset')->where('public_id', $claims['sid'])->first();
 
         if (! $user || ! $session) {
             return $this->redirectToLogin($request);
@@ -47,9 +48,22 @@ class AuthenticateJwtSession
         View::share('sessionExpiresAt', $session->access_expires_at);
 
         $request->merge(['auth_session_id' => $session->id]);
+        $request->attributes->set('auth_session', $session);
         $request->attributes->set('session_expires_at', $session->access_expires_at->toIso8601String());
 
-        if (is_null($user->password_changed_at) && ! $request->is('password/change') && ! $request->is('password/change/*')) {
+        $restrictedReset = $session->passwordReset?->status === PasswordResetStatus::CONSUMED;
+        $mustChangeInitialPassword = is_null($user->password_changed_at) && ! $session->password_reset_id;
+        $allowedRoute = in_array($request->route()?->getName(), [
+            'password.change',
+            'password.change.update',
+            'logout',
+        ], true);
+
+        if (($restrictedReset || $mustChangeInitialPassword) && ! $allowedRoute) {
+            if ($request->expectsJson() || ! $request->isMethod('GET')) {
+                return response()->json(['message' => 'Debe cambiar su contraseña antes de continuar.'], 403);
+            }
+
             return redirect()->route('password.change');
         }
 
@@ -62,6 +76,11 @@ class AuthenticateJwtSession
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        return redirect()->route('login');
+        if (! $request->isMethod('GET')) {
+            $request->session()->flashInput($request->input());
+            $request->session()->flash('session_expired', true);
+        }
+
+        return redirect()->route('login')->with('session_expired', true);
     }
 }

@@ -18,10 +18,10 @@
         </div>
     @endif
 
-    <div style="margin-bottom: var(--space-md); display: flex; justify-content: space-between; align-items: flex-end; gap: var(--space-md); flex-wrap: wrap;">
+    <div class="page-toolbar">
         <a href="{{ route('admin.bank-agents.create') }}" class="btn btn--primary">Nuevo Agente</a>
 
-        <form method="GET" action="{{ route('admin.bank-agents.index') }}" style="display: flex; gap: var(--space-sm); align-items: flex-end; flex-wrap: wrap;">
+        <form method="GET" action="{{ route('admin.bank-agents.index') }}" class="filter-bar">
             <x-ui.select
                 label="Tienda"
                 name="store_id"
@@ -43,43 +43,25 @@
                 :selected="request('is_active')"
                 placeholder="Todos los estados"
             />
-            <x-ui.button variant="secondary" type="submit">Filtrar</x-ui.button>
+            <div class="filter-bar-actions">
+                <x-ui.button variant="secondary" type="submit">Filtrar</x-ui.button>
+            </div>
         </form>
     </div>
 
     <div class="card">
-        <x-ui.data-table
-            :headers="[
-                ['label' => 'Codigo'],
-                ['label' => 'Terminal'],
-                ['label' => 'Tienda'],
-                ['label' => 'Banco'],
-                ['label' => 'Estado', 'align' => 'center'],
-                ['label' => 'Acciones', 'align' => 'center'],
-            ]"
-            :rows="$agents->map(function($agent) {
-                \$actions = \"<a href='#' onclick=\\\"event.preventDefault(); document.getElementById('edit-agent-{$agent->id}').submit();\\\" class='btn btn--primary'>Editar</a>
-                    <form id='edit-agent-{$agent->id}' action='\" . route('admin.bank-agents.update', $agent) . \"' method='POST' style='display:none;'>
-                        <input type='hidden' name='_token' value='\" . csrf_token() . \"'>
-                        <input type='hidden' name='_method' value='PATCH'>
-                    </form>\";
-                if (\$agent->is_active) {
-                    \$actions .= \"<form action='\" . route('admin.bank-agents.deactivate', $agent) . \"' method='POST' style='display:inline;' onsubmit=\\\"return confirm('Desactivar este agente? Se terminaran todas las asignaciones activas.');\\\">\";
-                    \$actions .= \"<input type='hidden' name='_token' value='\" . csrf_token() . \"'>\";
-                    \$actions .= \"<input type='hidden' name='_method' value='DELETE'>\";
-                    \$actions .= \"<button type='submit' class='btn btn--danger'>Desactivar</button></form>\";
-                }
-                return [
-                    ['value' => \$agent->code],
-                    ['value' => \$agent->terminal_code],
-                    ['value' => \$agent->store?->name ?? '—'],
-                    ['value' => \$agent->bank?->name ?? '—'],
-                    ['value' => \$agent->is_active ? \"<x-ui.badge variant='active'>Activo</x-ui.badge>\" : \"<x-ui.badge variant='inactive'>Inactivo</x-ui.badge>\", 'align' => 'center'],
-                    ['value' => \$actions, 'align' => 'center'],
-                ];
-            })->toArray()"
-            emptyMessage="No se encontraron agentes."
-        />
+        <div class="table-responsive"><table class="data-table">
+            <thead><tr><th>Código</th><th>Terminal</th><th>Tienda</th><th>Banco</th><th class="table-th-center">Estado</th><th class="table-th-center">Acciones</th></tr></thead>
+            <tbody>@forelse($agents as $agent)<tr>
+                <td>{{ $agent->code }}</td><td>{{ $agent->terminal_code }}</td><td>{{ $agent->store?->name ?? '—' }}</td><td>{{ $agent->bank?->name ?? '—' }}</td>
+                <td class="table-td-center"><x-ui.badge :variant="$agent->is_active ? 'active' : 'inactive'">{{ $agent->is_active ? 'Activo' : 'Inactivo' }}</x-ui.badge></td>
+                <td class="table-td-center">
+                    <a href="#" class="btn btn--primary" onclick="event.preventDefault(); document.getElementById('edit-agent-{{ $agent->id }}').submit();">Editar</a>
+                    <form id="edit-agent-{{ $agent->id }}" action="{{ route('admin.bank-agents.update', $agent) }}" method="POST" style="display:none">@csrf @method('PATCH')</form>
+                    @if($agent->is_active)<form action="{{ route('admin.bank-agents.deactivate', $agent) }}" method="POST" style="display:inline" data-confirm="¿Desactivar este agente? Se terminarán todas las asignaciones activas.">@csrf @method('DELETE')<button type="submit" class="btn btn--danger">Desactivar</button></form>@endif
+                </td>
+            </tr>@empty<tr><td colspan="6" class="table-empty"><div class="table-empty-icon" aria-hidden="true">&#x1F3E7;</div>No se encontraron agentes.</td></tr>@endforelse</tbody>
+        </table></div>
         <x-ui.pagination
             :currentPage="$agents->currentPage()"
             :lastPage="$agents->lastPage()"

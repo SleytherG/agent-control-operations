@@ -3,12 +3,18 @@
 namespace App\Modules\IdentityAccess\Models;
 
 use App\Modules\IdentityAccess\Domain\Enums\AuthSessionStatus;
+use App\Modules\IdentityAccess\Domain\Enums\RefreshTokenState;
 use App\Modules\IdentityAccess\Domain\Enums\SessionEndReason;
+use Database\Factories\IdentityAccess\AuthSessionFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class AuthSession extends Model
 {
+    /** @use HasFactory<AuthSessionFactory> */
+    use HasFactory;
+
     protected $casts = [
         'started_at' => 'datetime',
         'access_expires_at' => 'datetime',
@@ -20,7 +26,7 @@ class AuthSession extends Model
     ];
 
     protected $fillable = [
-        'public_id', 'user_id', 'status', 'started_at', 'access_expires_at',
+        'public_id', 'user_id', 'password_reset_id', 'status', 'started_at', 'access_expires_at',
         'absolute_expires_at', 'last_refreshed_at', 'ended_at', 'end_reason',
         'ip_hash', 'user_agent_summary',
     ];
@@ -32,6 +38,11 @@ class AuthSession extends Model
         });
     }
 
+    protected static function newFactory(): AuthSessionFactory
+    {
+        return AuthSessionFactory::new();
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -40,6 +51,11 @@ class AuthSession extends Model
     public function refreshTokens()
     {
         return $this->hasMany(AuthRefreshToken::class);
+    }
+
+    public function passwordReset()
+    {
+        return $this->belongsTo(PasswordReset::class);
     }
 
     public function events()

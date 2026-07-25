@@ -9,7 +9,7 @@ class DashboardPolicy
 {
     public function viewOperatorDashboard(User $actor): bool
     {
-        return in_array($actor->role, [Role::ADMINISTRADOR_PROPIETARIO, Role::OPERADOR]);
+        return $actor->role === Role::OPERADOR;
     }
 
     public function viewAdminDashboard(User $actor): bool

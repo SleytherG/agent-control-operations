@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('daily_closures', function (Blueprint $table) {
             $table->id();
             $table->foreignId('organization_id')->constrained('organizations')->restrictOnDelete();
-            $table->foreignId('store_id')->constrained('stores')->restrictOnDelete();
-            $table->foreignId('bank_agent_id')->constrained('bank_agents')->restrictOnDelete();
+            $table->foreignId('store_id')->nullable()->constrained('stores')->restrictOnDelete();
+            $table->foreignId('bank_agent_id')->nullable()->constrained('bank_agents')->restrictOnDelete();
             $table->date('business_date');
             $table->string('status', 20)->default('ACTIVO');
             $table->integer('operation_count')->unsigned()->default(0);

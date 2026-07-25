@@ -23,7 +23,19 @@
             <button class="filter-offcanvas-close" id="filter-offcanvas-close" aria-label="Cerrar filtros">&times;</button>
         </div>
         <div class="filter-offcanvas-body">
-            <form method="GET" action="{{ route('operations.index') }}" class="form-filter">
+            <form method="GET" action="{{ route('operations.index') }}" class="form-filter filter-form">
+                <div class="form-group">
+                    <label class="form-label">Código</label>
+                    <input type="text" name="code" class="form-input" value="{{ request('code') }}" placeholder="Código de operación">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cliente</label>
+                    <input type="text" name="customer_name" class="form-input" value="{{ request('customer_name') }}" placeholder="Nombre del cliente">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Monto</label>
+                    <input type="number" name="amount" class="form-input" step="0.01" value="{{ request('amount') }}" placeholder="Monto exacto">
+                </div>
                 <div class="form-group">
                     <label class="form-label">Agente</label>
                     <select name="bank_agent_id" class="form-input form-select">
@@ -56,7 +68,7 @@
                     <label class="form-label">Hasta</label>
                     <input type="date" name="date_to" class="form-input" value="{{ request('date_to') }}">
                 </div>
-                <div class="filter-bar-actions">
+                <div class="filter-form-actions">
                     <a href="{{ route('operations.index') }}" class="btn btn--secondary btn--sm">Limpiar</a>
                     <button type="submit" class="btn btn--primary btn--sm">Filtrar</button>
                 </div>

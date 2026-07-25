@@ -1,28 +1,13 @@
 @props([
-    'regions' => [], 'stores' => [], 'banks' => [], 'bankAgents' => [],
+    'regions' => [], 'agents' => [],
     'types' => [], 'operators' => [], 'currentFilters' => [],
     'period' => 'month', 'date' => null,
 ])
 
 @php
-    $regionOptions = ['' => 'Todas las regiones'];
-    foreach ($regions as $region) {
-        $regionOptions[$region->id] = $region->name;
-    }
-
-    $storeOptions = ['' => 'Todas las tiendas'];
-    foreach ($stores as $store) {
-        $storeOptions[$store->id] = $store->name;
-    }
-
-    $bankOptions = ['' => 'Todos los bancos'];
-    foreach ($banks as $bank) {
-        $bankOptions[$bank->id] = $bank->name;
-    }
-
     $agentOptions = ['' => 'Todos los agentes'];
-    foreach ($bankAgents as $agent) {
-        $agentOptions[$agent->id] = ($agent->code ?? '') . ' — ' . ($agent->bank->name ?? '');
+    foreach ($agents as $agent) {
+        $agentOptions[$agent->id] = ($agent->code ?? '') . ' — ' . ($agent->name ?? '');
     }
 
     $typeOptions = ['' => 'Todos los tipos'];
@@ -32,10 +17,10 @@
 @endphp
 
 <section class="admin-filters-panel">
-    <form method="GET" action="{{ route('admin.dashboard') }}">
+    <form method="GET" action="{{ route('admin.dashboard') }}" class="admin-filters-form">
         <div class="admin-filters-header">
             <span aria-hidden="true">&#x1F50D;</span>
-            <span class="admin-filters-title">Filtros Globales</span>
+            <span class="admin-filters-title">Filtros</span>
         </div>
         <div class="admin-filters-grid">
             <div class="form-group">
@@ -50,23 +35,15 @@
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label">Tienda</label>
-                <select name="store_id" class="form-input form-select">
-                    @foreach($storeOptions as $value => $label)
-                        <option value="{{ $value }}" {{ request('store_id') == $value ? 'selected' : '' }}>{{ $label }}</option>
+                <label class="form-label">Agente</label>
+                <select name="agent_id" class="form-input form-select">
+                    @foreach($agentOptions as $value => $label)
+                        <option value="{{ $value }}" {{ request('agent_id') == $value ? 'selected' : '' }}>{{ $label }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label">Banco</label>
-                <select name="bank_id" class="form-input form-select">
-                    @foreach($bankOptions as $value => $label)
-                        <option value="{{ $value }}" {{ request('bank_id') == $value ? 'selected' : '' }}>{{ $label }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Tipo de Operacion</label>
+                <label class="form-label">Tipo de Operación</label>
                 <select name="operation_type_id" class="form-input form-select">
                     @foreach($typeOptions as $value => $label)
                         <option value="{{ $value }}" {{ request('operation_type_id') == $value ? 'selected' : '' }}>{{ $label }}</option>
@@ -74,7 +51,7 @@
                 </select>
             </div>
         </div>
-        <div style="display:flex;justify-content:flex-end;gap:var(--space-sm);margin-top:var(--space-md);">
+        <div class="admin-filters-actions">
             <a href="{{ route('admin.dashboard') }}" class="btn btn--secondary btn--sm">Limpiar</a>
             <button type="submit" class="btn btn--primary btn--sm">Aplicar Filtros</button>
         </div>

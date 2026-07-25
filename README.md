@@ -6,7 +6,7 @@ Aplicación web interna para digitalizar el registro manual de operaciones efect
 
 - PHP 8.3+
 - Composer
-- MySQL 8.0 o MariaDB compatible
+- PostgreSQL administrado por Supabase en producción
 - Node.js (solo para compilar assets; no requerido en producción)
 
 ## Instalación
@@ -15,7 +15,7 @@ Aplicación web interna para digitalizar el registro manual de operaciones efect
 composer install
 cp .env.example .env
 php artisan key:generate
-# Configurar JWT_SIGNING_KEY y REFRESH_PEPPER en .env
+# Configurar DB_CONNECTION=pgsql, variables DB_*, JWT_SIGNING_KEY y REFRESH_PEPPER en .env
 php artisan migrate --seed
 npm ci && npm run build
 ```
@@ -23,6 +23,11 @@ npm ci && npm run build
 ## Despliegue
 
 El servidor web DEBE exponer **únicamente** el directorio `public/` como document root. No se deben servir archivos del directorio raíz del proyecto.
+
+Supabase se usa únicamente como proveedor administrado de PostgreSQL. Laravel conserva la
+autenticación, JWT y refresh tokens, autorización, reglas de negocio, validación, auditoría y acceso
+a datos. Las credenciales de base de datos se configuran solo mediante variables de entorno seguras;
+no deben incluirse valores reales en el repositorio.
 
 Procedimiento documentado en `docs/deployment.md`.
 

@@ -1,3 +1,5 @@
+> **Superseded by 008**: Esta especificacion fue superada por [`008-simplify-agent-operations`](../008-simplify-agent-operations/spec.md).
+
 # Feature Specification: Integración Visual Stitch al Sistema Funcional
 
 **Feature Branch**: `007-stitch-visual-integration`

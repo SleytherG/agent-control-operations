@@ -40,23 +40,15 @@
             <span class="sidebar-icon" aria-hidden="true">&#x25A3;</span>
             <span class="sidebar-label">Dashboard Admin</span>
         </a>
-        <a href="{{ route('admin.stores.index') }}" class="sidebar-link {{ request()->routeIs('admin.stores.*') ? 'sidebar-link--active' : '' }}">
+        <a href="{{ route('admin.agents.index') }}" class="sidebar-link {{ request()->routeIs('admin.agents.*') ? 'sidebar-link--active' : '' }}">
             <span class="sidebar-icon" aria-hidden="true">&#x1F3E2;</span>
-            <span class="sidebar-label">Tiendas</span>
+            <span class="sidebar-label">Agentes</span>
         </a>
         <a href="{{ route('admin.users.index') }}" class="sidebar-link {{ request()->routeIs('admin.users.*') ? 'sidebar-link--active' : '' }}">
             <span class="sidebar-icon" aria-hidden="true">&#x1F465;</span>
             <span class="sidebar-label">Usuarios</span>
         </a>
         <span class="sidebar-section">Operaciones</span>
-        <a href="{{ route('dashboard.operator') }}" class="sidebar-link {{ request()->routeIs('dashboard.operator') ? 'sidebar-link--active' : '' }}">
-            <span class="sidebar-icon" aria-hidden="true">&#x25A3;</span>
-            <span class="sidebar-label">Dashboard</span>
-        </a>
-        <a href="{{ route('operations.create') }}" class="sidebar-link {{ request()->routeIs('operations.create') ? 'sidebar-link--active' : '' }}">
-            <span class="sidebar-icon" aria-hidden="true">&#x2795;</span>
-            <span class="sidebar-label">Registrar Operación</span>
-        </a>
         <a href="{{ route('operations.index') }}" class="sidebar-link {{ request()->routeIs('operations.index') ? 'sidebar-link--active' : '' }}">
             <span class="sidebar-icon" aria-hidden="true">&#x23F0;</span>
             <span class="sidebar-label">Historial</span>
@@ -64,15 +56,6 @@
         <a href="{{ route('daily-closures.index') }}" class="sidebar-link {{ request()->routeIs('daily-closures.*') ? 'sidebar-link--active' : '' }}">
             <span class="sidebar-icon" aria-hidden="true">&#x1F4C5;</span>
             <span class="sidebar-label">Cierre Diario</span>
-        </a>
-        <span class="sidebar-section">Administración</span>
-        <a href="{{ route('admin.banks.index') }}" class="sidebar-link {{ request()->routeIs('admin.banks.*') ? 'sidebar-link--active' : '' }}">
-            <span class="sidebar-icon" aria-hidden="true">&#x1F3E6;</span>
-            <span class="sidebar-label">Bancos</span>
-        </a>
-        <a href="{{ route('admin.bank-agents.index') }}" class="sidebar-link {{ request()->routeIs('admin.bank-agents.*') ? 'sidebar-link--active' : '' }}">
-            <span class="sidebar-icon" aria-hidden="true">&#x1F3E6;</span>
-            <span class="sidebar-label">Agentes</span>
         </a>
         <a href="{{ route('admin.operation-types.index') }}" class="sidebar-link {{ request()->routeIs('admin.operation-types.*') ? 'sidebar-link--active' : '' }}">
             <span class="sidebar-icon" aria-hidden="true">&#x1F4CB;</span>

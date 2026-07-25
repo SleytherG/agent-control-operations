@@ -14,8 +14,11 @@ class GenerateClosingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'bank_agent_id' => ['required', 'exists:bank_agents,id'],
+            'agent_id' => ['nullable', 'exists:agents,id,is_active,1'],
+            'bank_agent_id' => ['nullable', 'exists:bank_agents,id'],
             'business_date' => ['required', 'date', 'before_or_equal:today'],
+            'opening_cash' => ['nullable', 'numeric', 'min:0'],
+            'opening_digital' => ['nullable', 'numeric', 'min:0'],
             'regenerate' => ['nullable', 'boolean'],
         ];
     }
@@ -23,8 +26,8 @@ class GenerateClosingRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'bank_agent_id.required' => 'El agente bancario es obligatorio.',
-            'bank_agent_id.exists' => 'El agente bancario seleccionado no existe.',
+            'agent_id.exists' => 'El agente seleccionado no existe o está inactivo.',
+            'bank_agent_id.required' => 'El agente es obligatorio.',
             'business_date.required' => 'La fecha del cierre es obligatoria.',
             'business_date.date' => 'La fecha del cierre no es válida.',
             'business_date.before_or_equal' => 'La fecha del cierre no puede ser futura.',

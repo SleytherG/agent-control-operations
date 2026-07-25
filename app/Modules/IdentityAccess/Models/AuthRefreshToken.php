@@ -3,10 +3,15 @@
 namespace App\Modules\IdentityAccess\Models;
 
 use App\Modules\IdentityAccess\Domain\Enums\RefreshTokenState;
+use Database\Factories\IdentityAccess\AuthRefreshTokenFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class AuthRefreshToken extends Model
 {
+    /** @use HasFactory<AuthRefreshTokenFactory> */
+    use HasFactory;
+
     protected $casts = [
         'issued_at' => 'datetime',
         'expires_at' => 'datetime',
@@ -33,5 +38,10 @@ class AuthRefreshToken extends Model
     public function isActive(): bool
     {
         return $this->state === RefreshTokenState::ACTIVE;
+    }
+
+    protected static function newFactory(): AuthRefreshTokenFactory
+    {
+        return AuthRefreshTokenFactory::new();
     }
 }

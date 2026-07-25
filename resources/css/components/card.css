@@ -16,17 +16,17 @@
 
 .metric-card--dark {
   background-color: var(--color-primary-container);
-  color: var(--color-on-primary-container);
+  color: var(--st-inverse-on-surface);
   border-color: var(--color-primary-container);
 }
 
 .metric-card--dark .metric-card-label {
-  color: var(--color-on-primary-container);
-  opacity: 0.8;
+  color: var(--st-inverse-on-surface);
+  opacity: 0.9;
 }
 
 .metric-card--dark .metric-card-value {
-  color: var(--color-on-primary-container);
+  color: var(--color-on-primary);
 }
 
 .metric-card-header {
@@ -42,8 +42,8 @@
 }
 
 .metric-card--dark .metric-card-icon {
-  color: var(--color-on-primary-container);
-  opacity: 0.6;
+  color: var(--color-on-primary);
+  opacity: 0.85;
 }
 
 .metric-card-label {

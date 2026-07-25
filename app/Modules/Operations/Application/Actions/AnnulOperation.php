@@ -16,7 +16,7 @@ class AnnulOperation
             throw new \RuntimeException('La operación ya se encuentra anulada.');
         }
 
-        $this->validateNotConfirmed($operation->bank_agent_id, $operation->effective_at);
+        $this->validateNotConfirmed($operation->agent_id, $operation->effective_at);
 
         if (! $isAdmin) {
             $hoursSinceRecorded = abs(now()->diffInHours($operation->recorded_at));
@@ -54,9 +54,9 @@ class AnnulOperation
         return $operation->refresh();
     }
 
-    private function validateNotConfirmed(int $bankAgentId, \Illuminate\Support\Carbon $effectiveAt): void
+    private function validateNotConfirmed(int $agentId, \Illuminate\Support\Carbon $effectiveAt): void
     {
-        $confirmedClosure = DailyClosure::where('bank_agent_id', $bankAgentId)
+        $confirmedClosure = DailyClosure::where('agent_id', $agentId)
             ->whereDate('business_date', $effectiveAt->toDateString())
             ->where('status', DailyClosure::STATUS_CONFIRMADO)
             ->exists();

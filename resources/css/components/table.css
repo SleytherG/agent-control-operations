@@ -9,19 +9,25 @@
 
 .data-table {
   width: 100%;
+  min-width: 720px;
   border-collapse: collapse;
+  table-layout: auto;
   font-size: var(--font-size-body-md);
 }
 
-.data-table thead th {
+.data-table thead th,
+.data-table tbody td {
   padding: 10px var(--space-md);
+  text-align: center;
+}
+
+.data-table thead th {
   font-size: var(--font-size-label);
   font-weight: var(--font-weight-bold);
   text-transform: uppercase;
   letter-spacing: var(--letter-spacing-label);
   color: var(--color-on-surface-variant);
   background-color: var(--color-surface-container-low);
-  text-align: left;
   white-space: nowrap;
   border-bottom: var(--border-thin);
 }
@@ -45,10 +51,24 @@
 .sort-indicator--desc::after { content: " ▼"; }
 
 .data-table tbody td {
-  padding: 10px var(--space-md);
   border-bottom: var(--border-thin);
   color: var(--color-on-surface);
   vertical-align: middle;
+  overflow-wrap: anywhere;
+}
+
+.data-table thead th.table-th-right,
+.data-table tbody td.table-td-right {
+  text-align: right;
+}
+
+.data-table thead th.table-th-center,
+.data-table tbody td.table-td-center {
+  text-align: center;
+}
+
+.data-table tbody td.table-td-center {
+  white-space: nowrap;
 }
 
 .data-table tbody tr:hover {

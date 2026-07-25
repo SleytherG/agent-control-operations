@@ -139,7 +139,8 @@ Un cierre formal de caja será una funcionalidad posterior que requerirá defini
 - Un solo cliente.
 - Monolito web.
 - Bajo costo de hosting.
-- MySQL o MariaDB.
+- PostgreSQL relacional administrado inicialmente por Supabase, sin acoplar reglas de negocio a otros
+  servicios de Supabase.
 - Frontend ligero.
 - Sin procesos permanentes obligatorios.
 - Uso desde navegadores modernos.

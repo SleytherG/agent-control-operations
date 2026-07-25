@@ -36,7 +36,7 @@ class DatabaseSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
-        $this->call(OperationalStructureSeeder::class);
+        $this->call(AgentStructureSeeder::class);
         $this->call(OperationTypeSeeder::class);
     }
 }

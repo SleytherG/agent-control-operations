@@ -2,6 +2,8 @@
 
 namespace App\Modules\IdentityAccess\Services;
 
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 
 class AuthCookieService
@@ -22,7 +24,7 @@ class AuthCookieService
         $this->path = $config['path'];
     }
 
-    public function withAuthCookies(Response $response, string $accessToken, string $refreshToken, int $ttl): Response
+    public function withAuthCookies(Response|RedirectResponse|JsonResponse $response, string $accessToken, string $refreshToken, int $ttl): Response|RedirectResponse|JsonResponse
     {
         return $response
             ->withCookie(cookie(
@@ -35,7 +37,7 @@ class AuthCookieService
             ));
     }
 
-    public function clearAuthCookies(Response $response): Response
+    public function clearAuthCookies(Response|RedirectResponse $response): Response|RedirectResponse
     {
         return $response
             ->withoutCookie($this->accessName, $this->path)

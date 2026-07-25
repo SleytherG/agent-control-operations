@@ -1,3 +1,5 @@
+> **Superseded by 008**: Esta especificacion fue superada por [`008-simplify-agent-operations`](../008-simplify-agent-operations/spec.md).
+
 # Feature Specification: Administración de Estructura Operacional
 
 **Feature Branch**: No creada (no hay hook de creación de rama configurado)

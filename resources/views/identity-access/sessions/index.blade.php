@@ -6,8 +6,8 @@
     <h2 class="admin-title" style="margin-bottom:var(--space-xs);">Historial de sesiones</h2>
     <p class="admin-subtitle">Registro de accesos y actividad de usuarios en el sistema.</p>
 
-    <div class="card" style="margin-bottom: var(--space-lg);">
-        <form method="GET" action="{{ route('sessions.index') }}" style="display: flex; gap: var(--space-sm); align-items: flex-end; flex-wrap: wrap;">
+    <div class="filter-panel" style="margin-bottom: var(--space-lg);">
+        <form method="GET" action="{{ route('sessions.index') }}" class="filter-form">
             <x-ui.select
                 label="Estado"
                 name="status"
@@ -27,32 +27,22 @@
                 type="date"
                 value="{{ request('to') }}"
             />
-            <x-ui.button variant="secondary" type="submit">Filtrar</x-ui.button>
+            <div class="filter-form-actions">
+                <a href="{{ route('sessions.index') }}" class="btn btn--secondary">Limpiar</a>
+                <x-ui.button variant="secondary" type="submit">Filtrar</x-ui.button>
+            </div>
         </form>
     </div>
 
     <div class="card">
-        <x-ui.data-table
-            :headers="[
-                ['label' => 'ID Publico'],
-                ['label' => 'Usuario'],
-                ['label' => 'Estado', 'align' => 'center'],
-                ['label' => 'Inicio'],
-                ['label' => 'Fin'],
-                ['label' => 'Motivo de fin'],
-            ]"
-            :rows="$sessions->map(function($session) {
-                return [
-                    ['value' => \$session->public_id],
-                    ['value' => \$session->user->username_normalized ?? 'N/A'],
-                    ['value' => \"<x-ui.badge variant='active'>\" . \$session->status->value . \"</x-ui.badge>\", 'align' => 'center'],
-                    ['value' => \$session->started_at?->format('Y-m-d H:i:s') ?? '—'],
-                    ['value' => \$session->ended_at?->format('Y-m-d H:i:s') ?? '—'],
-                    ['value' => \$session->end_reason?->value ?? '—'],
-                ];
-            })->toArray()"
-            emptyMessage="No se encontraron sesiones."
-        />
+        <div class="table-responsive"><table class="data-table">
+            <thead><tr><th>ID público</th><th>Usuario</th><th class="table-th-center">Estado</th><th>Inicio</th><th>Fin</th><th>Motivo de fin</th></tr></thead>
+            <tbody>@forelse($sessions as $session)<tr>
+                <td class="data-mono">{{ $session->public_id }}</td><td>{{ $session->user->username_normalized ?? 'N/A' }}</td>
+                <td class="table-td-center"><x-ui.badge :variant="match($session->status->value) { 'ACTIVE' => 'active', 'EXPIRED' => 'inactive', default => 'annulled' }">{{ match($session->status->value) { 'ACTIVE' => 'Activa', 'EXPIRED' => 'Expirada', 'REVOKED' => 'Revocada', default => $session->status->value } }}</x-ui.badge></td>
+                <td>{{ $session->started_at?->format('Y-m-d H:i:s') ?? '—' }}</td><td>{{ $session->ended_at?->format('Y-m-d H:i:s') ?? '—' }}</td><td>{{ $session->end_reason?->value ?? '—' }}</td>
+            </tr>@empty<tr><td colspan="6" class="table-empty"><div class="table-empty-icon" aria-hidden="true">&#x1F511;</div>No se encontraron sesiones.</td></tr>@endforelse</tbody>
+        </table></div>
         <x-ui.pagination
             :currentPage="$sessions->currentPage()"
             :lastPage="$sessions->lastPage()"

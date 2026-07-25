@@ -3,10 +3,15 @@
 @section('title', $agent->exists ? 'Editar Agente' : 'Nuevo Agente — Control de Operaciones')
 
 @section('content')
-    <h2 class="admin-title" style="margin-bottom:var(--space-xs);">{{ $agent->exists ? 'Editar Agente' : 'Nuevo Agente' }}</h2>
+    <div class="form-page">
+        <div class="form-page-header">
+            <h2 class="admin-title">{{ $agent->exists ? 'Editar Agente' : 'Nuevo Agente' }}</h2>
+            <p class="form-page-subtitle">Mantenga terminales y puntos de atencion bancaria con una estructura visual uniforme.</p>
+        </div>
 
-    <div class="card" style="max-width: 600px;">
-        <form method="POST" action="{{ $agent->exists ? route('admin.bank-agents.update', $agent) : route('admin.bank-agents.store') }}">
+        <div class="card form-shell">
+            <div class="card-body">
+                <form method="POST" action="{{ $agent->exists ? route('admin.bank-agents.update', $agent) : route('admin.bank-agents.store') }}" class="form-layout">
             @csrf
             @if($agent->exists)
                 @method('PATCH')
@@ -49,12 +54,14 @@
                 placeholder="Codigo de terminal"
             />
 
-            <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-md);">
+            <div class="form-actions">
+                <a href="{{ route('admin.bank-agents.index') }}" class="btn btn--secondary">Cancelar</a>
                 <x-ui.button variant="primary" type="submit">
                     {{ $agent->exists ? 'Actualizar' : 'Crear' }}
                 </x-ui.button>
-                <a href="{{ route('admin.bank-agents.index') }}" class="btn btn--secondary">Cancelar</a>
             </div>
         </form>
+            </div>
+        </div>
     </div>
 @endsection

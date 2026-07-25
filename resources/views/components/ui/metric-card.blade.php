@@ -10,7 +10,7 @@
     <div class="metric-card-header">
         <span class="metric-card-label">{{ $label }}</span>
         @if($icon)
-            <span class="metric-card-icon" aria-hidden="true">{{ $icon }}</span>
+            <span class="metric-card-icon" aria-hidden="true">{!! $icon !!}</span>
         @endif
     </div>
 

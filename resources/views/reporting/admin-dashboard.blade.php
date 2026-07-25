@@ -2,9 +2,9 @@
 
 @section('title', $title ?? 'Dashboard Admin — AgenteFlow')
 
-@section('head')
+@push('head')
     @vite('resources/js/reporting/dashboard-charts.js')
-@endsection
+@endpush
 
 @section('content')
     @if($metrics->operation_count === 0)
@@ -28,9 +28,7 @@
 
             <x-screen.admin-filters
                 :regions="$regions"
-                :stores="$stores"
-                :banks="$banks"
-                :bankAgents="$bankAgents"
+                :agents="$agents"
                 :types="$types"
                 :period="$period"
                 :date="$date ?? now()->format('Y-m-d')"
@@ -75,8 +73,8 @@
                     <canvas id="evolutionChart"></canvas>
                 </x-ui.chart-container>
 
-                <x-ui.chart-container title="Distribucion por Banco" height="280px">
-                    <canvas id="bankDoughnutChart"></canvas>
+                <x-ui.chart-container title="Distribucion por Tipo" height="280px">
+                    <canvas id="typeDoughnutChart"></canvas>
                 </x-ui.chart-container>
             </div>
         </div>
@@ -109,12 +107,12 @@
                     });
                 }
 
-                var donut = document.getElementById('bankDoughnutChart');
+                var donut = document.getElementById('typeDoughnutChart');
                 if (donut && typeDist && typeDist.length > 0) {
                     new Chart(donut.getContext('2d'), {
                         type: 'doughnut',
                         data: {
-                            labels: typeDist.map(function(d) { return d.bank || d.name || d.type || ''; }),
+                            labels: typeDist.map(function(d) { return d.name || d.type || ''; }),
                             datasets: [{ data: typeDist.map(function(d) { return d.count || d.percentage || 0; }), backgroundColor: ['#0b1c30', '#505f76', '#bec6e0', '#eae7e9', '#4edea3'], borderWidth: 0, hoverOffset: 4 }]
                         },
                         options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false } } }

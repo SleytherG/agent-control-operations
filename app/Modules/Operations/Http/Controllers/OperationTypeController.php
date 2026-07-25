@@ -5,7 +5,6 @@ namespace App\Modules\Operations\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Operations\Http\Requests\OperationTypeRequest;
 use App\Modules\Operations\Models\OperationType;
-use App\Modules\BankingNetwork\Models\Bank;
 use App\Modules\Audit\Models\AuditLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,35 +20,43 @@ class OperationTypeController extends Controller
 
         $orgId = auth()->user()->organization_id;
 
-        $query = OperationType::with('bank')
-            ->where('organization_id', $orgId);
+        $query = OperationType::where('organization_id', $orgId);
 
-        if ($request->filled('bank_id')) {
-            $query->where('bank_id', $request->input('bank_id'));
-        } elseif ($request->has('general') && $request->input('general') === '1') {
-            $query->whereNull('bank_id');
+        if ($request->filled('name')) {
+            $query->where('name', 'LIKE', '%' . $request->input('name') . '%');
+        }
+
+        if ($request->filled('description')) {
+            $query->where('description', 'LIKE', '%' . $request->input('description') . '%');
+        }
+
+        if ($request->filled('cash_multiplier')) {
+            $query->where('cash_multiplier', (int) $request->input('cash_multiplier'));
+        }
+
+        if ($request->filled('digital_multiplier')) {
+            $query->where('digital_multiplier', (int) $request->input('digital_multiplier'));
+        }
+
+        if ($request->filled('sort_order')) {
+            $query->where('sort_order', (int) $request->input('sort_order'));
         }
 
         if ($request->filled('is_active')) {
             $query->where('is_active', $request->boolean('is_active'));
         }
 
-        $types = $query->orderBy('name')->paginate(20)->withQueryString();
-        $banks = Bank::where('organization_id', $orgId)->where('is_active', true)->orderBy('name')->get();
+        $types = $query->orderBy('sort_order')->orderBy('name')->paginate(20)->withQueryString();
 
-        return view('operations.types.index', compact('types', 'banks'));
+        return view('operations.types.index', compact('types'));
     }
 
     public function create(): View
     {
         Gate::authorize('create', OperationType::class);
 
-        $orgId = auth()->user()->organization_id;
-        $banks = Bank::where('organization_id', $orgId)->where('is_active', true)->orderBy('name')->get();
-
         return view('operations.types.form', [
             'type' => new OperationType(),
-            'banks' => $banks,
         ]);
     }
 
@@ -59,10 +66,11 @@ class OperationTypeController extends Controller
 
         $type = OperationType::create([
             'organization_id' => auth()->user()->organization_id,
-            'bank_id' => $request->input('bank_id'),
             'name' => $request->input('name'),
             'description' => $request->input('description'),
-            'cash_direction' => $request->input('cash_direction'),
+            'cash_multiplier' => $request->input('cash_multiplier'),
+            'digital_multiplier' => $request->input('digital_multiplier'),
+            'sort_order' => $request->input('sort_order', 0),
             'is_active' => true,
         ]);
 
@@ -75,7 +83,7 @@ class OperationTypeController extends Controller
             'entity_type' => OperationType::class,
             'entity_id' => $type->id,
             'before_values' => null,
-            'after_values' => $type->only(['name', 'bank_id', 'cash_direction']),
+            'after_values' => $type->only(['name', 'cash_multiplier', 'digital_multiplier']),
             'occurred_at' => now(),
         ]);
 
@@ -87,12 +95,8 @@ class OperationTypeController extends Controller
     {
         Gate::authorize('update', $type);
 
-        $orgId = auth()->user()->organization_id;
-        $banks = Bank::where('organization_id', $orgId)->where('is_active', true)->orderBy('name')->get();
-
         return view('operations.types.form', [
             'type' => $type,
-            'banks' => $banks,
         ]);
     }
 
@@ -100,13 +104,14 @@ class OperationTypeController extends Controller
     {
         Gate::authorize('update', $type);
 
-        $before = $type->only(['name', 'bank_id', 'description', 'cash_direction']);
+        $before = $type->only(['name', 'description', 'cash_multiplier', 'digital_multiplier', 'sort_order']);
 
         $type->update([
-            'bank_id' => $request->input('bank_id'),
             'name' => $request->input('name'),
             'description' => $request->input('description'),
-            'cash_direction' => $request->input('cash_direction'),
+            'cash_multiplier' => $request->input('cash_multiplier'),
+            'digital_multiplier' => $request->input('digital_multiplier'),
+            'sort_order' => $request->input('sort_order', 0),
         ]);
 
         AuditLog::create([
@@ -118,7 +123,7 @@ class OperationTypeController extends Controller
             'entity_type' => OperationType::class,
             'entity_id' => $type->id,
             'before_values' => $before,
-            'after_values' => $type->only(['name', 'bank_id', 'cash_direction']),
+            'after_values' => $type->only(['name', 'cash_multiplier', 'digital_multiplier']),
             'occurred_at' => now(),
         ]);
 

@@ -3,8 +3,7 @@
 namespace App\Modules\Reporting\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\BankingNetwork\Models\Bank;
-use App\Modules\BankingNetwork\Models\BankAgent;
+use App\Modules\Agents\Models\Agent;
 use App\Modules\IdentityAccess\Domain\Enums\Role;
 use App\Modules\IdentityAccess\Models\User;
 use App\Modules\Operations\Models\Operation;
@@ -12,7 +11,6 @@ use App\Modules\Operations\Models\OperationType;
 use App\Modules\Organization\Models\District;
 use App\Modules\Organization\Models\Province;
 use App\Modules\Organization\Models\Region;
-use App\Modules\Organization\Models\Store;
 use App\Modules\Reporting\Http\Requests\DashboardFilterRequest;
 use App\Modules\Reporting\Services\DashboardQueryService;
 use Carbon\Carbon;
@@ -63,7 +61,7 @@ class DashboardController extends Controller
         $groupBy = in_array($period, ['day', 'week']) ? 'day' : 'month';
         $timeEvolution = $this->queryService->getTimeEvolution($user, $startUtc, $endUtc, $groupBy);
 
-        $recentOps = Operation::with(['bankAgent', 'operationType'])
+        $recentOps = Operation::with(['agent', 'operationType'])
             ->where('user_id', $user->id)
             ->whereBetween('effective_at', [$startUtc, $endUtc])
             ->orderBy('effective_at', 'desc')
@@ -72,7 +70,7 @@ class DashboardController extends Controller
             ->map(function ($op) {
                 return [
                     ['value' => $op->effective_at->format('H:i'), 'class' => 'data-mono'],
-                    ['value' => $op->bankAgent->code ?? '—'],
+                    ['value' => $op->agent->code ?? '—'],
                     ['value' => $op->operationType->name ?? '—'],
                     ['value' => 'S/ ' . number_format((float) $op->amount, 2), 'align' => 'right'],
                     ['value' => $op->isActive()
@@ -83,9 +81,17 @@ class DashboardController extends Controller
             })
             ->toArray();
 
-        $evolution = $timeEvolution && is_array($timeEvolution)
-            ? ['labels' => $timeEvolution['labels'] ?? [], 'entradas' => $timeEvolution['entradas'] ?? [], 'salidas' => $timeEvolution['salidas'] ?? []]
-            : ['labels' => [], 'entradas' => [], 'salidas' => []];
+        $evolution = ['labels' => [], 'entradas' => [], 'salidas' => []];
+        if (is_array($timeEvolution) && count($timeEvolution) > 0) {
+            foreach ($timeEvolution as $row) {
+                $label = is_object($row) ? ($row->date_label ?? '') : ($row['date_label'] ?? '');
+                $cashIn = is_object($row) ? ((int) ($row->cash_in_count ?? 0)) : ((int) ($row['cash_in_count'] ?? 0));
+                $cashOut = is_object($row) ? ((int) ($row->cash_out_count ?? 0)) : ((int) ($row['cash_out_count'] ?? 0));
+                $evolution['labels'][] = $label;
+                $evolution['entradas'][] = $cashIn;
+                $evolution['salidas'][] = $cashOut;
+            }
+        }
 
         return view('reporting.operator-dashboard', [
             'metrics' => $metrics,
@@ -117,22 +123,32 @@ class DashboardController extends Controller
 
         $period = $request->input('period', 'month');
         $groupBy = in_array($period, ['day', 'week']) ? 'day' : 'month';
-        $timeEvolution = $isEmpty ? [] : $this->queryService->getAdminTimeEvolution($startUtc, $endUtc, $groupBy, $filters, $includeAnnulled);
+        $timeEvolutionRaw = $isEmpty ? [] : $this->queryService->getAdminTimeEvolution($startUtc, $endUtc, $groupBy, $filters, $includeAnnulled);
+
+        $timeEvolution = ['labels' => [], 'data' => []];
+        if (is_array($timeEvolutionRaw) && count($timeEvolutionRaw) > 0) {
+            foreach ($timeEvolutionRaw as $row) {
+                $label = is_object($row) ? ($row->date_label ?? '') : ($row['date_label'] ?? '');
+                $count = is_object($row) ? ((int) ($row->count ?? 0)) : ((int) ($row['count'] ?? 0));
+                $timeEvolution['labels'][] = $label;
+                $timeEvolution['data'][] = $count;
+            }
+        }
+
+        $metrics->net_movement = bcsub((string) ($metrics->cash_in ?? 0), (string) ($metrics->cash_out ?? 0), 2);
 
         $operations = $isEmpty ? new \Illuminate\Pagination\LengthAwarePaginator([], 0, 25) : $this->queryService->getRecentOperations($startUtc, $endUtc, $filters, $includeAnnulled);
 
         $regions = Region::where('organization_id', $user->organization_id)->orderBy('name')->get();
         $provinces = !empty($filters['region_id']) ? Province::where('region_id', $filters['region_id'])->orderBy('name')->get() : collect();
         $districts = !empty($filters['province_id']) ? District::where('province_id', $filters['province_id'])->orderBy('name')->get() : collect();
-        $stores = Store::where('organization_id', $user->organization_id)->orderBy('name')->get();
-        $banks = Bank::where('organization_id', $user->organization_id)->orderBy('name')->get();
-        $bankAgents = BankAgent::where('organization_id', $user->organization_id)->orderBy('code')->get();
+        $agents = Agent::where('organization_id', $user->organization_id)->orderBy('code')->get();
         $types = OperationType::where('organization_id', $user->organization_id)->where('is_active', true)->orderBy('name')->get();
 
         return view('reporting.admin-dashboard', compact(
             'metrics', 'typeDistribution', 'timeEvolution', 'operations',
             'filters', 'includeAnnulled', 'period', 'regions', 'provinces',
-            'districts', 'stores', 'banks', 'bankAgents', 'types',
+            'districts', 'agents', 'types',
         ));
     }
 

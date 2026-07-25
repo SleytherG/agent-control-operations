@@ -2,15 +2,10 @@
 
 namespace App\Modules\IdentityAccess\Application\Actions;
 
-use App\Modules\IdentityAccess\Domain\Enums\AuthSessionStatus;
-use App\Modules\IdentityAccess\Domain\Enums\RefreshTokenState;
 use App\Modules\IdentityAccess\Domain\Enums\Role;
 use App\Modules\IdentityAccess\Domain\Enums\SessionEndReason;
 use App\Modules\IdentityAccess\Domain\Enums\SessionEventType;
 use App\Modules\IdentityAccess\Domain\Enums\UserStatus;
-use App\Modules\IdentityAccess\Models\AuthRefreshToken;
-use App\Modules\IdentityAccess\Models\AuthSession;
-use App\Modules\IdentityAccess\Models\SessionEvent;
 use App\Modules\IdentityAccess\Models\User;
 use App\Modules\Audit\Models\AuditLog;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +14,8 @@ use RuntimeException;
 
 class DeactivateUser
 {
+    public function __construct(private RevokeAllUserSessions $revokeAllUserSessions) {}
+
     public function execute(User $target, User $actor, string $reason): void
     {
         if ($target->id === $actor->id) {
@@ -79,39 +76,11 @@ class DeactivateUser
                 'occurred_at' => $now,
             ]);
 
-            $activeSessions = AuthSession::where('user_id', $user->id)
-                ->where('status', AuthSessionStatus::ACTIVE)
-                ->get();
-
-            foreach ($activeSessions as $session) {
-                $fresh = AuthSession::where('id', $session->id)->lockForUpdate()->first();
-                if (! $fresh || $fresh->status !== AuthSessionStatus::ACTIVE) {
-                    continue;
-                }
-
-                $fresh->update([
-                    'status' => AuthSessionStatus::REVOKED,
-                    'ended_at' => $now,
-                    'end_reason' => SessionEndReason::REVOCACION_ADMINISTRATIVA->value,
-                    'updated_at' => $now,
-                ]);
-
-                AuthRefreshToken::where('auth_session_id', $fresh->id)
-                    ->where('state', RefreshTokenState::ACTIVE)
-                    ->update([
-                        'state' => RefreshTokenState::REVOKED,
-                        'revoked_at' => $now,
-                        'updated_at' => $now,
-                    ]);
-
-                SessionEvent::create([
-                    'auth_session_id' => $fresh->id,
-                    'user_id' => $user->id,
-                    'type' => SessionEventType::ADMIN_REVOKED->value,
-                    'occurred_at' => $now,
-                    'created_at' => $now,
-                ]);
-            }
+            $this->revokeAllUserSessions->execute(
+                $user,
+                SessionEndReason::REVOCACION_ADMINISTRATIVA,
+                SessionEventType::ADMIN_REVOKED,
+            );
         });
     }
 }

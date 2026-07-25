@@ -19,4 +19,9 @@ class AuditLog extends Model
         'before_values', 'after_values', 'reason', 'occurred_at', 'correlation_id',
         'created_at',
     ];
+
+    public function actor()
+    {
+        return $this->belongsTo(\App\Modules\IdentityAccess\Models\User::class, 'actor_user_id');
+    }
 }

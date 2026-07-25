@@ -3,24 +3,31 @@
 @section('title', 'Comparativa de Operadores — Control de Operaciones')
 
 @section('content')
-    <h1>Comparativa de Operadores</h1>
+    <h1 class="admin-title" style="margin-bottom:var(--space-xs);">Comparativa de Operadores</h1>
+    <p class="admin-subtitle" style="margin-bottom:var(--space-md);">Compare volumen, entradas, salidas y neto por operador con filtros consistentes.</p>
 
-    <div class="dashboard-period-selector">
-        <form method="GET" action="{{ route('admin.dashboard.operators') }}">
-            <select name="period">
+    <div class="filter-panel" style="margin-bottom: var(--space-lg);">
+        <form method="GET" action="{{ route('admin.dashboard.operators') }}" class="filter-form filter-form--grid">
+            <div class="form-group">
+                <label class="form-label" for="period">Periodo</label>
+                <select name="period" id="period" class="form-input form-select">
                 <option value="day" {{ $period === 'day' ? 'selected' : '' }}>Día</option>
                 <option value="week" {{ $period === 'week' ? 'selected' : '' }}>Semana</option>
                 <option value="month" {{ $period === 'month' ? 'selected' : '' }}>Mes</option>
                 <option value="quarter" {{ $period === 'quarter' ? 'selected' : '' }}>Trimestre</option>
                 <option value="semester" {{ $period === 'semester' ? 'selected' : '' }}>Semestre</option>
                 <option value="year" {{ $period === 'year' ? 'selected' : '' }}>Año</option>
-            </select>
-            <input type="date" name="date" value="{{ $date }}">
-            <button type="submit">Actualizar</button>
+                </select>
+            </div>
 
-            <div class="operator-selector">
-                <label for="operator_ids">Operadores:</label>
-                <select name="operator_ids[]" id="operator_ids" multiple size="5">
+            <div class="form-group">
+                <label class="form-label" for="date">Fecha</label>
+                <input type="date" name="date" id="date" value="{{ $date }}" class="form-input">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="operator_ids">Operadores</label>
+                <select name="operator_ids[]" id="operator_ids" multiple size="5" class="form-input form-select form-select--multiple">
                     @foreach($allOperators as $op)
                         <option value="{{ $op->id }}" {{ in_array($op->id, $selectedOperatorIds) ? 'selected' : '' }}>
                             {{ $op->username_normalized }}
@@ -29,7 +36,10 @@
                 </select>
             </div>
 
-            <button type="submit">Aplicar</button>
+            <div class="filter-form-actions">
+                <a href="{{ route('admin.dashboard.operators') }}" class="btn btn--secondary btn--sm">Limpiar</a>
+                <button type="submit" class="btn btn--primary btn--sm">Aplicar</button>
+            </div>
         </form>
     </div>
 
@@ -67,7 +77,7 @@
                             <td>S/ {{ number_format((float) $operator->gross_amount, 2) }}</td>
                             <td>S/ {{ number_format((float) $operator->cash_in, 2) }}</td>
                             <td>S/ {{ number_format((float) $operator->cash_out, 2) }}</td>
-                            <td>S/ {{ number_format((float) $operator->net_movement, 2) }}</td>
+                            <td>S/ {{ number_format((float) (($operator->cash_in ?? 0) - ($operator->cash_out ?? 0)), 2) }}</td>
                         </tr>
                     @endforeach
                 </tbody>

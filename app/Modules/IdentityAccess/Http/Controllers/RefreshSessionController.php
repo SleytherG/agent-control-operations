@@ -30,7 +30,7 @@ class RefreshSessionController extends Controller
         }
 
         $response = response()->json([
-            'expiresAt' => $result['expires_at']->toIso8601String(),
+            'expiresAt' => $result['expires_at']->format(\DateTimeInterface::ATOM),
         ]);
 
         return $this->cookieService->withAuthCookies(

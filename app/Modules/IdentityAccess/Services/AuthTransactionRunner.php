@@ -36,6 +36,14 @@ class AuthTransactionRunner
     private function isTransientError(Throwable $e): bool
     {
         $message = $e->getMessage();
-        return str_contains($message, 'Deadlock') || str_contains($message, 'Lock wait timeout');
+        $code = $e->getCode();
+
+        if (str_contains($message, 'Deadlock') || str_contains($message, 'Lock wait timeout')) {
+            return true;
+        }
+
+        $pgTransientCodes = ['40P01', '55P03', '40001', '40P02'];
+
+        return in_array($code, $pgTransientCodes, true);
     }
 }

@@ -41,41 +41,29 @@
     </div>
 
     <div class="card">
-        <x-ui.data-table
-            :headers="[
-                ['label' => 'Codigo'],
-                ['label' => 'Nombre'],
-                ['label' => 'Distrito'],
-                ['label' => 'Provincia'],
-                ['label' => 'Region'],
-                ['label' => 'Estado', 'align' => 'center'],
-                ['label' => 'Acciones', 'align' => 'center'],
-            ]"
-            :rows="$stores->map(function($store) {
-                $actions = \"<a href='\" . route('admin.stores.show', $store) . \"' class='btn btn--secondary'>Ver</a>
-                    <a href='#' onclick=\\\"event.preventDefault(); document.getElementById('edit-store-{$store->id}').submit();\\\" class='btn btn--primary'>Editar</a>
-                    <form id='edit-store-{$store->id}' action='\" . route('admin.stores.update', $store) . \"' method='POST' style='display:none;'>
-                        <input type='hidden' name='_token' value='\" . csrf_token() . \"'>
-                        <input type='hidden' name='_method' value='PATCH'>
-                    </form>\";
-                if (\$store->is_active) {
-                    \$actions .= \"<form action='\" . route('admin.stores.deactivate', $store) . \"' method='POST' style='display:inline;' onsubmit=\\\"return confirm('Desactivar esta tienda?');\\\">\";
-                    \$actions .= \"<input type='hidden' name='_token' value='\" . csrf_token() . \"'>\";
-                    \$actions .= \"<input type='hidden' name='_method' value='DELETE'>\";
-                    \$actions .= \"<button type='submit' class='btn btn--danger'>Desactivar</button></form>\";
-                }
-                return [
-                    ['value' => \$store->code],
-                    ['value' => \$store->name],
-                    ['value' => \$store->district?->name ?? '—'],
-                    ['value' => \$store->district?->province?->name ?? '—'],
-                    ['value' => \$store->district?->province?->region?->name ?? '—'],
-                    ['value' => \$store->is_active ? \"<x-ui.badge variant='active'>Activo</x-ui.badge>\" : \"<x-ui.badge variant='inactive'>Inactivo</x-ui.badge>\", 'align' => 'center'],
-                    ['value' => \$actions, 'align' => 'center'],
-                ];
-            })->toArray()"
-            emptyMessage="No se encontraron tiendas."
-        />
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead><tr><th>Código</th><th>Nombre</th><th>Distrito</th><th>Provincia</th><th>Región</th><th class="table-th-center">Estado</th><th class="table-th-center">Acciones</th></tr></thead>
+                <tbody>
+                    @forelse($stores as $store)
+                        <tr>
+                            <td>{{ $store->code }}</td><td>{{ $store->name }}</td><td>{{ $store->district?->name ?? '—' }}</td><td>{{ $store->district?->province?->name ?? '—' }}</td><td>{{ $store->district?->province?->region?->name ?? '—' }}</td>
+                            <td class="table-td-center"><x-ui.badge :variant="$store->is_active ? 'active' : 'inactive'">{{ $store->is_active ? 'Activo' : 'Inactivo' }}</x-ui.badge></td>
+                            <td class="table-td-center">
+                                <a href="{{ route('admin.stores.show', $store) }}" class="btn btn--secondary">Ver</a>
+                                <a href="#" class="btn btn--primary" onclick="event.preventDefault(); document.getElementById('edit-store-{{ $store->id }}').submit();">Editar</a>
+                                <form id="edit-store-{{ $store->id }}" action="{{ route('admin.stores.update', $store) }}" method="POST" style="display:none">@csrf @method('PATCH')</form>
+                                @if($store->is_active)
+                                    <form action="{{ route('admin.stores.deactivate', $store) }}" method="POST" style="display:inline" data-confirm="¿Desactivar esta tienda?">@csrf @method('DELETE')<button type="submit" class="btn btn--danger">Desactivar</button></form>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="7" class="table-empty"><div class="table-empty-icon" aria-hidden="true">&#x1F3EA;</div>No se encontraron tiendas.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
         <x-ui.pagination
             :currentPage="$stores->currentPage()"
             :lastPage="$stores->lastPage()"

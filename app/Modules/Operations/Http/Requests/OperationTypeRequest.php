@@ -24,12 +24,12 @@ class OperationTypeRequest extends FormRequest
                 'max:160',
                 Rule::unique('operation_types', 'name')
                     ->where('organization_id', $orgId)
-                    ->where('bank_id', $this->input('bank_id'))
                     ->ignore($typeId),
             ],
             'description' => ['nullable', 'string', 'max:500'],
-            'bank_id' => ['nullable', 'exists:banks,id,is_active,1'],
-            'cash_direction' => ['required', 'in:ENTRADA,SALIDA,NEUTRA,POR_CONFIRMAR'],
+            'cash_multiplier' => ['required', 'in:-1,0,1'],
+            'digital_multiplier' => ['required', 'in:-1,0,1'],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
         ];
     }
 }

@@ -11,17 +11,17 @@ class DashboardQueryService
     public function getOperatorMetrics(User $user, Carbon $startUtc, Carbon $endUtc): object
     {
         return DB::table('operations as o')
-            ->join('operation_types as ot', 'o.operation_type_id', '=', 'ot.id')
             ->where('o.status', 'ACTIVE')
             ->where('o.user_id', $user->id)
             ->whereBetween('o.effective_at', [$startUtc, $endUtc])
             ->selectRaw("
                 COUNT(*) as operation_count,
                 COALESCE(SUM(o.amount), 0) as gross_amount,
-                COALESCE(SUM(CASE WHEN ot.cash_direction = 'ENTRADA' THEN o.amount ELSE 0 END), 0) as cash_in,
-                COALESCE(SUM(CASE WHEN ot.cash_direction = 'SALIDA' THEN o.amount ELSE 0 END), 0) as cash_out,
-                COALESCE(SUM(CASE WHEN ot.cash_direction = 'ENTRADA' THEN o.amount ELSE 0 END), 0)
-                  - COALESCE(SUM(CASE WHEN ot.cash_direction = 'SALIDA' THEN o.amount ELSE 0 END), 0) as net_movement
+                COALESCE(SUM(CASE WHEN o.cash_delta > 0 THEN o.cash_delta ELSE 0 END), 0) as cash_in,
+                COALESCE(SUM(CASE WHEN o.cash_delta < 0 THEN ABS(o.cash_delta) ELSE 0 END), 0) as cash_out,
+                COALESCE(SUM(CASE WHEN o.digital_delta > 0 THEN o.digital_delta ELSE 0 END), 0) as digital_in,
+                COALESCE(SUM(CASE WHEN o.digital_delta < 0 THEN ABS(o.digital_delta) ELSE 0 END), 0) as digital_out,
+                COALESCE(SUM(CASE WHEN o.cash_delta > 0 THEN o.cash_delta ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN o.cash_delta < 0 THEN ABS(o.cash_delta) ELSE 0 END), 0) as net_movement
             ")
             ->first();
     }
@@ -40,9 +40,9 @@ class DashboardQueryService
         $this->applyAdminFilters($query, $filters);
 
         return $query->selectRaw("
-            ot.name, ot.cash_direction, COUNT(*) as count, COALESCE(SUM(o.amount), 0) as total_amount
+            ot.name, COUNT(*) as count, COALESCE(SUM(o.amount), 0) as total_amount
         ")
-        ->groupBy('ot.id', 'ot.name', 'ot.cash_direction')
+        ->groupBy('ot.id', 'ot.name')
         ->orderBy('ot.name')
         ->get()
         ->toArray();
@@ -58,7 +58,7 @@ class DashboardQueryService
             $query->where('o.user_id', $user->id);
         }
 
-        if (!empty($filters['bank_id'])) {
+        if (!empty($filters['agent_id'])) {
             $query->join('operation_types as ot', 'o.operation_type_id', '=', 'ot.id');
         }
 
@@ -67,7 +67,11 @@ class DashboardQueryService
         $dateExpression = $this->getDateExpression($groupBy);
 
         return $query->selectRaw("
-            {$dateExpression} as date_label, COUNT(*) as count, COALESCE(SUM(o.amount), 0) as total_amount
+            {$dateExpression} as date_label,
+            COUNT(*) as count,
+            COALESCE(SUM(o.amount), 0) as total_amount,
+            COALESCE(SUM(CASE WHEN o.cash_delta > 0 THEN 1 ELSE 0 END), 0) as cash_in_count,
+            COALESCE(SUM(CASE WHEN o.cash_delta < 0 THEN 1 ELSE 0 END), 0) as cash_out_count
         ")
         ->groupBy('date_label')
         ->orderBy('date_label')
@@ -92,10 +96,8 @@ class DashboardQueryService
             u.id, u.username_normalized,
             COUNT(*) as operation_count,
             COALESCE(SUM(o.amount), 0) as gross_amount,
-            COALESCE(SUM(CASE WHEN ot.cash_direction = 'ENTRADA' THEN o.amount ELSE 0 END), 0) as cash_in,
-            COALESCE(SUM(CASE WHEN ot.cash_direction = 'SALIDA' THEN o.amount ELSE 0 END), 0) as cash_out,
-            COALESCE(SUM(CASE WHEN ot.cash_direction = 'ENTRADA' THEN o.amount ELSE 0 END), 0)
-              - COALESCE(SUM(CASE WHEN ot.cash_direction = 'SALIDA' THEN o.amount ELSE 0 END), 0) as net_movement
+            COALESCE(SUM(CASE WHEN o.cash_delta > 0 THEN o.cash_delta ELSE 0 END), 0) as cash_in,
+            COALESCE(SUM(CASE WHEN o.cash_delta < 0 THEN ABS(o.cash_delta) ELSE 0 END), 0) as cash_out
         ")
         ->groupBy('u.id', 'u.username_normalized')
         ->orderByRaw('COALESCE(SUM(o.amount), 0) DESC')
@@ -136,10 +138,8 @@ class DashboardQueryService
         return $query->selectRaw("
             COUNT(*) as operation_count,
             COALESCE(SUM(o.amount), 0) as gross_amount,
-            COALESCE(SUM(CASE WHEN ot.cash_direction = 'ENTRADA' THEN o.amount ELSE 0 END), 0) as cash_in,
-            COALESCE(SUM(CASE WHEN ot.cash_direction = 'SALIDA' THEN o.amount ELSE 0 END), 0) as cash_out,
-            COALESCE(SUM(CASE WHEN ot.cash_direction = 'ENTRADA' THEN o.amount ELSE 0 END), 0)
-              - COALESCE(SUM(CASE WHEN ot.cash_direction = 'SALIDA' THEN o.amount ELSE 0 END), 0) as net_movement
+            COALESCE(SUM(CASE WHEN o.cash_delta > 0 THEN o.cash_delta ELSE 0 END), 0) as cash_in,
+            COALESCE(SUM(CASE WHEN o.cash_delta < 0 THEN ABS(o.cash_delta) ELSE 0 END), 0) as cash_out
         ")
         ->first();
     }
@@ -158,9 +158,9 @@ class DashboardQueryService
         $this->applyAdminFilters($query, $filters);
 
         return $query->selectRaw("
-            ot.name, ot.cash_direction, COUNT(*) as count, COALESCE(SUM(o.amount), 0) as total_amount
+            ot.name, COUNT(*) as count, COALESCE(SUM(o.amount), 0) as total_amount
         ")
-        ->groupBy('ot.id', 'ot.name', 'ot.cash_direction')
+        ->groupBy('ot.id', 'ot.name')
         ->orderBy('ot.name')
         ->get()
         ->toArray();
@@ -176,7 +176,7 @@ class DashboardQueryService
 
         $query->whereBetween('o.effective_at', [$startUtc, $endUtc]);
 
-        if (!empty($filters['bank_id'])) {
+        if (!empty($filters['agent_id'])) {
             $query->join('operation_types as ot', 'o.operation_type_id', '=', 'ot.id');
         }
 
@@ -185,7 +185,11 @@ class DashboardQueryService
         $dateExpression = $this->getDateExpression($groupBy);
 
         return $query->selectRaw("
-            {$dateExpression} as date_label, COUNT(*) as count, COALESCE(SUM(o.amount), 0) as total_amount
+            {$dateExpression} as date_label,
+            COUNT(*) as count,
+            COALESCE(SUM(o.amount), 0) as total_amount,
+            COALESCE(SUM(CASE WHEN o.cash_delta > 0 THEN 1 ELSE 0 END), 0) as cash_in_count,
+            COALESCE(SUM(CASE WHEN o.cash_delta < 0 THEN 1 ELSE 0 END), 0) as cash_out_count
         ")
         ->groupBy('date_label')
         ->orderBy('date_label')
@@ -197,9 +201,8 @@ class DashboardQueryService
     {
         $query = DB::table('operations as o')
             ->join('operation_types as ot', 'o.operation_type_id', '=', 'ot.id')
-            ->join('bank_agents as ba', 'o.bank_agent_id', '=', 'ba.id')
+            ->join('agents as a', 'o.agent_id', '=', 'a.id')
             ->join('users as u', 'o.user_id', '=', 'u.id')
-            ->leftJoin('stores as s', 'ba.store_id', '=', 's.id')
             ->whereBetween('o.effective_at', [$startUtc, $endUtc]);
 
         if (!$includeAnnulled) {
@@ -210,8 +213,8 @@ class DashboardQueryService
 
         return $query->select([
                 'o.id', 'o.amount', 'o.currency', 'o.status', 'o.effective_at',
-                'ot.name as type_name', 'ot.cash_direction',
-                'ba.code as agent_code', 's.name as store_name',
+                'ot.name as type_name',
+                'a.code as agent_code', 'a.name as agent_name',
                 'u.username_normalized',
             ])
             ->orderByDesc('o.effective_at')
@@ -221,32 +224,12 @@ class DashboardQueryService
 
     private function applyAdminFilters($query, array $filters): void
     {
-        $needsStoreJoin = !empty($filters['region_id']) || !empty($filters['province_id']) || !empty($filters['district_id']);
-
-        if (!empty($filters['region_id'])) {
-            $query->join('stores as _fs', '_fs.id', '=', 'o.store_id');
-            $query->join('districts as _fd', '_fd.id', '=', '_fs.district_id');
-            $query->join('provinces as _fp', '_fp.id', '=', '_fd.province_id');
-            $query->where('_fp.region_id', $filters['region_id']);
-        } elseif (!empty($filters['province_id'])) {
-            $query->join('stores as _fs', '_fs.id', '=', 'o.store_id');
-            $query->join('districts as _fd', '_fd.id', '=', '_fs.district_id');
-            $query->where('_fd.province_id', $filters['province_id']);
-        } elseif (!empty($filters['district_id'])) {
-            $query->join('stores as _fs', '_fs.id', '=', 'o.store_id');
-            $query->where('_fs.district_id', $filters['district_id']);
+        if (!empty($filters['agent_id'])) {
+            $query->where('o.agent_id', $filters['agent_id']);
         }
 
-        if (!empty($filters['store_id'])) {
-            $query->where('o.store_id', $filters['store_id']);
-        }
-
-        if (!empty($filters['bank_id'])) {
-            $query->where('ot.bank_id', $filters['bank_id']);
-        }
-
-        if (!empty($filters['bank_agent_id'])) {
-            $query->where('o.bank_agent_id', $filters['bank_agent_id']);
+        if (!empty($filters['city'])) {
+            $query->where('a.city', 'like', '%' . $filters['city'] . '%');
         }
 
         if (!empty($filters['operator_id'])) {
@@ -268,6 +251,15 @@ class DashboardQueryService
                 'week' => "strftime('%Y-%W', o.effective_at)",
                 'month' => "strftime('%Y-%m', o.effective_at)",
                 default => 'DATE(o.effective_at)',
+            };
+        }
+
+        if ($driver === 'pgsql') {
+            return match ($groupBy) {
+                'day' => "TO_CHAR(o.effective_at, 'YYYY-MM-DD')",
+                'week' => "TO_CHAR(o.effective_at, 'IYYY-IW')",
+                'month' => "TO_CHAR(o.effective_at, 'YYYY-MM')",
+                default => "TO_CHAR(o.effective_at, 'YYYY-MM-DD')",
             };
         }
 

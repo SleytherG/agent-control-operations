@@ -1,40 +1,47 @@
 <!--
 Sync Impact Report
-- Version change: 1.0.0 -> 1.1.0
+- Version change: 2.0.0 -> 3.0.0
 - Modified principles:
-  - I. Desarrollo Incremental Dirigido por Especificaciones -> I. Desarrollo Dirigido por Especificaciones
-  - II. Corrección del Dominio -> II. Entregas Pequeñas e Incrementales
-  - III. Seguridad y Mínimo Privilegio -> V. Seguridad Impuesta por el Servidor
-  - IV. Integridad y Auditabilidad -> VII. Integridad y Trazabilidad Operacional
-  - V. Privacidad y Minimización de Datos -> IX. Privacidad y Minimización de Datos
-  - VI. Compatibilidad y Despliegue Económico -> III. Portabilidad y Operación Económica
-  - VII. Calidad y Pruebas -> X. Calidad y Pruebas Obligatorias
-  - VIII. Simplicidad y Uso Directo del Framework -> IV. Interfaz Mínima y Progresiva
-  - IX. Gobierno de Cambios -> XIII. Control de Cambios y Gobernanza
-- Added principles: VI. Gestión Segura de Sesiones; VIII. Exactitud Monetaria y Temporal;
-  XI. Rendimiento y Uso Responsable de Recursos; XII. Observabilidad y Recuperación
-- Added sections: Propósito del Sistema; Flujo de Desarrollo y Control Previo
-- Removed sections: Cross-Cutting Rules; Definition of Done (obligations integrated into principles
-  and workflow)
+  - III. Portabilidad y Operación Económica — PostgreSQL sustituye MySQL/MariaDB como base
+    relacional canónica; Supabase queda limitado a proveedor administrado reemplazable
+  - V. Seguridad Impuesta por el Servidor — Laravel conserva las responsabilidades de seguridad y
+    negocio; credenciales solo mediante variables de entorno seguras
+  - VII. Integridad y Trazabilidad Operacional — integridad referencial, transacciones y migraciones
+    versionadas quedan explícitas
+  - VIII. Exactitud Monetaria y Temporal — DECIMAL o NUMERIC son obligatorios para importes
+  - X. Calidad y Pruebas Obligatorias — se exigen pruebas de migración sobre PostgreSQL real
+  - XII. Observabilidad y Recuperación — backups y restauración cubren PostgreSQL administrado
+- Added principles: none
+- Added sections: none
+- Removed sections: none
+- Removed constraints: MySQL/MariaDB como tecnología obligatoria de producción
 - Templates:
   - ✅ updated: .specify/templates/plan-template.md
-  - ✅ updated: .specify/templates/spec-template.md
+  - ✅ reviewed, no change required: .specify/templates/spec-template.md
   - ✅ updated: .specify/templates/tasks-template.md
   - ✅ reviewed, no change required: .specify/templates/checklist-template.md
-  - ✅ updated: .opencode/commands/speckit.specify.md
-  - ✅ updated: .opencode/commands/speckit.tasks.md
-  - ✅ reviewed, no change required: remaining .opencode/commands/speckit.*.md files
+  - ✅ reviewed, no change required: .specify/templates/constitution-template.md
+  - ✅ reviewed, no change required: speckit command files under .opencode/commands/
+- Runtime guidance:
+  - ✅ updated: README.md
   - ✅ updated: docs/product-brief.md
-  - ✅ reviewed, no change required: README.md
-- Follow-up TODOs: none
+  - ✅ updated: docs/backup-restore.md
+  - ✅ updated: docs/deployment.md
+- Specs with superseded database assumptions: 001, 002, 003, 004, 005, 007, 008, 009
+- Follow-up TODOs: plan and execute the application/data migration to PostgreSQL in a separate
+  technical specification before changing production infrastructure; include .env.example,
+  Laravel database configuration, migrations, operational scripts, PostgreSQL tests and data cutover
 -->
-# Control de Operaciones de Agentes Bancarios Constitution
+# Control de Operaciones Constitution
 
 ## Propósito del Sistema
 
-El sistema DEBE ser una aplicación web interna que digitalice el registro manual de operaciones
-efectuadas en una red de cajeros corresponsales o agentes bancarios ubicados en distintas tiendas
-del cliente.
+El sistema DEBE ser una aplicación web interna que digitalice el cuaderno de operaciones
+de una organización que administra uno o más puntos físicos.
+
+El punto físico se denomina únicamente AGENTE. Un agente representa directamente un local,
+sucursal, tienda, punto de atención, agente corresponsal o agente bancario. El sistema NO DEBE
+mantener una entidad Tienda separada de Agente ni requerir que un agente pertenezca a un banco.
 
 El sistema es exclusivamente un registro interno de control operacional. NO DEBE reemplazar los
 sistemas de los bancos, confirmar que una operación fue procesada por un banco ni presentarse como
@@ -68,15 +75,26 @@ solicitud, decisión y entrega.
 
 ### III. Portabilidad y Operación Económica
 
-La aplicación DEBE ejecutarse en hosting PHP convencional que soporte la versión requerida de PHP,
-Composer, MySQL o MariaDB, HTTPS y acceso seguro al directorio público. La solución DEBE evitar toda
-dependencia de infraestructura que no sea imprescindible para el negocio.
+La aplicación DEBE usar una base de datos relacional PostgreSQL como almacenamiento canónico de
+producción, con claves foráneas e integridad referencial impuestas por la base de datos. Inicialmente,
+PostgreSQL será administrado por Supabase, pero la aplicación DEBE poder trasladarse a otro proveedor
+PostgreSQL sin modificar reglas de negocio. El alojamiento de Laravel PUEDE ser un hosting PHP
+económico separado, siempre que soporte la versión requerida de PHP, Composer, HTTPS, conexión TLS
+saliente a PostgreSQL y acceso seguro al directorio público.
+
+Supabase DEBE utilizarse únicamente como proveedor administrado de PostgreSQL. Las reglas de negocio
+NO DEBEN depender de Supabase Auth, Storage, Realtime, Edge Functions ni Data API. Laravel DEBE
+acceder a PostgreSQL mediante su capa de datos y migraciones convencionales. Esta separación conserva
+portabilidad razonable y evita dependencia funcional del proveedor.
 
 El MVP NO DEBE requerir Redis, contenedores en producción, Kubernetes, servidores de aplicaciones
 Java, WebSockets, procesos residentes, colas permanentes ni servicios externos de pago. Los assets
 del frontend DEBEN compilarse antes del despliegue y producción NO DEBE requerir Node.js para atender
 solicitudes. El servidor web DEBE exponer únicamente el directorio `public` de Laravel. Estas reglas
-preservan un despliegue seguro y viable en recursos económicos.
+preservan un despliegue seguro y viable en recursos económicos. La selección de proveedor y plan
+DEBE mantener una alternativa de bajo costo compatible con PostgreSQL. El servicio administrado de
+PostgreSQL es la única excepción permitida a la prohibición de servicios externos de pago y DEBE
+seleccionarse en el nivel de costo mínimo que satisfaga capacidad, backups y recuperación requeridos.
 
 ### IV. Interfaz Mínima y Progresiva
 
@@ -93,8 +111,8 @@ costos de operación y complejidad sin sacrificar acceso multidispositivo.
 El servidor DEBE verificar toda autenticación, autorización, validación y restricción de acceso. La
 interfaz NUNCA DEBE considerarse una barrera de seguridad. Los roles iniciales son:
 
-- `ADMINISTRADOR_PROPIETARIO`: administra la red y consulta información de todas las tiendas,
-  agentes y operadores.
+- `ADMINISTRADOR_PROPIETARIO`: administra la red y consulta información de todos los agentes y
+  operadores.
 - `OPERADOR`: registra operaciones y consulta únicamente la información permitida por las reglas de
   negocio.
 
@@ -102,7 +120,14 @@ Un `OPERADOR` NO DEBE acceder a operaciones de otro operador mediante URLs, par�
 o solicitudes HTTP manipuladas. Las contraseñas DEBEN usar el algoritmo de hash configurado por
 Laravel y NUNCA aparecer en logs. Producción DEBE usar exclusivamente HTTPS, los intentos de
 autenticación DEBEN limitarse por frecuencia y los secretos y credenciales DEBEN permanecer fuera
-del repositorio. Estos controles hacen cumplir el mínimo privilegio aun frente a clientes alterados.
+del repositorio. Las credenciales de PostgreSQL y cualquier secreto de Supabase DEBEN suministrarse
+exclusivamente mediante variables de entorno seguras y NUNCA incorporarse a código, plantillas,
+documentación, imágenes de despliegue o logs.
+
+Laravel DEBE seguir siendo responsable de autenticación, emisión y rotación de JWT y refresh tokens,
+autorización, reglas de negocio, validación, auditoría y acceso a datos. Estas responsabilidades NO
+DEBEN delegarse a servicios propietarios de Supabase. Estos controles hacen cumplir el mínimo
+privilegio aun frente a clientes alterados y conservan una frontera de seguridad auditable.
 
 ### VI. Gestión Segura de Sesiones
 
@@ -124,18 +149,26 @@ Las operaciones son registros de control y DEBEN conservar trazabilidad. La inte
 permitir su eliminación física. Las correcciones DEBEN realizarse mediante anulación lógica,
 reemplazo o edición auditada, según la especificación aprobada.
 
-Cada operación DEBE conservar como mínimo usuario registrador, agente bancario, tipo de operación,
-monto, moneda, fecha y hora efectiva, fecha y hora de registro, estado, referencia opcional y
-observación opcional. Los cambios sensibles DEBEN generar una auditoría con usuario, fecha, acción,
-entidad afectada, valores anteriores, valores posteriores y motivo cuando corresponda. Esto permite
-reconstruir quién hizo qué, cuándo y sobre qué información.
+Cada operación DEBE conservar como mínimo el operador autenticado, el agente del contexto
+operacional, el tipo de operación, el monto, la moneda, la fecha y hora efectiva, la fecha y
+hora de registro, los efectos monetarios sobre efectivo y saldo digital, el estado y una
+referencia u observación opcional. Los cambios sensibles DEBEN generar una auditoría con usuario,
+fecha, acción, entidad afectada, valores anteriores, valores posteriores y motivo cuando
+corresponda. Esto permite reconstruir quién hizo qué, cuándo y sobre qué información.
+
+Las relaciones persistentes DEBEN usar claves foráneas y restricciones compatibles con PostgreSQL.
+Los cambios que deban ser atómicos DEBEN ejecutarse dentro de transacciones. Toda evolución del
+esquema DEBE realizarse mediante migraciones Laravel versionadas, revisables y ordenadas; los cambios
+manuales no reproducibles sobre la base productiva están prohibidos.
 
 ### VIII. Exactitud Monetaria y Temporal
 
-Los importes DEBEN almacenarse con tipos decimales; queda prohibido usar `float` o `double` para
-valores monetarios. El sistema DEBE distinguir cantidad de operaciones, monto bruto operado, entrada
-de efectivo, salida de efectivo, movimiento neto de efectivo y comisión o ganancia. El MVP NO DEBE
-presentar el monto bruto operado como ganancia.
+Los importes DEBEN almacenarse con tipos `DECIMAL` o `NUMERIC`; queda prohibido usar `float` o
+`double` para valores monetarios. El sistema DEBE distinguir al menos: monto bruto operado, entradas
+de efectivo,
+salidas de efectivo, entradas digitales, salidas digitales, efectivo inicial, saldo digital inicial,
+efectivo esperado, saldo digital esperado, efectivo real, saldo digital real y diferencias
+operativas. Ninguno de estos valores DEBE presentarse como ganancia, utilidad o comisión.
 
 Las fechas DEBEN almacenarse de forma consistente y mostrarse en la zona horaria `America/Lima`.
 Toda especificación que use periodos diarios, semanales, mensuales, trimestrales, semestrales o
@@ -145,12 +178,17 @@ de redondeo, agregación e interpretación temporal.
 ### IX. Privacidad y Minimización de Datos
 
 El sistema DEBE recopilar únicamente datos necesarios para el control operacional. El MVP NO DEBE
-almacenar datos de los clientes que realizan operaciones bancarias, números completos de tarjetas,
-claves, credenciales bancarias, biometría ni información secreta del banco.
+almacenar números completos de tarjetas, claves, credenciales bancarias, biometría, DNI obligatorio
+ni información secreta del banco.
 
-La incorporación futura de clientes DEBE contar con una especificación independiente, un análisis
-de privacidad y reglas de acceso aprobadas antes de recopilar datos. La ausencia de una necesidad
-aprobada obliga a no almacenar el dato y reduce exposición innecesaria.
+El MVP PUEDE conservar, de manera opcional, un texto breve que identifique al cliente de una
+operación con propósito exclusivamente operativo interno: nombre, alias, razón social o descripción
+de cliente recurrente. Este texto NO constituye un catálogo maestro de clientes, NO autoriza la
+recopilación de datos sensibles adicionales y DEBE ser visible únicamente para el operador autor
+y el administrador propietario de la organización. Cualquier expansión futura de la captura de
+clientes DEBE contar con una especificación independiente, un análisis de privacidad y reglas de
+acceso aprobadas. La ausencia de una necesidad aprobada obliga a no almacenar el dato y reduce
+exposición innecesaria.
 
 ### X. Calidad y Pruebas Obligatorias
 
@@ -163,6 +201,10 @@ Cada corrección de defecto DEBE incluir una prueba que falle antes de la correc
 Una especificación NO DEBE considerarse terminada mientras falle cualquiera de sus pruebas
 obligatorias. Las pruebas constituyen evidencia ejecutable de cumplimiento, no una actividad
 opcional posterior.
+
+Toda migración DEBE probarse en subida y, cuando sea reversible, en bajada. Los comportamientos que
+dependan de bloqueos, restricciones, transacciones o sintaxis del motor DEBEN validarse contra una
+instancia real de PostgreSQL; SQLite NO sustituye estas pruebas de compatibilidad.
 
 ### XI. Rendimiento y Uso Responsable de Recursos
 
@@ -180,10 +222,13 @@ operacional inviable.
 Los errores DEBEN registrarse sin secretos ni datos sensibles. La aplicación DEBE proporcionar una
 ruta de comprobación de salud y producción DEBE ejecutarse con debug desactivado.
 
-DEBE existir una estrategia documentada de copias de seguridad para la base de datos y los archivos
-necesarios. Las migraciones DEBEN ser reversibles cuando sea técnicamente viable; toda excepción
-DEBE justificarse en el plan. Estas medidas permiten detectar fallos y recuperar el servicio sin
-incrementar la exposición de datos.
+DEBE existir una estrategia documentada de copias de seguridad y recuperación para PostgreSQL y los
+archivos necesarios. En Supabase, la estrategia DEBE identificar las capacidades de backup del plan
+contratado y mantener un procedimiento de exportación y restauración verificable que no dependa
+exclusivamente del proveedor. Las restauraciones DEBEN ensayarse periódicamente en un entorno seguro.
+Las migraciones DEBEN ser reversibles cuando sea técnicamente viable; toda excepción DEBE justificarse
+en el plan. Estas medidas permiten detectar fallos y recuperar el servicio sin incrementar la
+exposición de datos.
 
 ### XIII. Control de Cambios y Gobernanza
 
@@ -195,6 +240,31 @@ prohibidas.
 Cada cambio constitucional DEBE registrar fecha, versión y justificación. Antes de implementar se
 DEBE comprobar que la especificación, el plan y las tareas cumplen esta Constitución. Este control
 evita que decisiones locales degraden garantías transversales.
+
+### XIV. Simplicidad del Dominio
+
+El MVP DEBE modelar únicamente los conceptos confirmados por el cliente como necesarios para su
+proceso actual. NO DEBEN introducirse entidades, filtros, catálogos o segmentaciones por anticipación
+de requerimientos hipotéticos.
+
+Debe aplicarse el principio YAGNI: no diseñar ni implementar para necesidades que no estén
+documentadas en una especificación aprobada. Las necesidades futuras DEBEN incorporarse mediante
+nuevas especificaciones, nunca mediante sobreingeniería preventiva.
+
+## Separación entre Constitución y Especificaciones
+
+La Constitución contiene principios permanentes, restricciones transversales y criterios de calidad
+que aplican a todo el producto. Los modelos funcionales detallados, campos, estados, flujos y
+entidades específicas pertenecen a las especificaciones y al plan técnico.
+
+La Constitución NO DEBE inmovilizar el producto con modelos de datos detallados que puedan cambiar
+tras el descubrimiento con el cliente. Cuando una nueva validación de negocio invalide una suposición
+anterior:
+
+1. Se actualiza la Constitución únicamente si el cambio afecta un principio permanente.
+2. Se crea o actualiza una especificación para el comportamiento funcional.
+3. Se registra qué requisitos anteriores quedan superados.
+4. Se regeneran plan y tareas antes de implementar.
 
 ## Flujo de Desarrollo y Control Previo
 
@@ -222,4 +292,4 @@ sustancial; PATCH para aclaraciones que no cambien obligaciones. Toda revisión 
 plan, tareas o implementación DEBE tratar los incumplimientos constitucionales como bloqueantes
 hasta corregirlos o aprobar una excepción completa conforme al Principio XIII.
 
-**Version**: 1.1.0 | **Ratified**: 2026-07-22 | **Last Amended**: 2026-07-22
+**Version**: 3.0.0 | **Ratified**: 2026-07-22 | **Last Amended**: 2026-07-25

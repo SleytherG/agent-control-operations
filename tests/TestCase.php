@@ -37,4 +37,11 @@ abstract class TestCase extends BaseTestCase
 
         $this->withCookie(config('session-security.cookies.access_name'), $result['token']);
     }
+
+    protected function actingAsJwtSession(User $user, AuthSession $session): void
+    {
+        $result = app(JwtTokenService::class)->issue((string) $user->id, $session->public_id);
+
+        $this->withCookie(config('session-security.cookies.access_name'), $result['token']);
+    }
 }

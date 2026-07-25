@@ -16,16 +16,24 @@ class Operation extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'cash_delta' => 'decimal:2',
+        'digital_delta' => 'decimal:2',
         'effective_at' => 'datetime',
         'recorded_at' => 'datetime',
         'annulled_at' => 'datetime',
+        'voided_at' => 'datetime',
     ];
 
     protected $fillable = [
-        'organization_id', 'store_id', 'bank_agent_id', 'operation_type_id',
-        'user_id', 'amount', 'currency', 'effective_at', 'recorded_at',
-        'status', 'reference', 'observation', 'annulled_by', 'annulled_at',
-        'annulment_reason', 'idempotency_key',
+        'organization_id', 'store_id', 'bank_agent_id', 'agent_id',
+        'operation_type_id', 'user_id', 'operator_user_id',
+        'internal_code', 'customer_name',
+        'amount', 'cash_delta', 'digital_delta', 'currency',
+        'effective_at', 'recorded_at', 'status',
+        'reference', 'observation', 'notes',
+        'annulled_by', 'annulled_at', 'annulment_reason',
+        'voided_by', 'voided_at', 'void_reason',
+        'idempotency_key',
     ];
 
     protected static function newFactory(): OperationFactory
@@ -46,6 +54,11 @@ class Operation extends Model
     public function bankAgent()
     {
         return $this->belongsTo(\App\Modules\BankingNetwork\Models\BankAgent::class);
+    }
+
+    public function agent()
+    {
+        return $this->belongsTo(\App\Modules\Agents\Models\Agent::class);
     }
 
     public function operationType()

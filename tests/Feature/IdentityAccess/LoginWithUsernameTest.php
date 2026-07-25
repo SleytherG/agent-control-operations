@@ -27,7 +27,7 @@ class LoginWithUsernameTest extends TestCase
             'password' => 'secret123',
         ]);
 
-        $response->assertRedirect('/home');
+        $response->assertRedirect(route('dashboard.operator'));
         $this->assertEquals(1, AuthSession::where('user_id', $user->id)->count());
         $session = AuthSession::where('user_id', $user->id)->first();
         $this->assertNotNull($session->public_id);

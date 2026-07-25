@@ -6,3 +6,6 @@ import './components/dropdown.js';
 import './components/tabs.js';
 import './components/table-sort.js';
 import './components/currency-input.js';
+import './components/global-confirm.js';
+import './identity-access/session-timer.js';
+import './identity-access/password-reset.js';
