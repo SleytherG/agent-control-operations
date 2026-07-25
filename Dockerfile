@@ -1,6 +1,6 @@
 # Dockerfile — Multi-stage build for Laravel on Render
 # Stage 1: Build (composer, npm, vite)
-FROM php:8.3-cli AS build
+FROM php:8.4-cli AS build
 
 RUN apt-get update && apt-get install -y \
     git unzip libpq-dev libzip-dev nodejs npm \
@@ -11,19 +11,21 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-interaction --optimize-autoloader
+RUN composer install --no-dev --no-interaction --optimize-autoloader --no-scripts
+
+COPY . .
 
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY resources/ resources/
-COPY vite.config.js postcss.config.js tailwind.config.js ./
+COPY vite.config.js ./
 RUN npm run build
 
 # Stage 2: Runtime (PHP-FPM + Nginx)
-FROM php:8.3-fpm
+FROM php:8.4-fpm
 
 RUN apt-get update && apt-get install -y \
-    nginx libpq-dev libzip-dev supervisor \
+    nginx libpq-dev libzip-dev \
     && docker-php-ext-install pdo pdo_pgsql zip opcache \
     && apt-get clean
 
@@ -36,7 +38,8 @@ COPY docker/php-fpm.conf /usr/local/etc/php-fpm.d/zz-agenteflow.conf
 COPY docker/entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh \
-    && chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+    && chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
+    && rm -f /var/www/bootstrap/cache/*.php
 
 EXPOSE 80
 
