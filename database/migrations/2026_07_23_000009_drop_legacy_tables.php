@@ -30,54 +30,29 @@ return new class extends Migration
 
     private function dropOrphanIndexes(): void
     {
-        try {
-            Schema::table('operations', function ($table) {
-                $table->dropIndex(['bank_agent_id', 'effective_at']);
-            });
-        } catch (\Throwable $e) {
-        }
-
-        try {
-            Schema::table('operations', function ($table) {
-                $table->dropIndex(['store_id', 'effective_at']);
-            });
-        } catch (\Throwable $e) {
-        }
-
-        try {
-            Schema::table('daily_closures', function ($table) {
-                $table->dropUnique(['bank_agent_id', 'business_date', 'status']);
-            });
-        } catch (\Throwable $e) {
-        }
-
-        try {
-            Schema::table('daily_closures', function ($table) {
-                $table->dropIndex(['bank_agent_id', 'business_date']);
-            });
-        } catch (\Throwable $e) {
-        }
+        DB::statement('DROP INDEX IF EXISTS operations_bank_agent_id_effective_at_index');
+        DB::statement('DROP INDEX IF EXISTS operations_store_id_effective_at_index');
+        DB::statement('ALTER TABLE daily_closures DROP CONSTRAINT IF EXISTS daily_closures_bank_agent_id_business_date_status_unique');
+        DB::statement('DROP INDEX IF EXISTS daily_closures_bank_agent_id_business_date_index');
     }
 
     private function dropLegacyForeignKeys(): void
     {
-        $fkMap = [
-            ['operations', 'store_id', 'stores'],
-            ['operations', 'bank_agent_id', 'bank_agents'],
-            ['daily_closures', 'store_id', 'stores'],
-            ['daily_closures', 'bank_agent_id', 'bank_agents'],
-            ['operation_types', 'bank_id', 'banks'],
-            ['bank_agents', 'store_id', 'stores'],
-            ['bank_agents', 'bank_id', 'banks'],
+        $fks = [
+            'operations_store_id_foreign',
+            'operations_bank_agent_id_foreign',
+            'daily_closures_store_id_foreign',
+            'daily_closures_bank_agent_id_foreign',
+            'operation_types_bank_id_foreign',
+            'bank_agents_store_id_foreign',
+            'bank_agents_bank_id_foreign',
         ];
 
-        foreach ($fkMap as [$table, $column, $refTable]) {
-            try {
-                Schema::table($table, function ($blueprint) use ($column, $refTable) {
-                    $blueprint->dropForeign([$column]);
-                });
-            } catch (\Throwable $e) {
-                // FK may not exist if already dropped
+        foreach ($fks as $fk) {
+            foreach (['operations', 'daily_closures', 'operation_types', 'bank_agents'] as $table) {
+                if (Schema::hasTable($table)) {
+                    DB::statement("ALTER TABLE {$table} DROP CONSTRAINT IF EXISTS {$fk}");
+                }
             }
         }
     }
@@ -93,32 +68,25 @@ return new class extends Migration
 
     private function dropLegacyColumns(): void
     {
-        try {
-            Schema::table('operations', function ($table) {
-                $table->dropColumn(['store_id', 'bank_agent_id', 'reference']);
-            });
-        } catch (\Throwable $e) {
-            // columns may not exist
-        }
-
-        try {
-            Schema::table('daily_closures', function ($table) {
-                $table->dropColumn(['store_id', 'bank_agent_id', 'cash_in', 'cash_out', 'net_movement', 'has_pending_confirm']);
-            });
-        } catch (\Throwable $e) {
-            // columns may not exist
-        }
-
-        try {
-            Schema::table('operation_types', function ($table) {
-                $table->dropColumn('cash_direction');
-            });
-        } catch (\Throwable $e) {
-            // column may not exist
-        }
+        $this->safeDropColumns('operations', ['store_id', 'bank_agent_id', 'reference']);
+        $this->safeDropColumns('daily_closures', ['store_id', 'bank_agent_id', 'cash_in', 'cash_out', 'net_movement', 'has_pending_confirm']);
+        $this->safeDropColumns('operation_types', ['cash_direction']);
 
         DB::statement('UPDATE operations SET agent_id = 1 WHERE agent_id IS NULL');
         DB::statement('UPDATE daily_closures SET agent_id = 1 WHERE agent_id IS NULL');
+    }
+
+    private function safeDropColumns(string $table, array $columns): void
+    {
+        $existing = array_filter($columns, fn ($col) => Schema::hasColumn($table, $col));
+
+        if (empty($existing)) {
+            return;
+        }
+
+        Schema::table($table, function ($blueprint) use ($existing) {
+            $blueprint->dropColumn(array_values($existing));
+        });
     }
 
     public function down(): void

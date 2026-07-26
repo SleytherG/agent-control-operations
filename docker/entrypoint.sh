@@ -4,8 +4,8 @@ set -e
 echo "AgenteFlow — starting deployment"
 
 if [ "${APP_ENV}" = "production" ]; then
-    echo "Running migrations (isolated)..."
-    php artisan migrate --force --isolated
+echo "Running migrations..."
+php artisan migrate --force
     echo "Optimizing Laravel..."
     php artisan config:cache
     php artisan route:cache

@@ -21,6 +21,9 @@ services:
         value: pgsql
       - key: DB_HOST
         sync: false
+        # Recommended: Supabase Session Pooler host for IPv4 connectivity
+        # Get exact value from Supabase Dashboard → Database → Connection Pooling → Session mode
+        # Example format (varies by project): aws-0-sa-east-1.pooler.supabase.com
       - key: DB_PORT
         value: "5432"
       - key: DB_DATABASE
