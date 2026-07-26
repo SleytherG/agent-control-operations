@@ -38,6 +38,7 @@ COPY docker/php-fpm.conf /usr/local/etc/php-fpm.d/zz-agenteflow.conf
 COPY docker/entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh \
+    && rm -f /etc/nginx/sites-enabled/default /etc/nginx/conf.d/default.conf \
     && chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
     && rm -f /var/www/bootstrap/cache/*.php
 
