@@ -25,7 +25,7 @@
         }
     @endphp
 
-    <form method="GET" action="{{ route('operations.index') }}" class="filter-bar filter-bar--standalone" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));">
+    <form method="GET" action="{{ route('operations.index') }}" class="filter-bar filter-bar--standalone filter-bar--responsive">
         <x-ui.input
             label="Código"
             name="code"
@@ -79,7 +79,7 @@
             type="date"
             value="{{ request('date_to') }}"
         />
-        <div class="filter-bar-actions" style="grid-column: 1 / -1; margin-left: 0; justify-content: flex-end;">
+        <div class="filter-bar-actions" style="justify-content: flex-end;">
             <a href="{{ route('operations.index') }}" class="btn btn--secondary">Limpiar</a>
             <x-ui.button variant="secondary" type="submit">Filtrar</x-ui.button>
         </div>

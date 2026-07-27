@@ -17,6 +17,19 @@
   margin-bottom: var(--space-lg);
 }
 
+.filter-bar--responsive {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-md);
+  align-items: flex-end;
+}
+
+.filter-bar--responsive .filter-bar-actions {
+  grid-column: 1 / -1;
+  margin-left: 0;
+  justify-content: flex-end;
+}
+
 .page-toolbar {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -112,11 +125,21 @@
     display: none;
   }
 
+  .filter-bar--responsive {
+    display: grid !important;
+    grid-template-columns: 1fr;
+  }
+
   .filter-form,
   .filter-form--grid {
     display: flex;
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .filter-form .form-group {
+    flex: 1 1 100%;
+    min-width: 0;
   }
 
   .filter-bar-actions,
@@ -129,6 +152,10 @@
   .filter-form-actions > * {
     flex: 1 1 100%;
     text-align: center;
+  }
+
+  .filter-panel {
+    padding: var(--space-sm);
   }
 
   .filter-bar-toggle {
