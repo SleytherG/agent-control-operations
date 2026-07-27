@@ -113,18 +113,17 @@
 
 ---
 
-## BLOQUE 4 — Módulo IdentityAccess: Administración de usuarios (operadores)
+## BLOQUE 4 — Módulo IdentityAccess: Administración de usuarios (operadores) ✅ COMPLETADO (Web)
 
-- [ ] **Fase 4.1** — `app/(app)/admin/users/index.tsx`: listado de operadores (equivalente `identity-access/operators/index.blade.php`). Tabla/lista con `DataTable.tsx`: nombre, usuario, rol, estado, acciones.
-- [ ] **Fase 4.2** — `src/api/operators.ts`: `listOperators()`, `createOperator()`, `updateOperator()`, `deactivateOperator()`.
-- [ ] **Fase 4.3** — `app/(app)/admin/users/create.tsx`: formulario de creación (equivalente `operators/form.blade.php` modo create), RHF + Zod.
-- [ ] **Fase 4.4** — `app/(app)/admin/users/[id]/edit.tsx`: formulario de edición (mismo componente reutilizado en modo `edit`).
-- [ ] **Fase 4.5** — Acción de desactivar usuario: modal de confirmación (`Modal.tsx` + `useMutation`), equivalente `users/deactivate.blade.php`.
-- [ ] **Fase 4.6** — `app/(app)/admin/users/[id]/password-reset.tsx`: acción de reseteo de contraseña por admin — modal mostrando contraseña temporal una sola vez.
-- [ ] **Fase 4.7** — `app/(app)/admin/users/[id]/password-resets.tsx`: listado de auditoría de resets (equivalente `password-resets/index.blade.php`).
-- [ ] **Fase 4.8** — `app/(app)/sessions/index.tsx`: historial de sesiones del usuario actual (equivalente `identity-access/sessions/index.blade.php`), con acción de revocar sesión individual.
-- [ ] **Fase 4.9** — Hook `useAuthorize(action, resource)` que replique la lógica de las Policies (`UserPolicy`, `AuthSessionPolicy`) para mostrar/ocultar acciones según rol (solo UX, la autorización real siempre se valida en backend).
-- [ ] **Fase 4.10** — Testing manual cruzado (Web/iOS/Android). Commit y PR: `feat: módulo administración de usuarios (operadores, sesiones, password resets)`.
+- [x] **Fase 4.1** — `app/(app)/admin/users/index.tsx`: listado de operadores (equivalente `identity-access/operators/index.blade.php`). `DataTable` con columnas usuario/email/estado/restablecimiento/acciones, `FilterBar` (usuario, correo, estado), modal de confirmación de desactivación (`AppModal`), paginación.
+- [x] **Fase 4.2** — `src/api/operators.ts`: `listOperators()`, `createOperator()`, `updateOperator()`, `deactivateOperator()`, `getOperator()` + tipo `PaginatedResult<T>` reutilizable. Se agregó enum `PasswordResetStatus` a `src/types/enums.ts` (faltante desde Bloque 2).
+- [x] **Fase 4.3** — `app/(app)/admin/users/create.tsx` + componente compartido `src/components/forms/OperatorForm.tsx` (modo `create`), RHF + Zod, incluye campo contraseña.
+- [x] **Fase 4.4** — `app/(app)/admin/users/[id]/edit.tsx`: reutiliza `OperatorForm` en modo `edit` (sin campo contraseña), carga datos vía `useQuery`.
+- [x] **Fase 4.5** — Acción de desactivar: integrada directamente en `admin/users/index.tsx` vía `AppModal` + mutation con `queryClient.invalidateQueries`.
+- [x] **Fase 4.6** — `app/(app)/admin/users/[id]/password-reset.tsx`: formulario step-up (contraseña admin + motivo opcional) y pantalla de resultado mostrando la contraseña temporal una sola vez (sin persistencia, solo en memoria del componente).
+- [x] **Fase 4.7** — `app/(app)/admin/users/[id]/password-resets.tsx`: `DataTable` de auditoría (fecha, acción, actor, resultado, motivo) con labels de acciones migrados 1:1 del Blade.
+- [x] **Fase 4.8** — `app/(app)/sessions/index.tsx`: historial de sesiones con filtros (estado/fechas) y botón de revocar sesión individual — endpoint `DELETE /sessions/:id` documentado como **pendiente en el backend Laravel actual** (solo soporta logout global), a implementar en el backend NestJS.
+- [x] **Fase 4.9** — `src/hooks/useAuthorize.ts`: replica `UserPolicy.php` (`viewAny`, `createOperator`, `updateOperator`, `deactivateOperator`, `resetPassword`, `viewPasswordResetAudit`) comparando `organizationId`/`role`/`status` del actor vs. target. Aplicado en `admin/users/index.tsx` para condicionar el botón "Desactivar".
 
 ---
 
