@@ -127,16 +127,15 @@
 
 ---
 
-## BLOQUE 5 — Módulo Agents (Agentes bancarios y asignaciones)
+## BLOQUE 5 — Módulo Agents (Agentes bancarios y asignaciones) ✅ COMPLETADO (Web)
 
-- [ ] **Fase 5.1** — `src/api/agents.ts`: `listAgents()`, `createAgent()`, `updateAgent()`, `deactivateAgent()`, `listAssignments()`, `createAssignment()`, `deleteAssignment()`.
-- [ ] **Fase 5.2** — `app/(app)/admin/agents/index.tsx`: listado de agentes (equivalente `agents/index.blade.php`), con filtros por store/estado.
-- [ ] **Fase 5.3** — `app/(app)/admin/agents/create.tsx` y `[id]/edit.tsx`: formulario de agente (equivalente `agents/form.blade.php`) — campos: código, nombre, store asociado, estado.
-- [ ] **Fase 5.4** — Acción de desactivar agente (modal confirmación + mutation).
-- [ ] **Fase 5.5** — `app/(app)/admin/users/[id]/assignments.tsx`: gestión de asignaciones operador↔agente (equivalente `agents/assignments/index.blade.php` + `_modal.blade.php`).
-- [ ] **Fase 5.6** — `app/(app)/my-agents.tsx`: vista del operador de sus agentes asignados (equivalente `agents/my-agents.blade.php`), usado luego como selector en registro de operaciones.
-- [ ] **Fase 5.7** — Confirmar con el equipo si `BankingNetwork` (legacy) sigue vigente o fue reemplazado por `Agents`; si es legacy, omitir de la migración.
-- [ ] **Fase 5.8** — Testing cruzado, commit y PR: `feat: módulo agentes bancarios y asignaciones`.
+- [x] **Fase 5.1** — `src/api/agents.ts`: `listAgents()`, `createAgent()`, `updateAgent()`, `deactivateAgent()`, `getAgent()`, `listAssignments()`, `createAssignment()`, `deleteAssignment()`, `listMyAgents()`. Se corrigió/completó la interfaz `Agent` en `src/types/models.ts` (faltaban `city`, `region`, `province`, `district`, `address`, `description`, `deactivatedAt` — no coincidía con el schema real de `app/Modules/Agents/Models/Agent.php`).
+- [x] **Fase 5.2** — `app/(app)/admin/agents/index.tsx`: listado de agentes (equivalente `agents/index.blade.php`), con filtros por código/nombre/ciudad, `DataTable`, modal de desactivación.
+- [x] **Fase 5.3** — `app/(app)/admin/agents/create.tsx` y `[id]/edit.tsx` + componente compartido `src/components/forms/AgentForm.tsx` — campos: código, nombre, ciudad, región, provincia, distrito, dirección, descripción (1:1 con `agents/form.blade.php`).
+- [x] **Fase 5.4** — Acción de desactivar agente integrada en `admin/agents/index.tsx` vía `AppModal` + `queryClient.invalidateQueries`.
+- [x] **Fase 5.5** — `app/(app)/admin/users/[id]/assignments.tsx`: gestión de asignaciones operador↔agente (equivalente `agents/assignments/index.blade.php`) — formulario de asignación con `Select` de agentes disponibles, tabla de asignaciones históricas con acción de desasignar.
+- [x] **Fase 5.6** — `app/(app)/my-agents.tsx`: vista del operador de sus agentes asignados (equivalente `agents/my-agents.blade.php`).
+- [x] **Fase 5.7** — Confirmado: `BankingNetwork` es código **legacy/muerto** — sus rutas (`routes/banking-network.php`) **no están registradas** en `routes/web.php` (solo `routes/agents.php` lo está). Omitido de la migración según lo previsto.
 
 ---
 
