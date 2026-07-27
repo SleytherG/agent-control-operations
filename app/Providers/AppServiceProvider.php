@@ -11,6 +11,7 @@ use App\Modules\IdentityAccess\Services\PasswordPolicy;
 use App\Modules\IdentityAccess\Services\RefreshTokenService;
 use App\Modules\Reporting\Policies\DashboardPolicy;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Psr\Clock\ClockInterface;
 
@@ -51,6 +52,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+
         Gate::policy(Agent::class, AgentPolicy::class);
         Gate::policy(DailyClosure::class, DailyClosingPolicy::class);
 

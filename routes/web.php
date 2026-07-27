@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
+Route::redirect('/', '/login');
 Route::get('/up', [App\Http\Controllers\HealthController::class, 'liveness']);
 Route::get('/health', [App\Http\Controllers\HealthController::class, '__invoke']);
 
