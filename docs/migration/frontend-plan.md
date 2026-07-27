@@ -15,7 +15,7 @@
 - **Gestión de estado servidor:** TanStack Query (React Query).
 - **Estado global ligero (auth/sesión):** Zustand.
 - **Formularios:** React Hook Form + Zod.
-- **Almacenamiento seguro de tokens:** `expo-secure-store` (Native) / `localStorage` (Web) mediante capa de abstracción.
+- **HTTP Client:** `expo/fetch` (implementación oficial de fetch de Expo, runtime "Winter", WHATWG-compatible) con interceptores de refresh automático implementados manualmente — sin librerías HTTP externas (decisión tomada en Bloque 2 tras auditoría de seguridad de dependencias).
 - **UI Kit:** Tamagui (o alternativa con `StyleSheet` propio si se decide no usar librería de terceros).
 - **Gráficos:** `react-native-chart-kit` o `victory-native` (a decidir en Bloque 9).
 - **Testing:** Jest + `@testing-library/react-native` + Maestro (E2E).
@@ -75,20 +75,20 @@
 
 ## BLOQUE 2 — Infraestructura de datos y estado ✅ COMPLETADO
 
-- [x] **Fase 2.1** — `src/api/client.ts` creado con `baseURL` desde `EXPO_PUBLIC_API_URL` (`.env.example` documentado). **Actualizado:** implementado sobre `fetch` nativo (WHATWG, disponible en Native vía Hermes/JSC y en Web) en lugar de axios — ver nota de auditoría de seguridad abajo.
+- [x] **Fase 2.1** — `src/api/client.ts` creado con `baseURL` desde `EXPO_PUBLIC_API_URL` (`.env.example` documentado). Implementado sobre `expo/fetch` — ver nota de auditoría de seguridad abajo.
 - [x] **Fase 2.2** — TanStack Query instalado y configurado; `QueryClientProvider` envuelve el `Stack` raíz en `app/_layout.tsx` (retry: 1, staleTime: 30s).
 - [x] **Fase 2.3** — `src/utils/tokenStorage.ts` creado: abstracción cross-platform con `expo-secure-store` (Native) / `localStorage` (Web) vía `Platform.OS`. API: `getAccessToken`, `setAccessToken`, `getRefreshToken`, `setRefreshToken`, `setTokens`, `clear`.
-- [x] **Fase 2.4** — Interceptor de refresh reimplementado manualmente sobre `fetch` en `client.ts` (función `apiRequest`): adjunta `Authorization: Bearer` vía `buildHeaders()`; detecta 401 y ejecuta `refreshHandler` (inyectado por Bloque 3 para evitar dependencia circular), encola requests concurrentes durante el refresh (`pendingRequests`), y en caso de fallo limpia tokens e invoca `onAuthFailure` callback. Se agregó clase `ApiError` tipada para errores HTTP y helpers `apiClient.get/post/patch/delete`.
+- [x] **Fase 2.4** — Interceptor de refresh reimplementado manualmente sobre `expo/fetch` en `client.ts` (función `apiRequest`): adjunta `Authorization: Bearer` vía `buildHeaders()`; detecta 401 y ejecuta `refreshHandler` (inyectado por Bloque 3 para evitar dependencia circular), encola requests concurrentes durante el refresh (`pendingRequests`), y en caso de fallo limpia tokens e invoca `onAuthFailure` callback. Se agregó clase `ApiError` tipada para errores HTTP y helpers `apiClient.get/post/patch/delete`.
 - [x] **Fase 2.5** — Zustand instalado. `src/stores/authStore.ts` creado (`user`, `isAuthenticated`, `accessExpiresAt` + acciones `setSession`/`updateAccessExpiresAt`/`clearSession`).
 - [x] **Fase 2.6** — `react-hook-form`, `zod`, `@hookform/resolvers` instalados.
 - [x] **Fase 2.7** — `src/types/enums.ts` (Role, UserStatus, AuthSessionStatus, OperationStatus, DailyClosureStatus — migrados 1:1 desde los Enums PHP) y `src/types/models.ts` (User, AuthSession, Agent, UserAgentAssignment, OperationType, Operation, DailyClosure, Region, Province, District, Store, Bank, AuditLog) creados, con barrel export en `src/types/index.ts`.
-- [x] **Fase 2.8** — Commits `feat: infraestructura de datos (HTTP client, auth store, token storage, react-query)` y `refactor: reemplazar axios por fetch nativo en el cliente HTTP` + push a `main`.
+- [x] **Fase 2.8** — Commits `feat: infraestructura de datos (HTTP client, auth store, token storage, react-query)`, `refactor: reemplazar axios por fetch nativo en el cliente HTTP` y `refactor: usar expo/fetch explicitamente en lugar del fetch global` + push a `main`.
 
 **Auditoría de seguridad de dependencias (solicitada tras revisión):**
 - Se investigaron 36 vulnerabilidades reportadas por `npm audit` (10 moderate, 26 high) tras instalar axios.
 - **Diagnóstico:** ninguna vulnerabilidad provenía de axios (confirmado: era la versión más reciente `1.18.1`, sin dependencias propias, no listado en el árbol de `npm audit`). El 100% de las vulnerabilidades proviene de dependencias transitivas del **toolchain de desarrollo de Expo/React Native** (`brace-expansion` → `minimatch`/`glob` → `eslint`, `@react-native/codegen`, `babel-preset-expo`, `@expo/cli`, `expo-router`, etc.) — herramientas de build-time, no código que corre en el dispositivo del usuario final.
 - Se intentó `npm audit fix` (no destructivo): instaló una versión duplicada de `react-native@0.86.2` incompatible con SDK 54, rompiendo `expo-doctor` (18/18 → 17/18). **Se revirtió inmediatamente** (`git checkout package-lock.json` + `npm install`), confirmando 18/18 de nuevo. `npm audit fix --force` NO debe ejecutarse (forzaría un downgrade/mismatch de react-native que rompería todo el proyecto).
-- **Decisión final:** por preferencia explícita de minimizar dependencias externas, se **reemplazó axios por `fetch` nativo**, reimplementando manualmente los interceptores de autenticación/refresh. Tras el reemplazo, las 36 vulnerabilidades persistieron exactamente iguales (confirmando que nunca fueron causadas por axios) — son inherentes al toolchain de Expo SDK 54 y se resolverán orgánicamente en futuras versiones de Expo, no requieren acción del proyecto.
+- **Decisión final:** por preferencia explícita de minimizar dependencias externas, se **reemplazó axios por `expo/fetch`** (la implementación oficial de fetch de Expo, parte del runtime "Winter", con soporte de streaming en Native y 100% compatible con la especificación WHATWG usada en Web), reimplementando manualmente los interceptores de autenticación/refresh. Tras el reemplazo, las 36 vulnerabilidades persistieron exactamente iguales (confirmando que nunca fueron causadas por axios) — son inherentes al toolchain de Expo SDK 54 y se resolverán orgánicamente en futuras versiones de Expo, no requieren acción del proyecto.
 - Validado con `npm run typecheck` (0 errores), `npm run lint` (0 warnings), `npx expo-doctor` (18/18) y `npx expo export --platform web` (build exitoso) antes de cada commit.
 
 ---
@@ -252,4 +252,3 @@
 ## Notas finales
 
 - Este plan asume que el backend consumido inicialmente (Bloques 3-9) puede ser la API Laravel actual (adaptada mínimamente para responder JSON en rutas puntuales) o directamente mocks, mientras el backend NestJS (ver `backend-plan.md`) se construye en paralelo.
-- Cada Bloque genera un PR independiente — permite revisión incremental y no bloquea el resto del desarrollo.
