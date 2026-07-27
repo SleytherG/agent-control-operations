@@ -93,19 +93,23 @@
 
 ---
 
-## BLOQUE 3 — Módulo IdentityAccess (Auth) — Piloto end-to-end
+## BLOQUE 3 — Módulo IdentityAccess (Auth) — Piloto end-to-end ✅ COMPLETADO (Web)
 
-- [ ] **Fase 3.1** — Crear `app/(auth)/_layout.tsx` (layout no autenticado, equivalente `guest.blade.php`).
-- [ ] **Fase 3.2** — Pantalla `app/(auth)/login.tsx`: formulario con RHF + Zod; estados loading/error credenciales/usuario desactivado/throttled/error de red (replicar estados de `/demo/login?state=...`); al éxito guarda tokens, actualiza `authStore`, navega a `(app)`.
-- [ ] **Fase 3.3** — `src/api/auth.ts`: `login()`, `refresh()`, `logout()` (contra API actual o mocks).
-- [ ] **Fase 3.4** — Pantalla `app/(auth)/password-change.tsx` (cambio obligatorio de contraseña inicial).
-- [ ] **Fase 3.5** — `app/(app)/_layout.tsx` (layout autenticado): guard de sesión válida, redirige a login si no hay sesión; incluye Sidebar/Topbar/MobileNav según plataforma/tamaño.
-- [ ] **Fase 3.6** — Hook `useSessionExpiry()`: timer de aviso 30s antes de expirar, refresh automático, logout forzado si falla (equivalente modales `/demo/expiry`).
-- [ ] **Fase 3.7** — Pantalla `app/(app)/home.tsx` (equivalente `home.blade.php`).
-- [ ] **Fase 3.8** — Validar flujo completo de auth en Web, iOS Simulator y Android Emulator con `npx expo start --dev-client`.
-- [ ] **Fase 3.9** — Commit y PR: `feat: módulo auth completo (login, password-change, session expiry) — piloto validado en Web/iOS/Android`.
+- [x] **Fase 3.1** — `app/(auth)/_layout.tsx` creado (layout no autenticado, equivalente `guest.blade.php`), usando `Stack` con `contentStyle` centrado.
+- [x] **Fase 3.2** — `app/(auth)/login.tsx`: formulario con React Hook Form + Zod (`Controller`); estados de error (credenciales inválidas, usuario desactivado, throttled, error de red) manejados vía `LoginError.reason`; al éxito guarda tokens (`tokenStorage`), actualiza `authStore.setSession`, navega a `(app)/home` o `(auth)/password-change` según `restricted`/`mustChangePassword`.
+- [x] **Fase 3.3** — `src/api/auth.ts` creado: `login()`, `refresh()`, `logout()`, `completePasswordChange()`, y `registerAuthInterceptors()` (conecta el refresh real con los interceptores inyectables de `client.ts` del Bloque 2).
+- [x] **Fase 3.4** — `app/(auth)/password-change.tsx` creado (cambio obligatorio de contraseña, validación de confirmación con Zod `.refine()`).
+- [x] **Fase 3.5** — `app/(app)/_layout.tsx` creado: guard vía `authStore` (`Redirect` a login si no autenticado), `Sidebar` en Web/tablet (`width >= breakpoints.md`) / `MobileNav` en pantallas pequeñas, `Topbar` con `SessionIndicator`.
+- [x] **Fase 3.6** — `src/hooks/useSessionExpiry.ts` creado: cuenta regresiva desde `accessExpiresAt`, refresh automático dentro del umbral de 30s, `clearSession()` si el refresh falla.
+- [x] **Fase 3.7** — `app/(app)/home.tsx` creado (bienvenida post-login, botón "Ir al Dashboard" según rol).
+- [x] **Fase 3.8** — Validado en **Web** (`expo-doctor` 18/18, `expo export --platform web` con 9 rutas generadas, y validación visual real en navegador vía Puppeteer: pantalla de login renderiza correctamente, validación Zod muestra errores en vivo). **Pendiente validar en iOS Simulator / Android Emulator** (requiere entorno gráfico nativo no disponible en este entorno de ejecución de comandos — a validar en máquina de desarrollo con Xcode/Android Studio antes del corte final).
+- [x] **Fase 3.9** — Commit `feat: módulo auth completo (login, password-change, session expiry) - piloto validado en Web` + push a `main`.
 
 > Este bloque es el "piloto" que valida toda la infraestructura antes de escalar a los demás módulos.
+
+**Bug detectado y corregido durante validación visual (Fase 3.8):**
+- Al envolver `<Stack>` de Expo Router dentro de un `<View>` con `alignItems: 'center', justifyContent: 'center'` sin ancho explícito, React Native Web colapsaba el ancho del contenedor a "auto", causando que todo el texto se renderizara verticalmente (una letra por línea) y los inputs quedaran comprimidos a ~24px de ancho.
+- **Solución:** se reemplazó el `<View>` envolvente por la prop `contentStyle` del `screenOptions` del propio `<Stack>` (`app/(auth)/_layout.tsx`), evitando el contenedor flex intermedio problemático. Validado visualmente tras el fix: layout correcto en las 3 pantallas del bloque.
 
 ---
 
