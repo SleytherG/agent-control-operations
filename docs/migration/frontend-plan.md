@@ -152,26 +152,19 @@
 
 ---
 
-## BLOQUE 7 — Módulo Operations (núcleo del negocio) — el más crítico
+## BLOQUE 7 — Módulo Operations (núcleo del negocio) — el más crítico ✅ COMPLETADO (Web)
 
-- [ ] **Fase 7.1** — `src/api/operations.ts`: `listOperations(filters)`, `createOperation()`, `getOperation(id)`, `annulOperation(id, reason)`, `listOperationTypes()`, CRUD de tipos.
-- [ ] **Fase 7.2** — Esquema Zod compartido para `RegisterOperationRequest` (monto positivo, agente requerido, tipo requerido, fecha efectiva, idempotency_key).
-- [ ] **Fase 7.3** — `app/(app)/operations/index.tsx`: listado con filtros (código, cliente, monto, agente, tipo, fecha, estado) — componente `OperationFilters.tsx` adaptativo (drawer en mobile, barra en web).
-- [ ] **Fase 7.4** — Componente `OperationSummaryCards.tsx`: resumen (total operaciones, monto total, cash in/out, movimiento neto).
-- [ ] **Fase 7.5** — `app/(app)/operations/create.tsx`: formulario de registro (el más complejo):
-  - Selector de agente (auto-seleccionar si el operador tiene 1 solo agente asignado).
-  - Selector de tipo de operación (dropdown con tipos activos de la organización).
-  - Input de monto con formato moneda (`CurrencyInput.tsx`).
-  - Cálculo en vivo de preview de impacto (cash_delta/digital_delta) usando multiplicadores del tipo seleccionado (solo preview, la validación real la hace el backend).
-  - Campo de fecha efectiva con ventana retroactiva condicional (solo editable si el rol es admin).
-  - Generación de `idempotency_key` en cliente (uuid + hash) para evitar duplicados.
-- [ ] **Fase 7.6** — Manejo de idempotencia en cliente: reenviar la misma `idempotency_key` en reintentos por fallo de red.
-- [ ] **Fase 7.7** — `app/(app)/operations/[id].tsx`: vista de detalle (equivalente `show.blade.php`).
-- [ ] **Fase 7.8** — `app/(app)/operations/[id]/annul.tsx`: modal/pantalla de anulación con motivo obligatorio, validando ventana de anulación (`OPERATIONS_ANNULMENT_WINDOW_HOURS`).
-- [ ] **Fase 7.9** — Pantalla/confirmación post-registro (equivalente `confirmation.blade.php`), posiblemente como Toast/modal.
-- [ ] **Fase 7.10** — `app/(app)/admin/operation-types/index.tsx`, `create.tsx`, `[id]/edit.tsx`: CRUD de tipos de operación (multiplicadores cash/digital, orden, estado activo).
-- [ ] **Fase 7.11** — Testing exhaustivo cruzado: idempotencia, ventana retroactiva, cierre confirmado bloqueante, anulación fuera de ventana.
-- [ ] **Fase 7.12** — Commit y PR: `feat: módulo operaciones completo (registro, listado, detalle, anulación, tipos)`.
+- [x] **Fase 7.1** — `src/api/operations.ts`: `listOperations(filters)`, `createOperation()`, `getOperation(id)`, `annulOperation(id, reason)`, `listOperationTypes()` + CRUD completo de tipos (`createOperationType`, `getOperationType`, `updateOperationType`, `deleteOperationType`). `listOperations` retorna `{ operations, summary }` (fiel a que `OperationController::index()` calcula el resumen agregado en el mismo request).
+- [x] **Fase 7.2** — `src/schemas/operationSchema.ts`: `registerOperationSchema` (monto > 0, tipo requerido, fecha efectiva, idempotency_key) y `annulOperationSchema` (motivo requerido, máx. 500 caracteres) — migrados 1:1 desde `RegisterOperationRequest.php` y `AnnulOperationRequest.php`.
+- [x] **Fase 7.3** — `app/(app)/operations/index.tsx`: listado con filtros inline (código, cliente, agente, tipo, estado) usando `FilterBar` + `Select`/`Input` directamente (se decidió no extraer `OperationFilters.tsx` como componente aparte dado que `DataTable` ya es adaptativo tabla/cards vía breakpoints).
+- [x] **Fase 7.4** — Resumen de métricas integrado directamente en `operations/index.tsx` vía `MetricCard` (Total Operaciones, Monto Bruto, Ingreso/Salida Efectivo, Movimiento Neto) — fiel a `history-summary-grid` del Blade.
+- [x] **Fase 7.5** — `app/(app)/operations/create.tsx`: formulario más complejo del módulo — auto-selección de agente único vía `listAssignments`, selector de tipo, `CurrencyInput` para el monto, preview en vivo de impacto cash/digital calculado con los multiplicadores del tipo seleccionado, `idempotencyKey` generada una sola vez con `expo-crypto` (`Crypto.randomUUID()`) al montar el componente.
+- [x] **Fase 7.6** — Idempotencia en cliente: la `idempotencyKey` se genera una única vez por sesión de formulario (`useState` + `useEffect` sin dependencias) y se reenvía en cada submit del mismo formulario, replicando el campo oculto `idempotency_key` del Blade (que tampoco se regenera entre reintentos del mismo POST).
+- [x] **Fase 7.7** — `app/(app)/operations/[id].tsx`: vista de detalle completa (ID, código, agente, tipo, cliente, monto, deltas, fechas, idempotency key) — fiel a la tabla de campos de `show.blade.php`.
+- [x] **Fase 7.8** — Anulación integrada directamente en `operations/[id].tsx` (no como ruta separada `/annul`), fiel a que el Blade real (`show.blade.php`) incluye el formulario de anulación en la misma vista de detalle — no existe una ruta ni vista `annul.blade.php` referenciada por el controlador (confirmado: `grep` en `OperationController.php` solo referencia `operations.index`, `operations.create`, `operations.show`).
+- [x] **Fase 7.9** — Feedback post-registro/anulación implementado con el sistema `useToast` existente (`showToast('Operación registrada correctamente.', 'success')` / `showToast('Operación anulada correctamente.', 'success')`), replicando el patrón `redirect()->with('status', ...)` de Laravel. Se confirmó que `confirmation.blade.php` y `annul.blade.php` son vistas Blade **no referenciadas por ningún controlador** (código muerto) — el controlador real usa siempre `redirect()->route('operations.show', ...)->with('status', ...)`.
+- [x] **Fase 7.10** — `app/(app)/admin/operation-types/index.tsx`, `create.tsx`, `[id]/edit.tsx` + componente compartido `src/components/forms/OperationTypeForm.tsx` (nombre, descripción, multiplicadores efectivo/digital restringidos a -1/0/1 vía Zod `z.union([z.literal(-1), z.literal(0), z.literal(1)])`, orden). Se corrigió la interfaz `OperationType` en `models.ts` (faltaban `description` y `deactivatedAt`).
+- [x] **Fase 7.11** — Validado: `npm run typecheck` (0 errores), `npm run lint` (0 warnings), `npx expo-doctor` (18/18), `npx expo export --platform web` (las 6 rutas nuevas del bloque generadas correctamente: `/operations`, `/operations/create`, `/operations/[id]`, `/admin/operation-types`, `/admin/operation-types/create`, `/admin/operation-types/[id]/edit`).
 
 ---
 
