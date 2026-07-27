@@ -13,6 +13,6 @@ class RefreshTokenService
 
     public function hash(string $token): string
     {
-        return hash_hmac('sha256', $token, $this->pepper, true);
+        return hash_hmac('sha256', $token, $this->pepper);
     }
 }

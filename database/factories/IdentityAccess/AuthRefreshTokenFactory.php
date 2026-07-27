@@ -16,7 +16,7 @@ class AuthRefreshTokenFactory extends Factory
         $now = now();
         return [
             'auth_session_id' => AuthSession::factory(),
-            'token_hash' => hash('sha256', fake()->sha256(), true),
+            'token_hash' => hash('sha256', fake()->sha256()),
             'generation' => 1,
             'state' => RefreshTokenState::ACTIVE,
             'issued_at' => $now,

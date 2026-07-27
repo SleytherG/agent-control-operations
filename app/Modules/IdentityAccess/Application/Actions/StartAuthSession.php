@@ -52,7 +52,7 @@ class StartAuthSession
                 'started_at' => $now,
                 'access_expires_at' => $now->copy()->addSeconds($ttl),
                 'absolute_expires_at' => $now->copy()->addSeconds($absoluteTtl),
-                'ip_hash' => $ipHash ? hash('sha256', $ipHash, true) : null,
+                'ip_hash' => $ipHash ? hash('sha256', $ipHash) : null,
                 'user_agent_summary' => mb_substr($userAgent ?? '', 0, 255),
                 'created_at' => $now,
                 'updated_at' => $now,
