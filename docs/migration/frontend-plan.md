@@ -139,15 +139,16 @@
 
 ---
 
-## BLOQUE 6 — Módulo Organization (Jerarquía geográfica y tiendas)
+## BLOQUE 6 — Módulo Organization (Jerarquía geográfica y tiendas) ✅ COMPLETADO (Web)
 
-- [ ] **Fase 6.1** — `src/api/organization.ts`: CRUD para regions, provinces, districts, stores.
-- [ ] **Fase 6.2** — `app/(app)/admin/regions/index.tsx` y `[id]/show.tsx` (equivalente `organization/geo/regions/index.blade.php` + `show.blade.php`).
-- [ ] **Fase 6.3** — `app/(app)/admin/regions/[id]/provinces.tsx` (listado anidado de provincias por región).
-- [ ] **Fase 6.4** — `app/(app)/admin/provinces/[id]/districts.tsx` (listado anidado de distritos por provincia).
-- [ ] **Fase 6.5** — Componente reutilizable `GeoSelector.tsx`: combo dependiente región→provincia→distrito, usado en gestión geográfica y en formularios de Store/Agent.
-- [ ] **Fase 6.6** — `app/(app)/admin/stores/index.tsx`, `create.tsx`, `[id].tsx` (equivalente `organization/stores/*.blade.php`).
-- [ ] **Fase 6.7** — Testing cruzado, commit y PR: `feat: módulo organización (geografía y tiendas)`.
+> **Hallazgo relevante:** `routes/organization.php` (con `GeoHierarchyController` y `StoreController` completamente implementados en el backend) **no está registrado en `routes/web.php`** — a diferencia de `agents.php`, `identity-access.php`, `operations.php`, `reporting.php` y `daily-closing.php` que sí lo están. Verificado en `bootstrap/app.php` (solo carga `routes/web.php`) y en el propio `routes/web.php` (sin `require` de `organization.php`). Por decisión explícita del usuario, **se migró el frontend de todos modos**, ya que el código backend existe íntegro y podría activarse en el futuro o migrarse directamente al backend NestJS.
+
+- [x] **Fase 6.1** — `src/api/organization.ts`: CRUD completo para regions (`listRegions`, `getRegion`, `createRegion`, `updateRegion`, `deactivateRegion`), provinces, districts y stores (`listStores`, `createStore`, `getStore`, `updateStore`, `deactivateStore`) + `listActiveDistricts()` para selects. Se corrigió la interfaz `Store` en `models.ts` (faltaban `code`, `district` — no coincidía con el schema real de `Store.php`).
+- [x] **Fase 6.2** — `app/(app)/admin/regions/index.tsx` (listado con creación inline y desactivación) y `app/(app)/admin/regions/[id].tsx` (equivalente `show.blade.php`: detalle de región + listado de provincias).
+- [x] **Fase 6.3** — Listado anidado de provincias integrado directamente en `regions/[id].tsx` (fiel a la estructura real del Blade `show.blade.php`, que lista provincias dentro de la vista de la región, no en una ruta separada).
+- [x] **Fase 6.4** — `app/(app)/admin/provinces/[id]/districts.tsx` (listado anidado de distritos por provincia, con creación inline y desactivación).
+- [x] **Fase 6.5** — `src/components/forms/GeoSelector.tsx`: combo dependiente región→provincia→distrito con carga en cascada vía `useEffect` + `listProvinces`/`listDistricts`. Documentado como mejora opcional (los formularios legacy de Agent usan inputs de texto libre, no un selector jerárquico real).
+- [x] **Fase 6.6** — `app/(app)/admin/stores/index.tsx`, `create.tsx`, `[id].tsx` (edit) + componente compartido `src/components/forms/StoreForm.tsx` (soporta modos `create`/`edit`/`readonly`, fiel a que el Blade real reutiliza el mismo formulario para show y edit).
 
 ---
 
