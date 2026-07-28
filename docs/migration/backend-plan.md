@@ -1,0 +1,286 @@
+# Plan de Migración — Backend (NestJS + TypeScript)
+
+> **Repositorio destino:** `agenteflow-api` (nuevo repositorio, separado del frontend)
+> **Repositorio actual (`control-operaciones-agente`, Laravel):** permanece intacto en `main`, en producción, durante TODO el proceso. No se toca hasta el corte final (Bloque 14).
+> **Base de datos:** Supabase PostgreSQL — **mismo esquema existente**, sin recrear tablas (se introspecta con Prisma). Solo Laravel/NestJS acceden a datos; no se usa Supabase Auth/Storage/Realtime/Data API.
+> **Objetivo:** Reescribir la API que hoy expone vistas Blade como una **API REST pura en NestJS**, replicando exactamente las mismas reglas de negocio, políticas de autorización y comportamiento de autenticación (JWT + refresh token rotativo) ya implementadas en Laravel, para ser consumida por la nueva app Expo (ver `frontend-plan.md`).
+
+---
+
+## Contexto y decisiones de arquitectura
+
+- **Framework:** NestJS (última versión estable).
+- **Lenguaje:** TypeScript en modo `strict`.
+- **ORM:** Prisma (introspección del esquema Supabase existente vía `prisma db pull` — no se recrean migraciones desde cero).
+- **Autenticación:** JWT access token (corta duración, ~5 min, igual que `JWT_ACCESS_TTL` actual) + refresh token opaco con rotación y detección de reuso (replicando `RotateRefreshToken.php` exactamente).
+- **Autorización:** Guards personalizados por rol + Guards específicos por recurso (equivalente a las Policies de Laravel).
+- **Validación:** `class-validator` + `class-transformer` sobre DTOs (equivalente a los `FormRequest`).
+- **Auditoría:** Interceptor global que registre en `audit_logs` (equivalente a `AuditLog::create()` manual).
+- **Documentación de API:** Swagger (`@nestjs/swagger`) — contrato consumido por Expo.
+- **Testing:** Jest (unit) + Supertest (integración/E2E de endpoints).
+- **Despliegue:** Docker + Render (Web Service, Free Tier) — ver Bloque 13.
+- **Monedas/decimales:** usar librería de precisión decimal (`decimal.js` o `Prisma.Decimal`) para replicar los cálculos `bcadd`/`bcsub` de `CalculateClosing.php` sin errores de coma flotante.
+
+### Mapeo de módulos Laravel → NestJS
+
+| Módulo Laravel (`app/Modules/*`) | Módulo NestJS equivalente |
+|---|---|
+| `IdentityAccess` | `AuthModule` + `UsersModule` + `SessionsModule` |
+| `Agents` | `AgentsModule` |
+| `Operations` | `OperationsModule` |
+| `DailyClosing` | `DailyClosingModule` |
+| `Organization` | `OrganizationModule` |
+| `Reporting` | `ReportingModule` |
+| `Audit` | `AuditModule` (interceptor global, sin controller propio) |
+| `BankingNetwork` | Evaluar si se migra o se descarta (legacy) — decisión en Bloque 6 |
+
+---
+
+## BLOQUE 0 — Fundación del repositorio y monorepo ✅ COMPLETADO
+
+> **Repositorio real creado:** `control-operaciones-agente-backend` (https://github.com/SleytherG/control-operaciones-agente-backend, privado), siguiendo el mismo patrón de nombre que el repo frontend. Se descartó el nombre `agenteflow-api` sugerido originalmente por decisión explícita del usuario.
+
+- [x] **Fase 0.1** — Repositorio `control-operaciones-agente-backend` creado en GitHub vía `gh repo create` (privado) y clonado localmente como carpeta hermana.
+- [x] **Fase 0.2** — Scaffolding con `npx @nestjs/cli new control-operaciones-agente-backend --package-manager npm --skip-git` (Nest 11, React/Node moderno).
+- [x] **Fase 0.3** — `tsconfig.json` reescrito con `strict: true` completo (`noImplicitAny`, `strictBindCallApply`, `noImplicitReturns`, `noUnusedLocals/Parameters` — el scaffolding por defecto de Nest 11 solo trae `strictNullChecks` parcial). Validado con `tsc --noEmit`: 0 errores.
+- [x] **Fase 0.4** — ESLint reforzado: `no-explicit-any`, `no-unsafe-*` y `explicit-function-return-type` subidos a `error` (el scaffolding los trae en `off`/`warn`) — cumple con el requisito explícito del usuario de prohibir tipos genéricos/`any`. Prettier ya viene integrado vía `eslint-plugin-prettier`.
+- [x] **Fase 0.5** — Husky + lint-staged instalados y configurados (`.husky/pre-commit` ejecuta `npx lint-staged`; `.lintstagedrc.json` corre `eslint --fix` + `prettier --write`).
+- [x] **Fase 0.6** — Estructura de carpetas por módulo de dominio creada exactamente según el plan (`src/modules/{auth,users,sessions,agents,operations,daily-closing,organization,reporting,audit}`, `src/common/{guards,decorators,interceptors,filters,pipes,enums}`, `src/prisma/`, `src/config/`).
+- [x] **Fase 0.7** — `prisma`+`@prisma/client` instalados. **Nota importante:** la versión más reciente (Prisma 7.9.1) introdujo un breaking change que elimina el soporte de `url` directo en el bloque `datasource` (exige migrar a `prisma.config.ts`), rompiendo el patrón estándar documentado en toda la comunidad NestJS+Prisma — se hizo downgrade explícito a **Prisma 6.19.3** (LTS estable) para mantener compatibilidad total con el patrón `PrismaService extends PrismaClient` planeado. `DATABASE_URL` configurada en `.env` con la contraseña real de Supabase URL-encoded (el caracter `$` requiere encoding a `%24` en connection strings).
+- [x] **Fase 0.8** — `prisma db pull` ejecutado contra la base de datos Supabase real: **introspección exitosa de 20 modelos** (agents, audit_logs, auth_refresh_tokens, auth_sessions, cache, cache_locks, daily_closure_operations, daily_closures, districts, migrations, operation_types, operations, organizations, password_resets, provinces, regions, session_events, sessions, user_agent_assignments, users).
+- [x] **Fase 0.9** — `schema.prisma` reescrito manualmente por completo: los 20 modelos convertidos de `snake_case`/`String` planos a **PascalCase con campos camelCase** (`@map`/`@@map` preservando los nombres reales de columnas/tablas), y **9 enums nativos de Prisma** creados a partir de los enums PHP reales leídos directamente de `app/Modules/IdentityAccess/Domain/Enums/*.php` (Role, UserStatus, AuthSessionStatus, RefreshTokenState, SessionEndReason, SessionEventType, PasswordResetStatus) más los confirmados en `control-operaciones-agente-frontend/src/types/enums.ts` (OperationStatus, DailyClosureStatus, que no tienen enum PHP dedicado). Relaciones múltiples hacia la misma tabla (ej. varios FKs de `User` en `DailyClosure`) renombradas con alias descriptivos (`ClosureOpenedBy`, `ClosureConfirmedBy`, etc.) en vez de los sufijos autogenerados `_Touser`. Validado con `prisma format` (sin errores).
+- [x] **Fase 0.10** — `npx prisma generate` ejecutado exitosamente (Prisma Client v6.19.3). `PrismaService` creado (`src/prisma/prisma.service.ts`) extendiendo `PrismaClient` con hooks `OnModuleInit`/`OnModuleDestroy` para conectar/desconectar ordenadamente.
+- [x] **Fase 0.11** — `PrismaModule` (`@Global()`) creado y registrado en `AppModule`.
+- [x] **Fase 0.12** — `@nestjs/config` + `zod` instalados. `src/config/env.schema.ts` creado: esquema Zod completo con las mismas variables conceptuales que usa Laravel en su `render.yaml` (JWT_SIGNING_KEY, JWT_ISSUER, JWT_AUDIENCE, JWT_ACCESS_TTL, JWT_ABSOLUTE_SESSION_TTL, REFRESH_PEPPER, PASSWORD_RESET_TTL_SECONDS, PASSWORD_RESET_TEMPORARY_LENGTH, CORS_ORIGIN, OPERATIONS_RETROACTIVE_WINDOW_HOURS, OPERATIONS_ANNULMENT_WINDOW_HOURS, OPERATIONS_DEFAULT_CURRENCY), con `validateEnv()` fail-fast (lanza error descriptivo y detiene el arranque si falta/es inválida alguna variable). Integrado en `AppModule` vía `ConfigModule.forRoot({ isGlobal: true, validate: validateEnv })`.
+- [x] **Fase 0.13** — `HealthModule`/`HealthController` creados con `@nestjs/terminus`, chequeo `PrismaHealthIndicator.pingCheck()` contra la base de datos real. **Validado end-to-end**: `curl http://localhost:3000/health` → `{"status":"ok","info":{"database":{"status":"up"}}}`.
+- [x] **Fase 0.14** — Swagger configurado en `main.ts` (`DocumentBuilder` + `addBearerAuth()`), expuesto en `/docs`, condicionado a `NODE_ENV !== 'production'`. Validado: `curl -o /dev/null -w "%{http_code}" http://localhost:3000/docs` → `200`.
+- [x] **Fase 0.15** — CORS configurado en `main.ts` vía `app.enableCors({ origin: CORS_ORIGIN.split(','), credentials: true })`, soportando múltiples orígenes separados por coma.
+
+---
+
+## BLOQUE 1 — Infraestructura transversal (Guards, Decoradores, Filtros, Interceptores)
+
+- [ ] **Fase 1.1** — Crear enum compartido `Role` (`ADMINISTRADOR_PROPIETARIO`, `OPERADOR`) en `src/common/enums/role.enum.ts`, replicando `Role.php`.
+- [ ] **Fase 1.2** — Crear enums de dominio replicando los de Laravel: `AuthSessionStatus`, `PasswordResetStatus`, `RefreshTokenState`, `SessionEndReason`, `SessionEventType`, `UserStatus` (`src/common/enums/`).
+- [ ] **Fase 1.3** — Crear decorador `@Public()` para marcar rutas que no requieren JWT (ej. login).
+- [ ] **Fase 1.4** — Crear decorador `@Roles(...roles: Role[])` para restringir endpoints por rol.
+- [ ] **Fase 1.5** — Crear decorador `@CurrentUser()` (extrae el usuario autenticado del `request` inyectado por el Guard).
+- [ ] **Fase 1.6** — Implementar `JwtAuthGuard` (Passport strategy `passport-jwt`): valida el JWT (firma, issuer, audience, expiración — replicando exactamente `JwtTokenService::validate()`), busca `User` y `AuthSession` en BD, verifica `UserStatus.ACTIVE` y `AuthSessionStatus.ACTIVE`, adjunta `request.user` y `request.session`.
+- [ ] **Fase 1.7** — Registrar `JwtAuthGuard` como Guard global (`APP_GUARD` en `AppModule`), respetando el decorador `@Public()` vía `Reflector`.
+- [ ] **Fase 1.8** — Implementar `RolesGuard` que lea el decorador `@Roles()` y compare contra `request.user.role`.
+- [ ] **Fase 1.9** — Implementar `MustChangePasswordGuard` / interceptor que replique la lógica actual de `AuthenticateJwtSession`: si `password_changed_at` es null y no hay `password_reset_id`, o si el `passwordReset.status === CONSUMED`, bloquear todo excepto endpoints de cambio de contraseña/logout (HTTP 403 con mensaje "Debe cambiar su contraseña antes de continuar").
+- [ ] **Fase 1.10** — Implementar `AuditInterceptor` global: intercepta mutaciones (POST/PATCH/DELETE) marcadas con un decorador `@Audit(action, entityType)` y registra automáticamente en `audit_logs` (correlation_id, actor_user_id, before/after, occurred_at) — reemplaza las llamadas manuales `AuditLog::create()` dispersas en los controllers actuales.
+- [ ] **Fase 1.11** — Implementar `HttpExceptionFilter` global para normalizar el formato de errores de respuesta (mensaje, código, detalles de validación) consumido de forma consistente por el frontend Expo.
+- [ ] **Fase 1.12** — Implementar `CorrelationIdMiddleware` (equivalente `AssignCorrelationId.php`): genera/propaga un `X-Correlation-Id` por request, usado en logs y auditoría.
+- [ ] **Fase 1.13** — Configurar logger estructurado (`nestjs-pino` o el logger nativo de Nest con formato JSON) — equivalente a `LOG_CHANNEL=stderr` de Laravel para logs consumidos por Render.
+- [ ] **Fase 1.14** — Implementar `LogSanitizerInterceptor` (equivalente `app/Logging/LogSanitizer.php`) para no loguear campos sensibles (contraseñas, tokens).
+- [ ] **Fase 1.15** — Commit: `feat: infraestructura transversal (guards, decoradores, interceptores, filtros)`.
+
+---
+
+## BLOQUE 2 — Módulo Auth (autenticación, JWT, refresh tokens) — el más crítico
+
+- [ ] **Fase 2.1** — Crear `AuthModule` con `AuthController`, `AuthService`, y sub-servicios `JwtTokenService`, `RefreshTokenService` (replicando 1:1 la lógica de los archivos PHP homónimos).
+- [ ] **Fase 2.2** — `JwtTokenService.issue(sub, sid)`: usar `@nestjs/jwt` (o `jsonwebtoken` directo) para firmar HS256 con `JWT_SIGNING_KEY`, claims `iss`, `aud`, `sub`, `sid`, `jti` (random), `iat`, `nbf`, `exp` (TTL desde `JWT_ACCESS_TTL`) — replica exacta de `JwtTokenService::issue()`.
+- [ ] **Fase 2.3** — `JwtTokenService.validate(jwt)`: verificar firma, issuer, audience, y expiración/nbf; retorna `{ sub, sid, jti, exp }` o `null` en cualquier fallo (try/catch amplio, igual que el `catch (\Throwable)` de Laravel).
+- [ ] **Fase 2.4** — `RefreshTokenService.generate()`: `crypto.randomBytes(32).toString('base64')` (equivalente a `random_bytes(32)` + `base64_encode`).
+- [ ] **Fase 2.5** — `RefreshTokenService.hash(token)`: `crypto.createHmac('sha256', REFRESH_PEPPER).update(token).digest('hex')` (replica exacta de `hash_hmac('sha256', $token, $this->pepper)`).
+- [ ] **Fase 2.6** — DTO `LoginDto` (`class-validator`): `identifier` (string, requerido), `password` (string, requerido) — equivalente `LoginRequest.php`.
+- [ ] **Fase 2.7** — `AuthService.authenticateAndStartSession(identifier, password, ip, userAgent, correlationId)`: replica `AuthenticateAndStartSession.php` — normaliza identifier (lowercase+trim), busca `User` por `username_normalized` o `email_normalized` con lock (`SELECT ... FOR UPDATE` vía `$transaction` de Prisma), verifica `UserStatus.ACTIVE` y hash de password (`bcrypt.compare`), maneja flujo de `PasswordReset` pendiente/expirado/consumido igual que el original (incluye expiración automática de reset vencido con auditoría).
+- [ ] **Fase 2.8** — `AuthService.startAuthSession(user, ip, userAgent, passwordReset?, eventType?)`: crea `AuthSession` (public_id UUID, ip_hash con HMAC, user_agent, `access_expires_at`, `absolute_expires_at` desde `JWT_ABSOLUTE_SESSION_TTL`), crea `AuthRefreshToken` inicial (generation 0, state ACTIVE), registra `SessionEvent` (LOGIN o PASSWORD_RESET_LOGIN), emite JWT — equivalente `StartAuthSession.php`.
+- [ ] **Fase 2.9** — `POST /auth/login` (`@Public()`): valida `LoginDto`, llama `authenticateAndStartSession`, setea cookies o retorna tokens en body (decisión: para consumo por Expo Web+Native, **retornar tokens en el body JSON**, no en cookies, ya que Native no maneja cookies HttpOnly de forma nativa — el cliente los persiste vía `expo-secure-store`/`localStorage`, ver `frontend-plan.md` Bloque 2). Responder 401 genérico en credenciales inválidas (sin filtrar si el usuario existe), 403 si usuario desactivado.
+- [ ] **Fase 2.10** — Manejo de rate limiting / throttling de intentos de login: usar `@nestjs/throttler` (equivalente al estado `throttled` visto en `/demo/login?state=throttled` de la app actual) — configurar límite por IP+identifier.
+- [ ] **Fase 2.11** — `AuthService.rotateRefreshToken(rawRefreshToken)`: replica `RotateRefreshToken.php` con **transacción y locks** (Prisma `$transaction` con `SELECT ... FOR UPDATE` vía raw query si es necesario, Prisma no soporta `lockForUpdate` nativo — usar `prisma.$queryRaw` con `FOR UPDATE` dentro de la transacción):
+  - Busca `AuthRefreshToken` por hash.
+  - Verifica `AuthSession.status === ACTIVE`, `User.status === ACTIVE`.
+  - Si `absolute_expires_at` o `expires_at` vencidos → expira sesión, retorna null.
+  - Si el token ya fue `CONSUMED` (reuso detectado) → marca sesión como `REVOKED` con `end_reason = FALLO_SEGURIDAD`, registra `SessionEvent.REFRESH_REUSE`, retorna null (medida de seguridad ante robo de refresh token).
+  - Si válido y `ACTIVE`: genera nuevo refresh (generation+1), marca el anterior como `CONSUMED` con `replaced_by_id`, actualiza `access_expires_at` de la sesión, registra `SessionEvent.REFRESHED`, emite nuevo JWT.
+- [ ] **Fase 2.12** — `POST /auth/refresh` (`@Public()`): recibe refresh token del body, llama `rotateRefreshToken`, retorna nuevo access+refresh o 401 si inválido/expirado/reuso detectado.
+- [ ] **Fase 2.13** — `AuthService.logout(sessionId)`: marca `AuthSession.status = REVOKED`, `end_reason = LOGOUT_MANUAL`, registra `SessionEvent.LOGOUT` — equivalente lógica de `LogoutController.php`.
+- [ ] **Fase 2.14** — `POST /auth/logout` (autenticado): invoca `logout()`.
+- [ ] **Fase 2.15** — `AuthService.expireSession` / job periódico: replicar `ExpireSession.php` — considerar un cron job (`@nestjs/schedule`) que expire sesiones vencidas por `absolute_expires_at` de forma proactiva (o mantenerlo reactivo como en Laravel, solo al intentar usar la sesión).
+- [ ] **Fase 2.16** — `AuthService.revokeSession(sessionId)` y `revokeAllUserSessions(userId)`: equivalentes `RevokeSession.php` y `RevokeAllUserSessions.php` — usados por endpoints de administración de sesiones.
+- [ ] **Fase 2.17** — `AuthService.recordSessionEvent(...)`: helper genérico equivalente `RecordSessionEvent.php`.
+- [ ] **Fase 2.18** — Testing unitario exhaustivo de `AuthService`: casos de login exitoso, credenciales inválidas, usuario desactivado, reset pendiente/expirado/consumido, refresh válido, refresh reusado (seguridad), refresh expirado, sesión absoluta expirada.
+- [ ] **Fase 2.19** — Commit y PR: `feat: módulo auth completo (login, refresh rotativo, logout, gestión de sesiones)`.
+
+---
+
+## BLOQUE 3 — Módulo Users (gestión de operadores) e IdentityAccess complementario
+
+- [ ] **Fase 3.1** — DTOs: `CreateOperatorDto`, `UpdateOperatorDto`, `DeactivateUserDto` — replicando validaciones de `CreateOperatorRequest.php`/`DeactivateUserRequest.php`.
+- [ ] **Fase 3.2** — `UsersService.createOperator(dto, organizationId)`: crea `User` con rol `OPERADOR`, contraseña temporal hasheada (bcrypt), `password_changed_at = null` (fuerza cambio en primer login) — equivalente lógica de `OperatorController::store`.
+- [ ] **Fase 3.3** — `UsersService.updateOperator(id, dto)`, `deactivateOperator(id)` (equivalente `DeactivateUser.php` — marca `UserStatus.INACTIVE`, revoca sesiones activas del usuario).
+- [ ] **Fase 3.4** — Endpoints `GET/POST /users`, `GET/PATCH /users/:id`, `DELETE /users/:id` (deactivate) — protegidos con `@Roles(Role.ADMINISTRADOR_PROPIETARIO)`.
+- [ ] **Fase 3.5** — `AuthService.completeRequiredPasswordChange(userId, newPassword)`: equivalente `CompleteRequiredPasswordChange.php` — actualiza `password`, `password_changed_at = now()`.
+- [ ] **Fase 3.6** — `PATCH /users/me/password` (autenticado): endpoint de cambio de contraseña obligatorio/voluntario.
+- [ ] **Fase 3.7** — `AuthService.resetOperatorPassword(userId, actorId)`: equivalente `ResetOperatorPassword.php` — genera contraseña temporal (longitud desde `PASSWORD_RESET_TEMPORARY_LENGTH`), crea `PasswordReset` (TTL desde `PASSWORD_RESET_TTL_SECONDS`), retorna la contraseña en texto plano **solo una vez** en la respuesta.
+- [ ] **Fase 3.8** — `POST /users/:id/password-reset` — protegido por rol admin, dispara auditoría.
+- [ ] **Fase 3.9** — `AuthService.listPasswordResetAudit(userId)`: equivalente `ListPasswordResetAudit.php` — historial de resets de un usuario.
+- [ ] **Fase 3.10** — `GET /users/:id/password-resets`.
+- [ ] **Fase 3.11** — Implementar `PasswordPolicyService` (equivalente `PasswordPolicy.php`): reglas de complejidad de contraseña (longitud mínima, etc.) usadas tanto en creación como en cambio de contraseña.
+- [ ] **Fase 3.12** — Testing unitario e integración de `UsersService` (creación, desactivación, reset, cambio de contraseña, políticas).
+- [ ] **Fase 3.13** — Commit y PR: `feat: módulo usuarios/operadores (CRUD, password reset, cambio de contraseña)`.
+
+---
+
+## BLOQUE 4 — Módulo Sessions (historial y auditoría de sesiones)
+
+- [ ] **Fase 4.1** — `SessionsService.listAuthorizedSessions(userId)`: equivalente `ListAuthorizedSessions.php` — lista sesiones activas/históricas del usuario autenticado.
+- [ ] **Fase 4.2** — `GET /sessions` (autenticado) — historial de sesiones del usuario actual, con datos: IP (hash), user agent, fecha inicio/fin, estado, razón de finalización.
+- [ ] **Fase 4.3** — `POST /sessions/:id/revoke` (autenticado) — invoca `revokeSession()`, valida que la sesión pertenezca al usuario (o sea admin).
+- [ ] **Fase 4.4** — `POST /users/:id/sessions/revoke-all` (admin) — invoca `revokeAllUserSessions()`.
+- [ ] **Fase 4.5** — DTO `ListSessionsDto` con paginación/filtros — equivalente `ListSessionsRequest.php`.
+- [ ] **Fase 4.6** — Testing de integración: revocar sesión propia, intentar revocar sesión de otro usuario sin ser admin (debe fallar 403).
+- [ ] **Fase 4.7** — Commit y PR: `feat: módulo sesiones (historial, revocación individual y masiva)`.
+
+---
+
+## BLOQUE 5 — Módulo Agents (Agentes bancarios y asignaciones)
+
+- [ ] **Fase 5.1** — Confirmar con el equipo si se migra `Agents` (estructura vigente según migraciones más recientes) o si `BankingNetwork` (legacy) aún es necesario — **decisión bloqueante antes de continuar**, para no duplicar modelos.
+- [ ] **Fase 5.2** — DTOs: `CreateAgentDto`, `UpdateAgentDto` — replicando `AgentRequest.php` (código único, nombre, store_id, estado).
+- [ ] **Fase 5.3** — `AgentsService`: `list(organizationId, filters)`, `create(dto)`, `update(id, dto)`, `deactivate(id)` — equivalente `AgentController.php`.
+- [ ] **Fase 5.4** — Guard/lógica de autorización equivalente `AgentPolicy.php`: solo admin gestiona agentes; operador solo lee los suyos.
+- [ ] **Fase 5.5** — Endpoints: `GET/POST /agents`, `GET/PATCH /agents/:id`, `DELETE /agents/:id` (deactivate) — protegidos por rol admin.
+- [ ] **Fase 5.6** — `UserAgentAssignmentsService`: `list(userId)`, `create(userId, agentId)`, `delete(assignmentId)` — equivalente `UserAgentAssignmentController.php`, validando que no se dupliquen asignaciones activas.
+- [ ] **Fase 5.7** — Endpoints: `GET/POST /users/:id/assignments`, `DELETE /assignments/:id`.
+- [ ] **Fase 5.8** — `AgentsService.myAgents(userId)`: equivalente `MyAgentsController.php` — lista de agentes activos asignados al operador autenticado.
+- [ ] **Fase 5.9** — `GET /my-agents` (autenticado).
+- [ ] **Fase 5.10** — Testing de integración: creación/edición/desactivación de agentes, asignación/desasignación, validación de agentes duplicados por organización.
+- [ ] **Fase 5.11** — Commit y PR: `feat: módulo agentes bancarios y asignaciones operador-agente`.
+
+---
+
+## BLOQUE 6 — Módulo Organization (Jerarquía geográfica y tiendas)
+
+- [ ] **Fase 6.1** — DTOs: `CreateRegionDto`, `CreateProvinceDto`, `CreateDistrictDto`, `CreateStoreDto` (+ Update) — replicando `RegionRequest.php`, `ProvinceRequest.php`, `DistrictRequest.php`, `StoreRequest.php`.
+- [ ] **Fase 6.2** — `OrganizationService`: CRUD completo para `Region`, `Province`, `District`, `Store`, con relaciones jerárquicas (región→provincia→distrito) y soft-deactivate (no hard delete, igual que Laravel).
+- [ ] **Fase 6.3** — Endpoints regiones: `GET/POST /regions`, `GET/PATCH /regions/:id`, `DELETE /regions/:id` (deactivate).
+- [ ] **Fase 6.4** — Endpoints provincias: `GET/POST /regions/:id/provinces`, `PATCH /provinces/:id`, `DELETE /provinces/:id`.
+- [ ] **Fase 6.5** — Endpoints distritos: `GET/POST /provinces/:id/districts`, `PATCH /districts/:id`, `DELETE /districts/:id`.
+- [ ] **Fase 6.6** — Endpoints tiendas: `GET/POST /stores`, `GET/PATCH /stores/:id`, `DELETE /stores/:id` (deactivate).
+- [ ] **Fase 6.7** — Guards de autorización equivalentes `RegionPolicy`, `ProvincePolicy`, `DistrictPolicy`, `StorePolicy` (todo restringido a admin).
+- [ ] **Fase 6.8** — Testing de integración: jerarquía completa (crear región→provincia→distrito→tienda), validación de relaciones al desactivar (no permitir desactivar región con provincias activas, etc. si esa regla existe en Laravel — verificar en `GeoHierarchyController.php`).
+- [ ] **Fase 6.9** — Commit y PR: `feat: módulo organización (jerarquía geográfica y tiendas)`.
+
+---
+
+## BLOQUE 7 — Módulo Operations (núcleo del negocio) — el más crítico funcionalmente
+
+- [ ] **Fase 7.1** — DTOs: `RegisterOperationDto` (agent_id, operation_type_id, customer_name?, amount, currency?, effective_at?, notes?, idempotency_key), `AnnulOperationDto` (reason) — replicando `RegisterOperationRequest.php`/`AnnulOperationRequest.php` con `class-validator` (`@IsPositive()`, `@IsUUID()`, etc.).
+- [ ] **Fase 7.2** — `OperationsService.register(dto, userId, organizationId)`: replica `RegisterOperation.php` paso a paso:
+  - `validateAssignment(agentId, userId)`: verifica `UserAgentAssignment` activa — lanza excepción de dominio si no existe.
+  - `resolveEffectiveAt(effectiveAt, userId)`: solo admin puede registrar fecha retroactiva dentro de la ventana `OPERATIONS_RETROACTIVE_WINDOW_HOURS`; cualquier otro caso usa `now()`.
+  - `validateNotConfirmed(agentId, effectiveAt)`: verifica que no exista `DailyClosure` con status `CONFIRMADO` para esa fecha/agente.
+  - Calcula `cash_delta`/`digital_delta` = `amount * multiplicador` del `OperationType`.
+  - `InternalCodeGenerator.generate(effectiveAt)`: replica generación de código interno único (ver Fase 7.3).
+  - Persistencia dentro de una transacción Prisma (`$transaction`).
+- [ ] **Fase 7.3** — `InternalCodeGeneratorService`: replicar exactamente el algoritmo de `InternalCodeGenerator.php` (formato de código por fecha/secuencia) — **leer el archivo fuente antes de implementar para no alterar el formato usado en producción**.
+- [ ] **Fase 7.4** — Manejo de idempotencia: `POST /operations` primero busca por `idempotency_key` existente; si ya existe, retorna la operación existente con flag `idempotent: true` (mismo comportamiento que `OperationController::store` actual, incluyendo el catch de `UniqueConstraintViolationException` como fallback ante condición de carrera).
+- [ ] **Fase 7.5** — `OperationsService.list(filters, isAdmin, userId, organizationId)`: replica `ListOperations.php` — filtros por code, customer_name, amount, agent_id, operation_type_id, status, user_id, date_from/date_to; admin ve todas las operaciones de la organización, operador solo las propias.
+- [ ] **Fase 7.6** — `OperationsService.getSummary(filters, isAdmin, userId, organizationId)`: replica el cálculo de resumen visto en `OperationController::index` (total_ops, total_amount, total_cash_in/out, net_movement) usando agregaciones SQL (Prisma `groupBy`/`aggregate` o raw query si es más simple para las sumas condicionales `CASE WHEN`).
+- [ ] **Fase 7.7** — `OperationsService.annul(operationId, reason, userId, isAdmin)`: replica `AnnulOperation.php` — validar ventana de anulación (`OPERATIONS_ANNULMENT_WINDOW_HOURS`), solo admin o el propio operador que la registró, marca `status = ANNULLED`, `annulled_by`, `annulled_at`, `annulment_reason`.
+- [ ] **Fase 7.8** — Endpoints: `GET /operations` (con filtros + resumen), `POST /operations`, `GET /operations/:id`, `POST /operations/:id/annul`.
+- [ ] **Fase 7.9** — Guard de autorización equivalente `OperationPolicy.php` (`viewAny`, `register`, `view`, `annul`).
+- [ ] **Fase 7.10** — Módulo `OperationTypes`: DTOs `CreateOperationTypeDto`/`UpdateOperationTypeDto` (nombre, cash_multiplier, digital_multiplier, sort_order, is_active) — replicando `OperationTypeRequest.php`.
+- [ ] **Fase 7.11** — Endpoints: `GET/POST /operation-types`, `GET/PATCH /operation-types/:id`, `DELETE /operation-types/:id` — protegidos por `OperationTypePolicy`.
+- [ ] **Fase 7.12** — Interceptor `@Audit('operation.created', Operation)` aplicado al endpoint de registro (reemplaza el `AuditLog::create()` manual del controller Laravel).
+- [ ] **Fase 7.13** — Testing exhaustivo: idempotencia (doble submit), ventana retroactiva (admin vs operador), bloqueo por cierre confirmado, anulación dentro/fuera de ventana, cálculo correcto de cash_delta/digital_delta según multiplicadores, resumen de filtros.
+- [ ] **Fase 7.14** — Commit y PR: `feat: módulo operaciones (registro idempotente, listado con filtros/resumen, anulación, tipos)`.
+
+---
+
+## BLOQUE 8 — Módulo DailyClosing (Cierres diarios)
+
+- [ ] **Fase 8.1** — DTOs: `GenerateClosingDto`, `ReopenClosingDto` — replicando `GenerateClosingRequest.php`/`ReopenClosingRequest.php` (agent_id, business_date, opening_cash, opening_digital).
+- [ ] **Fase 8.2** — `DailyClosingService.generate(dto, userId)`: crea `DailyClosure` en estado `ACTIVO` para agente+fecha (validar que no exista ya un cierre para esa combinación).
+- [ ] **Fase 8.3** — `CalculateClosingService.execute(closureId)`: replica **exactamente** `CalculateClosing.php` — agrega operaciones ACTIVE del agente en el rango de fecha vía Prisma (`groupBy`/`aggregate` con filtros CASE WHEN, o raw SQL si Prisma no soporta la agregación condicional directamente), calcula `expected_closing_cash/digital` con precisión decimal (`decimal.js`, replicando `bcadd`/`bcsub`), calcula diferencias contra `actual_closing_cash/digital` si existen, marca `has_inconsistencies` si hay operaciones con multiplicadores en cero.
+- [ ] **Fase 8.4** — `DailyClosingService.confirm(closureId, actualClosingCash, actualClosingDigital, userId)`: recalcula (`CalculateClosingService`), guarda montos reales, cambia estado a `CONFIRMADO` — bloquea registrar nuevas operaciones para esa fecha/agente (ya validado en `RegisterOperation` del Bloque 7).
+- [ ] **Fase 8.5** — `DailyClosingService.reopen(closureId, reason, userId)`: solo admin, cambia estado de `CONFIRMADO` a `REABIERTO`, registra motivo y auditoría.
+- [ ] **Fase 8.6** — `DailyClosingService.list(filters, isAdmin, userId)`, `getById(id)` — listado y detalle con métricas ya calculadas.
+- [ ] **Fase 8.7** — Endpoints: `GET /daily-closures`, `POST /daily-closures`, `GET /daily-closures/:id`, `POST /daily-closures/:id/confirm`, `POST /daily-closures/:id/reopen`.
+- [ ] **Fase 8.8** — Guard de autorización equivalente `DailyClosingPolicy.php`.
+- [ ] **Fase 8.9** — Testing exhaustivo: cálculo de montos esperados con precisión decimal exacta (comparar con casos reales de Laravel para asegurar paridad de resultados), confirmación/reapertura, bloqueo de registro de operaciones tras confirmación.
+- [ ] **Fase 8.10** — Commit y PR: `feat: módulo cierres diarios (cálculo, confirmación, reapertura)`.
+
+---
+
+## BLOQUE 9 — Módulo Reporting (Dashboards y agregaciones)
+
+- [ ] **Fase 9.1** — DTO `DashboardFilterDto` — replicando `DashboardFilterRequest.php` (rango de fechas, agente, tipo de operación).
+- [ ] **Fase 9.2** — `DashboardQueryService.operatorDashboard(userId, filters)`: replica `DashboardQueryService.php` para vista operador — métricas propias, operaciones recientes.
+- [ ] **Fase 9.3** — `DashboardQueryService.adminDashboard(organizationId, filters)`: métricas globales de la organización, tendencias por fecha (para gráficos).
+- [ ] **Fase 9.4** — `DashboardQueryService.operatorComparison(organizationId, filters)`: agregación comparativa por operador (total operaciones, montos, etc.).
+- [ ] **Fase 9.5** — Endpoints: `GET /dashboard` (operador), `GET /admin/dashboard`, `GET /admin/dashboard/operators`.
+- [ ] **Fase 9.6** — Guard de autorización equivalente `DashboardPolicy.php`.
+- [ ] **Fase 9.7** — Optimización de queries: usar índices ya existentes en las tablas (`operations`, `daily_closures`) — revisar que las queries Prisma generen SQL eficiente equivalente al de Laravel (usar `EXPLAIN ANALYZE` si hay dudas de performance).
+- [ ] **Fase 9.8** — Testing de integración: verificar que los números devueltos coincidan exactamente con los que produce el `DashboardQueryService.php` actual (test de paridad con datos de fixture idénticos).
+- [ ] **Fase 9.9** — Commit y PR: `feat: módulo reporting (dashboards operador/admin, comparación entre operadores)`.
+
+---
+
+## BLOQUE 10 — Módulo Audit (auditoría transversal)
+
+- [ ] **Fase 10.1** — `AuditService.record(action, entityType, entityId, actorUserId, organizationId, before, after, correlationId)`: helper central usado por el `AuditInterceptor` (Bloque 1) y también invocable manualmente donde se requiera mayor control (ej. flujos de auth con lógica condicional compleja).
+- [ ] **Fase 10.2** — Endpoint de solo lectura `GET /audit-logs` (admin) con filtros por entidad/acción/fecha — si existe un caso de uso equivalente en Laravel (verificar si hay UI de consulta de auditoría más allá de `password-resets`), replicarlo; si no existe, omitir endpoint público y dejar la tabla solo para trazabilidad interna.
+- [ ] **Fase 10.3** — Testing: verificar que cada mutación crítica (login, operación, anulación, cierre, cambio de contraseña, reset) genere su registro de auditoría correspondiente.
+- [ ] **Fase 10.4** — Commit y PR: `feat: módulo auditoría (interceptor global + consulta)`.
+
+---
+
+## BLOQUE 11 — Contrato de API y documentación
+
+- [ ] **Fase 11.1** — Decorar todos los DTOs con `@ApiProperty()` de Swagger para generar documentación completa y tipada.
+- [ ] **Fase 11.2** — Decorar todos los controllers/endpoints con `@ApiTags()`, `@ApiOperation()`, `@ApiResponse()`.
+- [ ] **Fase 11.3** — Generar cliente TypeScript tipado desde el esquema OpenAPI (`openapi-typescript` o similar) para uso directo en el repo `agenteflow-mobile` (Bloque 2 del `frontend-plan.md`) — evita mantener tipos duplicados manualmente entre backend y frontend.
+- [ ] **Fase 11.4** — Publicar el paquete de tipos generado (opcional: como paquete npm privado, o simplemente como artefacto versionado copiado al repo frontend).
+- [ ] **Fase 11.5** — Documentar en `README.md` del repo `agenteflow-api` cómo levantar el entorno local, variables de entorno requeridas, y cómo regenerar el cliente de tipos.
+- [ ] **Fase 11.6** — Commit: `docs: contrato de API completo (Swagger) + generación de tipos para frontend`.
+
+---
+
+## BLOQUE 12 — Testing integral y calidad
+
+- [ ] **Fase 12.1** — Configurar Jest para unit tests (`*.spec.ts` por servicio) — cobertura mínima objetivo (ej. 80%) en Services de lógica de negocio crítica (Auth, Operations, DailyClosing).
+- [ ] **Fase 12.2** — Configurar Supertest para tests E2E de endpoints HTTP (`*.e2e-spec.ts`), usando una base de datos de test separada (schema o base de datos Supabase de staging, nunca contra producción).
+- [ ] **Fase 12.3** — Suite de tests de paridad funcional: para cada regla de negocio migrada, comparar resultado NestJS vs comportamiento documentado/observado en Laravel (especialmente cálculos de `DailyClosing` y `Operations`).
+- [ ] **Fase 12.4** — Tests de seguridad: intento de acceso cross-organization (un admin de la organización A no debe poder ver/modificar datos de la organización B), intento de escalamiento de privilegios, reuso de refresh token.
+- [ ] **Fase 12.5** — Integrar CI (GitHub Actions): lint + unit + e2e en cada PR, bloqueo de merge si fallan.
+- [ ] **Fase 12.6** — Commit: `test: suite de pruebas unitarias, e2e y paridad funcional`.
+
+---
+
+## BLOQUE 13 — Despliegue en Render
+
+- [ ] **Fase 13.1** — Crear `Dockerfile` multi-stage para NestJS: stage `build` (`npm ci && npm run build`), stage `runtime` (imagen `node:alpine`, solo `dist/` + `node_modules` de producción).
+- [ ] **Fase 13.2** — Configurar `.dockerignore` (excluir `node_modules`, `.git`, tests, etc.).
+- [ ] **Fase 13.3** — Crear `render.yaml` para el nuevo servicio `agenteflow-api`: `runtime: docker`, `plan: free`, `healthCheckPath: /health`, variables de entorno (`DATABASE_URL`, `JWT_SIGNING_KEY`, `JWT_ISSUER`, `JWT_AUDIENCE`, `JWT_ACCESS_TTL`, `JWT_ABSOLUTE_SESSION_TTL`, `REFRESH_PEPPER`, `PASSWORD_RESET_TTL_SECONDS`, `PASSWORD_RESET_TEMPORARY_LENGTH`, `CORS_ORIGIN`, `OPERATIONS_RETROACTIVE_WINDOW_HOURS`, `OPERATIONS_ANNULMENT_WINDOW_HOURS`, `OPERATIONS_DEFAULT_CURRENCY`) — mismos valores/nombres conceptuales que usa Laravel actualmente, para no perder configuración de negocio ya validada.
+- [ ] **Fase 13.4** — Ejecutar `npx prisma migrate deploy` (o simplemente `prisma generate`, dado que el esquema ya existe y no se gestiona por migraciones Prisma sino que se mantiene sincronizado con las migraciones Laravel/SQL existentes) como parte del entrypoint/build.
+- [ ] **Fase 13.5** — Desplegar en Render como servicio de **staging** primero (`agenteflow-api-staging`), apuntando a una base de datos Supabase de pruebas (nunca la de producción) hasta validar completamente.
+- [ ] **Fase 13.6** — Validar `/health` responde 200 y conecta correctamente a la base de datos.
+- [ ] **Fase 13.7** — Validar CORS contra el dominio del frontend Expo Web desplegado en staging.
+- [ ] **Fase 13.8** — Pruebas de carga básicas (ej. `autocannon` o `k6`) para validar comportamiento dentro de los límites del plan Free (512MB RAM).
+- [ ] **Fase 13.9** — Documentar el proceso de despliegue en `README.md`/`docs/deployment.md` del repo `agenteflow-api` (variables de entorno requeridas, comandos de build/start, healthcheck).
+- [ ] **Fase 13.10** — Commit y PR: `chore: despliegue en Render (Dockerfile, render.yaml, staging validado)`.
+
+---
+
+## BLOQUE 14 — Corte final y cierre de la migración Backend
+
+- [ ] **Fase 14.1** — Ejecutar la suite completa de tests de paridad funcional (Bloque 12) contra el ambiente de staging con datos reales/anonimizados de producción, comparando resultados con el sistema Laravel actual.
+- [ ] **Fase 14.2** — Periodo de convivencia: mantener ambos backends (Laravel actual y NestJS nuevo) disponibles simultáneamente; el frontend Expo (ver `frontend-plan.md`) apunta a NestJS solo cuando esté validado.
+- [ ] **Fase 14.3** — Migrar el servicio de staging a producción en Render (`agenteflow-api`), apuntando ahora sí a la base de datos Supabase de producción real.
+- [ ] **Fase 14.4** — Validación final end-to-end: frontend Expo (Web/iOS/Android) contra `agenteflow-api` en producción, con todos los módulos migrados.
+- [ ] **Fase 14.5** — Monitoreo post-lanzamiento: logs, métricas de error, tiempos de respuesta durante las primeras semanas — comparar contra el comportamiento histórico conocido de Laravel para detectar regresiones.
+- [ ] **Fase 14.6** — Retiro/archivo del stack Laravel (`app/`, `routes/`, `database/migrations/` quedan como referencia histórica; considerar archivar el repo `control-operaciones-agente` o mantenerlo solo de solo lectura).
+- [ ] **Fase 14.7** — Post-mortem/retrospectiva de la migración completa (frontend + backend), documentar lecciones aprendidas y deuda técnica pendiente.
+
+---
+
+## Notas finales
+
+- El **Bloque 2 (Auth)** es el más crítico y debe completarse y probarse exhaustivamente antes de avanzar — toda la seguridad del sistema (JWT, refresh rotativo, detección de reuso) depende de una implementación fiel al comportamiento actual de Laravel.
+- Cada Bloque genera un PR independiente, permitiendo revisión incremental sin bloquear el resto del desarrollo.
+- Este plan asume que el frontend (`agenteflow-mobile`, ver `frontend-plan.md`) puede consumir la API Laravel actual (o mocks) en sus primeras fases, mientras este backend NestJS se construye en paralelo — ambos planes convergen en sus respectivos Bloques finales de corte (Bloque 13 del frontend / Bloque 14 del backend).
