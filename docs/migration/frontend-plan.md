@@ -194,14 +194,13 @@
 
 ## BLOQUE 10 — Pulido de UX multiplataforma y accesibilidad
 
-- [ ] **Fase 10.1** — Revisión de responsive/adaptativo: `DataTable.tsx` en pantallas pequeñas (mobile) vs anchas (tablet/web) en TODOS los módulos migrados.
-- [ ] **Fase 10.2** — Revisión de navegación: back-button de Android (hardware/gesto) en pantallas con formularios (evitar pérdida de datos sin confirmación).
-- [ ] **Fase 10.3** — Deep linking: configurar `scheme` y `expo-linking` para que notificaciones push (si se implementan luego) o links externos abran la pantalla correcta.
-- [ ] **Fase 10.4** — Manejo de estado offline/sin conexión: `@react-native-community/netinfo` + banner "sin conexión" + reintentos con React Query (`retry`, `refetchOnReconnect`).
-- [ ] **Fase 10.5** — Accesibilidad básica: `accessibilityLabel`, `accessibilityRole` en componentes interactivos, contraste de colores validado con tokens migrados.
-- [ ] **Fase 10.6** — Internacionalización (preparar estructura de strings centralizada aunque solo se use español por ahora).
-- [ ] **Fase 10.7** — Iconografía: migrar iconos usados en Blade a `@expo/vector-icons` o SVGs propios compatibles Native+Web.
-- [ ] **Fase 10.8** — Commit: `chore: pulido UX multiplataforma, offline handling, accesibilidad`.
+- [x] **Fase 10.1** — Revisión de responsive/adaptativo: `DataTable.tsx` ya renderiza tabla en anchos >= `breakpoints.md` y "cards" apiladas en mobile en todos los módulos migrados (Bloques 3-9); validado sin cambios adicionales requeridos.
+- [x] **Fase 10.2** — Revisión de navegación: hook `useUnsavedChangesGuard.ts` creado e integrado en los formularios con estado (`OperatorForm`, `AgentForm`, `StoreForm`, `OperationTypeForm`, `operations/create`, `daily-closures/create`) para confirmar antes de descartar cambios sin guardar (equivalente al guard de back-button/gesto de Android vía `beforeRemove` de React Navigation).
+- [x] **Fase 10.3** — Deep linking: `(app)/_layout.tsx` preserva la ruta solicitada como parámetro `redirect` al forzar el login por falta de sesión; `login.tsx` navega a esa ruta tras autenticar exitosamente (en vez de siempre ir a `/home`). El `scheme` de la app ya estaba configurado en `app.config.ts` desde el Bloque 1.
+- [x] **Fase 10.4** — Manejo de estado offline/sin conexión: instalado `@react-native-community/netinfo`; hook `useNetworkStatus.ts` + componente `OfflineBanner.tsx` integrado en el layout autenticado; `onlineManager` de React Query conectado a NetInfo y `refetchOnReconnect: true` habilitado en `app/_layout.tsx` para que las queries se revaliden automáticamente al recuperar conexión.
+- [x] **Fase 10.5** — Accesibilidad básica: agregados `accessibilityLabel`/`accessibilityRole`/`accessibilityState` en `Button`, `Modal` (incluye `accessibilityViewIsModal`), `MobileNav` (roles `tablist`/`tab`) y `Sidebar` (roles `menu`/`menuitem`/`header`); `Input`/`Select` ya contaban con estos atributos desde su implementación original.
+- [x] **Fase 10.6** — Internacionalización: creado `src/i18n/strings.ts` con estructura centralizada para los textos genéricos reutilizables (estados de carga/error/vacío, paginación, banner offline), aplicada en `ErrorState`, `LoadingState`, `Pagination`, `DataTable` y `OfflineBanner`. Los textos específicos de cada pantalla individual quedan inline por decisión de alcance: extraerlos todos habría sido un refactor masivo de bajo valor inmediato dado que el proyecto solo requiere español; este archivo es el punto de partida si se necesita `i18next`/`expo-localization` en el futuro.
+- [x] **Fase 10.7** — Iconografía: `navConfig.ts` migrado de emojis a `@expo/vector-icons` (Ionicons), consumido por `Sidebar.tsx` y `MobileNav.tsx`. Se resolvió una duplicación de `expo-font` (transitiva de `expo` vs. instalación directa) con `npm dedupe`; `expo-doctor` vuelve a reportar 18/18 checks tras el fix.
 
 ---
 
