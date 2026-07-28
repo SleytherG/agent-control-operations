@@ -179,17 +179,16 @@
 
 ---
 
-## BLOQUE 9 — Módulo Reporting (Dashboards y gráficos)
+## BLOQUE 9 — Módulo Reporting (Dashboards y gráficos) ✅ COMPLETADO (Web)
 
-- [ ] **Fase 9.1** — Decidir librería de gráficos multiplataforma: `react-native-chart-kit` (simple, SVG, Native+Web) o `victory-native` (más robusta). Instalar junto a `react-native-svg`.
-- [ ] **Fase 9.2** — `src/api/reporting.ts`: `getOperatorDashboard(filters)`, `getAdminDashboard(filters)`, `getOperatorComparison(filters)`.
-- [ ] **Fase 9.3** — Componente `Filters.tsx` de reporting (equivalente `reporting/components/filters.blade.php`).
-- [ ] **Fase 9.4** — `app/(app)/dashboard.tsx` (rol operador): dashboard con métricas propias, equivalente `operator-dashboard.blade.php` — cards de métricas (`MetricCard.tsx`) + tabla de operaciones recientes (`OperationsTable.tsx`, equivalente `operations-table.blade.php`).
-- [ ] **Fase 9.5** — `app/(app)/admin/dashboard.tsx`: dashboard administrativo global, equivalente `admin-dashboard.blade.php` — gráficos de tendencia (línea/barras) usando `ChartContainer.tsx` + librería elegida en 9.1.
-- [ ] **Fase 9.6** — `app/(app)/admin/dashboard/operators.tsx`: comparación entre operadores, equivalente `operator-comparison.blade.php` — tabla comparativa + gráfico de barras por operador.
-- [ ] **Fase 9.7** — Componente `EmptyState.tsx` específico de reporting cuando no hay datos en el rango filtrado (equivalente `reporting/components/empty-state.blade.php`).
-- [ ] **Fase 9.8** — Validar rendimiento de gráficos en Android/iOS reales (no solo emulador) — diferencias de performance en dispositivos de gama baja.
-- [ ] **Fase 9.9** — Testing cruzado, commit y PR: `feat: módulo reporting (dashboards operador/admin, comparación, gráficos)`.
+- [x] **Fase 9.1** — Librería de gráficos elegida: `react-native-chart-kit` + `react-native-svg` (SVG, Native+Web, más simple que `victory-native`). Instaladas vía `npx expo install`, validado 18/18 en `expo-doctor`.
+- [x] **Fase 9.2** — `src/api/reporting.ts`: `getOperatorDashboard(filters)`, `getAdminDashboard(filters)`, `getOperatorComparison(filters)` + interfaces completas (`OperatorMetrics`, `AdminMetrics`, `TimeEvolutionOperator/Admin`, `TypeDistributionItem`, `OperatorComparisonRow`, etc.) migradas desde `DashboardQueryService` y las 3 acciones de `DashboardController.php`.
+- [x] **Fase 9.3** — `src/components/reporting/ReportingFilters.tsx`: replica exacta de `admin-filters.blade.php` — solo 3 filtros reales (periodo, agente, tipo de operación); se confirmó que el Blade real NO incluye región/provincia/distrito/operador a pesar de que `DashboardFilterRequest` los valide.
+- [x] **Fase 9.4** — `app/(app)/dashboard.tsx` (rol operador): `MetricCard`×5 + `BarChart` (volumen por periodo) + `PieChart` (distribución por tipo) + `DataTable` de operaciones recientes con botón "Ver Todas" — fiel a `operator-dashboard.blade.php` + `operator-metrics.blade.php`.
+- [x] **Fase 9.5** — `app/(app)/admin/dashboard.tsx`: `ReportingFilters` + `MetricCard`×4 + `LineChart` (evolución) + `PieChart` (distribución) — fiel a `admin-dashboard.blade.php`. Se confirmó que el Blade real (127 líneas completas revisadas) **no renderiza tabla de operaciones** a pesar de que el controlador pasa `$operations` — se omitió deliberadamente por fidelidad al comportamiento real.
+- [x] **Fase 9.6** — `app/(app)/admin/dashboard/operators.tsx`: filtros (periodo, fecha, selector múltiple de operadores vía botones toggle) + `BarChart` (top por monto bruto) + `DataTable` de ranking + `Pagination` — fiel a `operator-comparison.blade.php`.
+- [x] **Fase 9.7** — Empty states específicos integrados con `EmptyState.tsx` existente, usando los textos exactos de `reporting/components/empty-state.blade.php` (contextos `operator`, `admin`, `comparison`) y de los `<x-ui.empty-state>` inline en cada vista.
+- [ ] **Fase 9.8** — Pendiente: validar rendimiento de gráficos en Android/iOS reales (requiere hardware físico no disponible en este entorno de ejecución de comandos — a validar en máquina de desarrollo con dispositivos reales antes del corte final).
 
 ---
 
