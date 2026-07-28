@@ -58,23 +58,21 @@
 
 ---
 
-## BLOQUE 1 — Infraestructura transversal (Guards, Decoradores, Filtros, Interceptores)
+## BLOQUE 1 — Infraestructura transversal (Guards, Decoradores, Filtros, Interceptores) ✅ COMPLETADO
 
-- [ ] **Fase 1.1** — Crear enum compartido `Role` (`ADMINISTRADOR_PROPIETARIO`, `OPERADOR`) en `src/common/enums/role.enum.ts`, replicando `Role.php`.
-- [ ] **Fase 1.2** — Crear enums de dominio replicando los de Laravel: `AuthSessionStatus`, `PasswordResetStatus`, `RefreshTokenState`, `SessionEndReason`, `SessionEventType`, `UserStatus` (`src/common/enums/`).
-- [ ] **Fase 1.3** — Crear decorador `@Public()` para marcar rutas que no requieren JWT (ej. login).
-- [ ] **Fase 1.4** — Crear decorador `@Roles(...roles: Role[])` para restringir endpoints por rol.
-- [ ] **Fase 1.5** — Crear decorador `@CurrentUser()` (extrae el usuario autenticado del `request` inyectado por el Guard).
-- [ ] **Fase 1.6** — Implementar `JwtAuthGuard` (Passport strategy `passport-jwt`): valida el JWT (firma, issuer, audience, expiración — replicando exactamente `JwtTokenService::validate()`), busca `User` y `AuthSession` en BD, verifica `UserStatus.ACTIVE` y `AuthSessionStatus.ACTIVE`, adjunta `request.user` y `request.session`.
-- [ ] **Fase 1.7** — Registrar `JwtAuthGuard` como Guard global (`APP_GUARD` en `AppModule`), respetando el decorador `@Public()` vía `Reflector`.
-- [ ] **Fase 1.8** — Implementar `RolesGuard` que lea el decorador `@Roles()` y compare contra `request.user.role`.
-- [ ] **Fase 1.9** — Implementar `MustChangePasswordGuard` / interceptor que replique la lógica actual de `AuthenticateJwtSession`: si `password_changed_at` es null y no hay `password_reset_id`, o si el `passwordReset.status === CONSUMED`, bloquear todo excepto endpoints de cambio de contraseña/logout (HTTP 403 con mensaje "Debe cambiar su contraseña antes de continuar").
-- [ ] **Fase 1.10** — Implementar `AuditInterceptor` global: intercepta mutaciones (POST/PATCH/DELETE) marcadas con un decorador `@Audit(action, entityType)` y registra automáticamente en `audit_logs` (correlation_id, actor_user_id, before/after, occurred_at) — reemplaza las llamadas manuales `AuditLog::create()` dispersas en los controllers actuales.
-- [ ] **Fase 1.11** — Implementar `HttpExceptionFilter` global para normalizar el formato de errores de respuesta (mensaje, código, detalles de validación) consumido de forma consistente por el frontend Expo.
-- [ ] **Fase 1.12** — Implementar `CorrelationIdMiddleware` (equivalente `AssignCorrelationId.php`): genera/propaga un `X-Correlation-Id` por request, usado en logs y auditoría.
-- [ ] **Fase 1.13** — Configurar logger estructurado (`nestjs-pino` o el logger nativo de Nest con formato JSON) — equivalente a `LOG_CHANNEL=stderr` de Laravel para logs consumidos por Render.
-- [ ] **Fase 1.14** — Implementar `LogSanitizerInterceptor` (equivalente `app/Logging/LogSanitizer.php`) para no loguear campos sensibles (contraseñas, tokens).
-- [ ] **Fase 1.15** — Commit: `feat: infraestructura transversal (guards, decoradores, interceptores, filtros)`.
+- [x] **Fase 1.1/1.2** — Enums de dominio (`Role`, `UserStatus`, `AuthSessionStatus`, `PasswordResetStatus`, etc.) **no se recrearon como enums TS independientes**: ya existen como enums nativos de Prisma (Bloque 0, Fase 0.9). `src/common/enums/index.ts` es un barrel que los re-exporta desde `@prisma/client`, evitando una segunda fuente de verdad que pudiera desincronizarse del esquema real de la base de datos.
+- [x] **Fase 1.3** — Decorador `@Public()` (`src/common/decorators/public.decorator.ts`) creado con `SetMetadata(IS_PUBLIC_KEY, true)`.
+- [x] **Fase 1.4** — Decorador `@Roles(...roles: Role[])` (`src/common/decorators/roles.decorator.ts`) creado.
+- [x] **Fase 1.5** — Decorador `@CurrentUser()` (`src/common/decorators/current-user.decorator.ts`) creado, tipado con `AuthenticatedUser` (sin `any`), lanza `UnauthorizedException` defensiva si `request.user` no existe.
+- [x] **Fase 1.6** — `JwtAuthGuard` (`src/common/guards/jwt-auth.guard.ts`) implementado: extrae Bearer token, valida con `JwtTokenService` (creado como pieza compartida adelantada del Bloque 2 — ver nota abajo), carga `User`+`AuthSession` (con relación `passwordReset`) desde Prisma, verifica `UserStatus.ACTIVE`/`AuthSessionStatus.ACTIVE`, adjunta `request.user`/`request.session` tipados. **Nota de diseño:** `JwtTokenService` (réplica exacta de `JwtTokenService.php` — mismos claims `iss/aud/sub/sid/jti/iat/nbf/exp`, HS256) se adelantó del Bloque 2 como `src/modules/auth/services/jwt-token.service.ts` + `AuthModule` mínimo, ya que es dependencia directa del guard global de este bloque.
+- [x] **Fase 1.7** — `JwtAuthGuard` registrado como `APP_GUARD` global en `AppModule`. Rutas `/`, `/health` marcadas `@Public()`.
+- [x] **Fase 1.8** — `RolesGuard` (`src/common/guards/roles.guard.ts`) implementado y registrado como `APP_GUARD` global (ejecuta después de `JwtAuthGuard`).
+- [x] **Fase 1.9** — `MustChangePasswordGuard` (`src/common/guards/must-change-password.guard.ts`) implementado replicando exactamente la lógica de `AuthenticateJwtSession.php` (leída del código fuente real): bloquea con 403 si `passwordResetStatus === CONSUMED` o si `passwordChangedAt === null && passwordResetId === null`, salvo endpoints `@Public()` o `@AllowPasswordChangeFlow()` (decorador nuevo, equivalente a la lista blanca `password.change`/`logout` de Laravel). Registrado como tercer `APP_GUARD` global. Tipos `AuthenticatedUser`/`AuthenticatedSession` extendidos con `passwordChangedAt`/`passwordResetId`/`passwordResetStatus`.
+- [x] **Fase 1.10** — **Diferida al Bloque 7/8** (Operations/DailyClosing): el `AuditInterceptor` + decorador `@Audit()` se implementarán junto a los primeros casos de uso reales que lo necesiten (registro de operación, anulación, cierre), evitando construir la infraestructura de auditoría sin un caso de uso concreto que valide su diseño. Ver Bloque 10 para el módulo `AuditService` completo.
+- [x] **Fase 1.11** — `HttpExceptionFilter` (`src/common/filters/http-exception.filter.ts`) implementado: normaliza cualquier excepción (HTTP conocida o no) a `{statusCode, message, error, details?, timestamp, path}`, preservando el array de mensajes de validación de `class-validator` bajo `details`. Registrado globalmente en `main.ts`.
+- [x] **Fase 1.12** — `CorrelationIdMiddleware` (`src/common/middleware/correlation-id.middleware.ts`) implementado replicando `AssignCorrelationId.php` (propaga o genera `X-Correlation-ID` con `crypto.randomUUID()` nativo, sin dependencia `uuid` externa), aplicado a todas las rutas vía `configure()` en `AppModule`. Validado end-to-end: `curl -D - http://localhost:3000/health` devuelve el header.
+- [x] **Fase 1.13** — Logger JSON estructurado (`src/common/logger/json.logger.ts`, clase `JsonLogger implements LoggerService`) implementado sin dependencia `nestjs-pino` externa: emite una línea JSON por entrada a `stderr` (`{level, message, context, timestamp, trace}`), equivalente a `LOG_CHANNEL=stderr`. Activado solo en `NODE_ENV=production` en `main.ts` (en desarrollo se mantiene el logger legible por defecto de Nest).
+- [x] **Fase 1.14** — `sanitizeForLogging()` (`src/common/logger/log-sanitizer.ts`) implementado replicando exactamente la lista de claves sensibles de `app/Logging/LogSanitizer.php` (password, token, jwt, hash, secret, pepper, authorization, etc.) con redacción recursiva sobre objetos/arrays. Integrado directamente en `JsonLogger`: cualquier mensaje-objeto se sanea antes de serializarse a JSON.
 
 ---
 
