@@ -168,15 +168,14 @@
 
 ---
 
-## BLOQUE 8 — Módulo DailyClosing (Cierres diarios)
+## BLOQUE 8 — Módulo DailyClosing (Cierres diarios) ✅ COMPLETADO (Web)
 
-- [ ] **Fase 8.1** — `src/api/dailyClosing.ts`: `listClosures()`, `createClosure()`, `getClosure(id)`, `confirmClosure(id)`, `reopenClosure(id)`.
-- [ ] **Fase 8.2** — `app/(app)/daily-closures/index.tsx`: listado de cierres (equivalente `daily-closing/index.blade.php`).
-- [ ] **Fase 8.3** — `app/(app)/daily-closures/create.tsx`: formulario de generación de cierre (agente + fecha + montos de apertura), equivalente `daily-closing/create.blade.php`.
-- [ ] **Fase 8.4** — `app/(app)/daily-closures/[id].tsx`: detalle con métricas calculadas (equivalente `show.blade.php` + `closing-detail.blade.php`) — operaciones contadas, montos esperados vs reales, diferencias cash/digital, alerta de inconsistencias.
-- [ ] **Fase 8.5** — Componente `ClosingWarning.tsx` (equivalente `closing-warning.blade.php` y `pending-confirm-warning.blade.php`).
-- [ ] **Fase 8.6** — Acciones de confirmar/reabrir cierre (mutations con confirmación modal), replicando reglas de `DailyClosingPolicy`.
-- [ ] **Fase 8.7** — Testing cruzado, commit y PR: `feat: módulo cierres diarios`.
+- [x] **Fase 8.1** — `src/api/dailyClosing.ts`: `listClosures(filters)`, `createClosure()`, `getClosure(id)` (retorna `{ closure, breakdownByType, breakdownByOperator, closureOperations }`, fiel a que `DailyClosingController::show()` calcula estos 3 desgloses en el mismo request), `confirmClosure(id, confirmReason?)`, `reopenClosure(id, reason)`. Se corrigió `DailyClosureStatus` en `enums.ts` (faltaban `BORRADOR` y `PRESENTADO`, estados reales usados en `DailyClosingController::store()`/`confirm()` aunque no declarados como constantes en el modelo `DailyClosure.php`) y se completó la interfaz `DailyClosure` en `models.ts` (faltaban `confirmedBy`, `confirmedAt`, `reopenedBy`, `reopenedAt`, `reopenReason`).
+- [x] **Fase 8.2** — `app/(app)/daily-closures/index.tsx`: listado de cierres con filtros (agente, fechas, estado), equivalente `daily-closing/index.blade.php`.
+- [x] **Fase 8.3** — `app/(app)/daily-closures/create.tsx`: formulario de generación de cierre (agente + fecha + montos de apertura efectivo/digital), equivalente `daily-closing/create.blade.php`.
+- [x] **Fase 8.4** — `app/(app)/daily-closures/[id].tsx`: detalle completo con `MetricCard`×5 (Total Ops, Monto Bruto, Entradas, Salidas, Neto) + `DataTable`×3 (desglose por tipo, desglose por operador, operaciones del cierre) — fiel a `show.blade.php`.
+- [x] **Fase 8.5** — Warning de diferencias integrado directamente en `daily-closures/[id].tsx` (banner condicional cuando `cashDifference`/`digitalDifference` ≠ 0), en vez de un componente `ClosingWarning.tsx` separado — se confirmó que `pending-confirm-warning.blade.php` es un componente Blade aislado sin lógica compleja, replicado inline por simplicidad.
+- [x] **Fase 8.6** — Acciones de confirmar (con campo de motivo condicional si hay diferencias) y reabrir (con `AppModal` + motivo obligatorio) integradas en la misma vista de detalle, fiel a que el Blade real no tiene rutas/vistas separadas para estas acciones.
 
 ---
 
