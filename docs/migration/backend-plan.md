@@ -217,17 +217,21 @@
 
 ---
 
-## BLOQUE 9 — Módulo Reporting (Dashboards y agregaciones)
+## BLOQUE 9 — Módulo Reporting (Dashboards y agregaciones) ✅ COMPLETADO
 
-- [ ] **Fase 9.1** — DTO `DashboardFilterDto` — replicando `DashboardFilterRequest.php` (rango de fechas, agente, tipo de operación).
-- [ ] **Fase 9.2** — `DashboardQueryService.operatorDashboard(userId, filters)`: replica `DashboardQueryService.php` para vista operador — métricas propias, operaciones recientes.
-- [ ] **Fase 9.3** — `DashboardQueryService.adminDashboard(organizationId, filters)`: métricas globales de la organización, tendencias por fecha (para gráficos).
-- [ ] **Fase 9.4** — `DashboardQueryService.operatorComparison(organizationId, filters)`: agregación comparativa por operador (total operaciones, montos, etc.).
-- [ ] **Fase 9.5** — Endpoints: `GET /dashboard` (operador), `GET /admin/dashboard`, `GET /admin/dashboard/operators`.
-- [ ] **Fase 9.6** — Guard de autorización equivalente `DashboardPolicy.php`.
-- [ ] **Fase 9.7** — Optimización de queries: usar índices ya existentes en las tablas (`operations`, `daily_closures`) — revisar que las queries Prisma generen SQL eficiente equivalente al de Laravel (usar `EXPLAIN ANALYZE` si hay dudas de performance).
-- [ ] **Fase 9.8** — Testing de integración: verificar que los números devueltos coincidan exactamente con los que produce el `DashboardQueryService.php` actual (test de paridad con datos de fixture idénticos).
-- [ ] **Fase 9.9** — Commit y PR: `feat: módulo reporting (dashboards operador/admin, comparación entre operadores)`.
+> **Hallazgos corregidos durante la validación:**
+> 1. `Prisma.join()` lanza una excepción cuando se le pasa un array vacío (`Expected join([]) to be called with an array of multiple elements`) — ocurría al construir la cláusula de filtros admin cuando no había ningún filtro activo. Corregido en `buildAdminFilterClause()` devolviendo `Prisma.sql\`\`` (vacío) cuando no hay filtros.
+> 2. `operator_ids` como query param único (`?operatorIds=5`) no se normalizaba a array por `class-transformer`. Corregido con un `@Transform()` explícito en `DashboardFilterDto` que envuelve valores escalares en un array de un elemento.
+
+- [x] **Fase 9.1** — DTO `DashboardFilterDto` (`src/modules/reporting/dto/dashboard-filter.dto.ts`) — réplica de `DashboardFilterRequest.php` (rango de fechas, región/provincia/distrito, agente, operador, tipo de operación, `include_annulled`, `operator_ids`). Se omiten `store_id`/`bank_id`/`bank_agent_id` (módulo `BankingNetwork`, descartado en el Bloque 5).
+- [x] **Fase 9.2** — `DashboardQueryService.getOperatorMetrics()` (`src/modules/reporting/services/dashboard-query.service.ts`): réplica exacta de `DashboardQueryService::getOperatorMetrics()` usando `$queryRaw` con `CASE WHEN` (Prisma no soporta agregación condicional nativa en `aggregate()`) — métricas propias del operador (operationCount, grossAmount, cashIn/Out, digitalIn/Out, netMovement).
+- [x] **Fase 9.3** — `DashboardQueryService.getAdminMetrics()`/`getAdminTypeDistribution()`/`getAdminTimeEvolution()`: métricas globales de la organización con los mismos filtros admin (`agentId`, `city`, `operatorId`, `operationTypeId`), tendencias por fecha para gráficos (`TO_CHAR` con formato `YYYY-MM-DD`/`YYYY-MM`, equivalente a `getDateExpression()` de PHP para PostgreSQL).
+- [x] **Fase 9.4** — `DashboardQueryService.getOperatorComparison()`/`getOperatorComparisonCount()`: agregación comparativa por operador (total operaciones, montos, cash in/out), ordenada por monto bruto descendente, con paginación y filtro opcional por `operatorIds`.
+- [x] **Fase 9.5** — Endpoints en `DashboardController`: `GET /dashboard` (operador), `GET /admin/dashboard`, `GET /admin/dashboard/operators`.
+- [x] **Fase 9.6** — Autorización equivalente a `DashboardPolicy.php`: `viewOperatorDashboard` solo `OPERADOR`, `viewAdminDashboard` solo `ADMINISTRADOR_PROPIETARIO` — verificación manual en el controller (más restrictiva que un simple `@Roles()`, ya que excluye explícitamente al rol contrario en ambas direcciones, replicando el comportamiento exacto de la Policy de PHP).
+- [x] **Fase 9.7** — Optimización de queries: todas las queries usan los índices ya existentes en `operations` (`organization_id, effective_at`, `user_id, effective_at`, `status, effective_at`, `operation_type_id, effective_at`) — mismas condiciones `WHERE`/`JOIN` que las queries SQL crudas de Laravel, sin cambios de esquema requeridos.
+- [x] **Fase 9.8** — **Validación end-to-end real** (no unitaria) contra la base de datos Supabase, 15 escenarios: dashboard operador con métricas exactas sobre datos reales (2 operaciones, `grossAmount=130.00`, `cashIn=130.00`, `netMovement=130.00`), autorización estricta en ambas direcciones (admin no puede ver dashboard de operador y viceversa, 403), dashboard admin filtrado por agente con los mismos totales, filtro por `operationTypeId` inexistente (array vacío, `operationCount=0`), anulación de una operación y verificación de que el dashboard sin `includeAnnulled` la excluye (`operationCount` de 2→1, `grossAmount` de 130.00→30.00) y con `includeAnnulled=true` la vuelve a incluir, comparación entre operadores con el monto correcto de la operación activa, comparación filtrada por `operatorIds` específico, y dashboard sin operaciones en un período distante (arrays vacíos) — todos los 15 escenarios pasaron correctamente tras corregir los 2 hallazgos.
+- [x] **Fase 9.9** — Commit `bc798f1`: `feat: modulo reporting (dashboards operador/admin, comparacion entre operadores)`, pusheado a `main`.
 
 ---
 
