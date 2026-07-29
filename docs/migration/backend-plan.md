@@ -155,17 +155,17 @@
 
 ---
 
-## BLOQUE 6 — Módulo Organization (Jerarquía geográfica y tiendas)
+## BLOQUE 6 — Módulo Organization (Jerarquía geográfica) ✅ COMPLETADO
 
-- [ ] **Fase 6.1** — DTOs: `CreateRegionDto`, `CreateProvinceDto`, `CreateDistrictDto`, `CreateStoreDto` (+ Update) — replicando `RegionRequest.php`, `ProvinceRequest.php`, `DistrictRequest.php`, `StoreRequest.php`.
-- [ ] **Fase 6.2** — `OrganizationService`: CRUD completo para `Region`, `Province`, `District`, `Store`, con relaciones jerárquicas (región→provincia→distrito) y soft-deactivate (no hard delete, igual que Laravel).
-- [ ] **Fase 6.3** — Endpoints regiones: `GET/POST /regions`, `GET/PATCH /regions/:id`, `DELETE /regions/:id` (deactivate).
-- [ ] **Fase 6.4** — Endpoints provincias: `GET/POST /regions/:id/provinces`, `PATCH /provinces/:id`, `DELETE /provinces/:id`.
-- [ ] **Fase 6.5** — Endpoints distritos: `GET/POST /provinces/:id/districts`, `PATCH /districts/:id`, `DELETE /districts/:id`.
-- [ ] **Fase 6.6** — Endpoints tiendas: `GET/POST /stores`, `GET/PATCH /stores/:id`, `DELETE /stores/:id` (deactivate).
-- [ ] **Fase 6.7** — Guards de autorización equivalentes `RegionPolicy`, `ProvincePolicy`, `DistrictPolicy`, `StorePolicy` (todo restringido a admin).
-- [ ] **Fase 6.8** — Testing de integración: jerarquía completa (crear región→provincia→distrito→tienda), validación de relaciones al desactivar (no permitir desactivar región con provincias activas, etc. si esa regla existe en Laravel — verificar en `GeoHierarchyController.php`).
-- [ ] **Fase 6.9** — Commit y PR: `feat: módulo organización (jerarquía geográfica y tiendas)`.
+> **Decisión de alcance (Fase 6.1 extendida):** se descarta migrar `StoreController.php` (tiendas) — al igual que el caso de `BankingNetwork` descartado en el Bloque 5, la tabla `stores` fue **eliminada físicamente** de la base de datos por la migración `2026_07_23_000009_drop_legacy_tables.php` (`Schema::dropIfExists('stores')`), confirmado además por la ausencia de `model Store` en `schema.prisma`. `StoreController::show()` incluso referencia `activeBankAgents.bank`, una relación del módulo `BankingNetwork` también descartado — es código PHP doblemente roto en la aplicación actual. Se migra únicamente la jerarquía geográfica vigente: `Region → Province → District`.
+- [x] **Fase 6.1** — DTOs creados en `src/modules/organization/dto/`: `CreateRegionDto` (`name` máx. 160, `isActive` opcional), `CreateProvinceDto`/`CreateDistrictDto` (extienden de `CreateRegionDto`, mismas reglas — PHP también replica exactamente las mismas reglas en los 3 `FormRequest`) — verificados campo por campo contra `RegionRequest.php`/`ProvinceRequest.php`/`DistrictRequest.php`. Se omite `CreateStoreDto` por la decisión de alcance documentada arriba.
+- [x] **Fase 6.2** — `OrganizationService` (`src/modules/organization/services/organization.service.ts`): CRUD completo para `Region`, `Province`, `District` con relaciones jerárquicas y soft-deactivate (`isActive`/`deactivatedAt`, no hard delete) — réplica exacta de `GeoHierarchyController`, incluyendo la lógica de `updateRegion()`/`updateProvince()`/`updateDistrict()` que solo setea `deactivatedAt` si la entidad pasa de activa a inactiva (y lo limpia si vuelve a activarse), y auditoría completa (`region.created/updated/deactivated`, `province.*`, `district.*`).
+- [x] **Fase 6.3** — Endpoints regiones: `GET/POST /regions`, `PATCH /regions/:id`, `POST /regions/:id/deactivate`.
+- [x] **Fase 6.4** — Endpoints provincias: `GET/POST /regions/:id/provinces`, `PATCH /provinces/:id`, `POST /provinces/:id/deactivate`.
+- [x] **Fase 6.5** — Endpoints distritos: `GET/POST /provinces/:id/districts`, `PATCH /districts/:id`, `POST /districts/:id/deactivate`.
+- [x] **Fase 6.6 (descartada)** — No aplica: no se migran tiendas (ver decisión de alcance).
+- [x] **Fase 6.7** — Autorización equivalente a `RegionPolicy`/`ProvincePolicy`/`DistrictPolicy` (idénticas en estructura entre sí, igual patrón que `AgentPolicy` del Bloque 5) implementada vía `@Roles(Role.ADMINISTRADOR_PROPIETARIO)` a nivel de controller completo (`OrganizationController`).
+- [x] **Fase 6.8** — **Validación end-to-end real** (no unitaria) contra la base de datos Supabase, 15 escenarios: creación de región, nombre duplicado (409, replicando la regla `unique` de `RegionRequest.php`), listado de regiones, creación de provincia dentro de la región, listado de provincias, creación de distrito dentro de la provincia, listado de distritos, actualización de región, intento de creación por un operador (403, solo admin), desactivación de distrito, desactivación de provincia, desactivación de región, verificación final de `isActive: false` — todos los escenarios pasaron correctamente, confirmando la jerarquía completa región→provincia→distrito.
 
 ---
 
