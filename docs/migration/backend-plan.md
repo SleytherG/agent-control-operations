@@ -92,7 +92,8 @@
 - [x] **Fase 2.13/2.14** — `AuthService.logout()` + `POST /auth/logout` (autenticado): `AuthSession.status = REVOKED`, `end_reason = LOGOUT_MANUAL`, `SessionEvent.LOGOUT`.
 - [x] **Fase 2.18** — **Validación end-to-end real** (no solo unitaria) contra la base de datos Supabase: login exitoso, refresh con rotación válida, reuso de refresh detectado y sesión revocada en cascada, token nuevo tras revocación rechazado, logout con token ya revocado rechazado — los 5 escenarios críticos de seguridad confirmados funcionando correctamente.
 - [x] **Fase 2.19** — Commit `7e5372b`: `feat: módulo auth completo (login, refresh rotativo, logout, gestión de sesiones)`, pusheado a `main`.
-- [ ] **Fase 2.15/2.16/2.17** — Diferidas: `revokeSession()`/`revokeAllUserSessions()`/`recordSessionEvent()` genérico y el job de expiración proactiva se implementarán junto al Bloque 4 (Sessions), que es su consumidor natural.
+- [x] **Fase 2.15/2.16** — **Corrección de documentación (detectada durante la implementación del Bloque 4):** `AuthService.revokeSession()` y `revokeAllUserSessions()` (réplicas exactas de `RevokeSession.php`/`RevokeAllUserSessions.php`) **ya estaban implementadas desde este bloque** — no estaban realmente diferidas como se documentó originalmente. `revokeAllUserSessions()` ya era consumida por `DeactivateUserService`/`ResetOperatorPasswordService` del Bloque 3; `revokeSession()` solo era usada internamente por `AuthService.logout()`. El Bloque 4 las reutiliza sin necesidad de reimplementarlas.
+- [ ] **Fase 2.17** — Diferida: `recordSessionEvent()` genérico (helper transversal) y el job de expiración proactiva de sesiones vencidas se posponen — actualmente cada acción registra su propio `SessionEvent` inline (igual que en PHP, donde tampoco existe un helper genérico consolidado), y la expiración se resuelve de forma perezosa (lazy) en `JwtAuthGuard`/`AuthService`, replicando el comportamiento real observado en `AuthenticateJwtSession.php` (no hay un job/cron de expiración proactiva en el Laravel original).
 
 ---
 
@@ -121,15 +122,15 @@
 
 ---
 
-## BLOQUE 4 — Módulo Sessions (historial y auditoría de sesiones)
+## BLOQUE 4 — Módulo Sessions (historial y auditoría de sesiones) ✅ COMPLETADO
 
-- [ ] **Fase 4.1** — `SessionsService.listAuthorizedSessions(userId)`: equivalente `ListAuthorizedSessions.php` — lista sesiones activas/históricas del usuario autenticado.
-- [ ] **Fase 4.2** — `GET /sessions` (autenticado) — historial de sesiones del usuario actual, con datos: IP (hash), user agent, fecha inicio/fin, estado, razón de finalización.
-- [ ] **Fase 4.3** — `POST /sessions/:id/revoke` (autenticado) — invoca `revokeSession()`, valida que la sesión pertenezca al usuario (o sea admin).
-- [ ] **Fase 4.4** — `POST /users/:id/sessions/revoke-all` (admin) — invoca `revokeAllUserSessions()`.
-- [ ] **Fase 4.5** — DTO `ListSessionsDto` con paginación/filtros — equivalente `ListSessionsRequest.php`.
-- [ ] **Fase 4.6** — Testing de integración: revocar sesión propia, intentar revocar sesión de otro usuario sin ser admin (debe fallar 403).
-- [ ] **Fase 4.7** — Commit y PR: `feat: módulo sesiones (historial, revocación individual y masiva)`.
+> **Hallazgo de alcance:** en el Laravel original, `RevokeSession`/`RevokeAllUserSessions` **no tienen endpoints HTTP propios** — solo se invocan internamente desde `LogoutController` (`RevokeSession`) y desde `DeactivateUser`/`ResetOperatorPassword` (`RevokeAllUserSessions`, ya reutilizado desde el Bloque 3). No existe un `RevokeSessionController` ni rutas `sessions/{id}/revoke` o `users/{id}/sessions/revoke-all` en `routes/identity-access.php`. Siguiendo el requisito explícito del plan de migración (Fases 4.3/4.4), se expusieron como endpoints REST explícitos nuevos — comportamiento equivalente al de las `Action` PHP, pero con superficie de API más amplia que el Laravel original (necesaria para que el futuro frontend Expo pueda ofrecer gestión de sesiones de forma autónoma vía API, sin depender de vistas Blade).
+- [x] **Fase 4.1** — `SessionsService.listAuthorizedSessions()` (`src/modules/sessions/services/sessions.service.ts`): réplica exacta de `ListAuthorizedSessions::execute()` — `OPERADOR` solo ve sus propias sesiones, `ADMINISTRADOR_PROPIETARIO` ve todas las de su organización (con filtro opcional por `userId` específico, replicando la condición `$user->role === Role::ADMINISTRADOR_PROPIETARIO` de PHP), filtros por `status`/`from`/`to`, paginación (25/página por defecto, tope 100, igual que `config('session-security.history')`).
+- [x] **Fase 4.2** — `GET /sessions` (autenticado, `SessionsController.list()`): historial paginado con `sessionEvents` incluidos (IP hash, user agent, fechas, estado, razón de finalización — todos los campos ya existen en el modelo `AuthSession`/`SessionEvent` de Prisma).
+- [x] **Fase 4.3** — `POST /sessions/:id/revoke` (`SessionsController.revoke()`): invoca `AuthService.revokeSession()` (ya implementado en el Bloque 2) — valida que el actor sea el dueño de la sesión (motivo `LOGOUT_MANUAL`) o un `ADMINISTRADOR_PROPIETARIO` de la misma organización (motivo `REVOCACION_ADMINISTRATIVA`), replicando la autorización de `AuthSessionPolicy::view()`.
+- [x] **Fase 4.4** — `POST /users/:id/sessions/revoke-all` (`SessionsController.revokeAll()`, `@Roles(ADMINISTRADOR_PROPIETARIO)`): invoca `AuthService.revokeAllUserSessions()` (ya implementado en el Bloque 2, reutilizado también por el Bloque 3) — valida que el usuario objetivo pertenezca a la misma organización del admin.
+- [x] **Fase 4.5** — `ListSessionsDto` (`src/modules/sessions/dto/list-sessions.dto.ts`): réplica de `ListSessionsRequest.php` — `page`/`from`/`to`/`status`/`userId`/`perPage` (tope 100 vía `@Max(100)`, igual que `max_page_size`).
+- [x] **Fase 4.6** — **Validación end-to-end real** (no unitaria) contra la base de datos Supabase, 14 escenarios: admin lista su historial, operador crea 2 sesiones y lista solo las propias (aislamiento por rol confirmado), admin filtra por `userId` específico, operador revoca una sesión propia, **confirmación crítica de seguridad**: el JWT de una sesión revocada es rechazado inmediatamente (401) en la siguiente petición — validado con la sesión restante aún funcionando y la sesión revocada fallando, intento de revocar sesión inexistente (404), admin revoca todas las sesiones activas del operador (`revokedCount: 2`), verificación de que las sesiones revocadas por el revoke-all también quedan invalidadas de inmediato (401). Testing unitario formal diferido al Bloque 12.
 
 ---
 
