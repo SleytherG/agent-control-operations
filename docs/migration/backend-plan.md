@@ -217,9 +217,12 @@
 
 ---
 
-## BLOQUE 9 — Módulo Reporting (Dashboards y agregaciones) ✅ COMPLETADO
+## BLOQUE 9 — Módulo Reporting (Dashboards y agregaciones) ✅ COMPLETADO (revalidado fase a fase, con 3 correcciones adicionales)
 
-> **Hallazgos corregidos durante la validación:**
+> **Hallazgo crítico corregido en la revalidación posterior** (comparación línea por línea contra el código PHP fuente):
+> 3. `getAdminMetrics()`, `getAdminTypeDistribution()` y `getTypeDistribution()` hacían `JOIN` **incondicional** a la tabla `agents`, pero PHP **nunca** hace ese JOIN en esos métodos (solo a `operation_types`). `getTimeEvolution()`/`getAdminTimeEvolution()` en PHP solo hacen JOIN a `operation_types` de forma **condicional** (cuando hay filtro `agent_id`), nunca a `agents`. Como `Operation.agentId` es nullable en el esquema, el `INNER JOIN agents` incondicional habría excluido indebidamente cualquier operación sin agente de las métricas/distribución/evolución del dashboard — una discrepancia funcional real con el comportamiento de Laravel. Corregido separando los filtros admin en dos variantes (`buildFilterClauseNoAgentsJoin`/`buildFilterClauseWithAgentsJoin`) y haciendo el JOIN de `getTimeEvolution()` condicional igual que en PHP; `getRecentOperations()` sigue siendo el único método con JOIN real a `agents`. Revalidado end-to-end contra Supabase (9 escenarios): métricas exactas, evolución temporal correcta, dashboard sin filtros, listado de operaciones recientes con `agentCode` correcto, comparación entre operadores — todos pasaron correctamente tras la corrección.
+
+> **Hallazgos corregidos durante la validación inicial:**
 > 1. `Prisma.join()` lanza una excepción cuando se le pasa un array vacío (`Expected join([]) to be called with an array of multiple elements`) — ocurría al construir la cláusula de filtros admin cuando no había ningún filtro activo. Corregido en `buildAdminFilterClause()` devolviendo `Prisma.sql\`\`` (vacío) cuando no hay filtros.
 > 2. `operator_ids` como query param único (`?operatorIds=5`) no se normalizaba a array por `class-transformer`. Corregido con un `@Transform()` explícito en `DashboardFilterDto` que envuelve valores escalares en un array de un elemento.
 
@@ -231,7 +234,7 @@
 - [x] **Fase 9.6** — Autorización equivalente a `DashboardPolicy.php`: `viewOperatorDashboard` solo `OPERADOR`, `viewAdminDashboard` solo `ADMINISTRADOR_PROPIETARIO` — verificación manual en el controller (más restrictiva que un simple `@Roles()`, ya que excluye explícitamente al rol contrario en ambas direcciones, replicando el comportamiento exacto de la Policy de PHP).
 - [x] **Fase 9.7** — Optimización de queries: todas las queries usan los índices ya existentes en `operations` (`organization_id, effective_at`, `user_id, effective_at`, `status, effective_at`, `operation_type_id, effective_at`) — mismas condiciones `WHERE`/`JOIN` que las queries SQL crudas de Laravel, sin cambios de esquema requeridos.
 - [x] **Fase 9.8** — **Validación end-to-end real** (no unitaria) contra la base de datos Supabase, 15 escenarios: dashboard operador con métricas exactas sobre datos reales (2 operaciones, `grossAmount=130.00`, `cashIn=130.00`, `netMovement=130.00`), autorización estricta en ambas direcciones (admin no puede ver dashboard de operador y viceversa, 403), dashboard admin filtrado por agente con los mismos totales, filtro por `operationTypeId` inexistente (array vacío, `operationCount=0`), anulación de una operación y verificación de que el dashboard sin `includeAnnulled` la excluye (`operationCount` de 2→1, `grossAmount` de 130.00→30.00) y con `includeAnnulled=true` la vuelve a incluir, comparación entre operadores con el monto correcto de la operación activa, comparación filtrada por `operatorIds` específico, y dashboard sin operaciones en un período distante (arrays vacíos) — todos los 15 escenarios pasaron correctamente tras corregir los 2 hallazgos.
-- [x] **Fase 9.9** — Commit `bc798f1`: `feat: modulo reporting (dashboards operador/admin, comparacion entre operadores)`, pusheado a `main`.
+- [x] **Fase 9.9** — Commits: `bc798f1` (`feat: modulo reporting...`) + `37c7963` (fix de los JOINs incorrectos a `agents` encontrados en la revalidación), pusheados a `main`.
 
 ---
 
