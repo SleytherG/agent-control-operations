@@ -136,19 +136,19 @@
 
 ---
 
-## BLOQUE 5 — Módulo Agents (Agentes bancarios y asignaciones)
+## BLOQUE 5 — Módulo Agents (Agentes bancarios y asignaciones) ✅ COMPLETADO
 
-- [ ] **Fase 5.1** — Confirmar con el equipo si se migra `Agents` (estructura vigente según migraciones más recientes) o si `BankingNetwork` (legacy) aún es necesario — **decisión bloqueante antes de continuar**, para no duplicar modelos.
-- [ ] **Fase 5.2** — DTOs: `CreateAgentDto`, `UpdateAgentDto` — replicando `AgentRequest.php` (código único, nombre, store_id, estado).
-- [ ] **Fase 5.3** — `AgentsService`: `list(organizationId, filters)`, `create(dto)`, `update(id, dto)`, `deactivate(id)` — equivalente `AgentController.php`.
-- [ ] **Fase 5.4** — Guard/lógica de autorización equivalente `AgentPolicy.php`: solo admin gestiona agentes; operador solo lee los suyos.
-- [ ] **Fase 5.5** — Endpoints: `GET/POST /agents`, `GET/PATCH /agents/:id`, `DELETE /agents/:id` (deactivate) — protegidos por rol admin.
-- [ ] **Fase 5.6** — `UserAgentAssignmentsService`: `list(userId)`, `create(userId, agentId)`, `delete(assignmentId)` — equivalente `UserAgentAssignmentController.php`, validando que no se dupliquen asignaciones activas.
-- [ ] **Fase 5.7** — Endpoints: `GET/POST /users/:id/assignments`, `DELETE /assignments/:id`.
-- [ ] **Fase 5.8** — `AgentsService.myAgents(userId)`: equivalente `MyAgentsController.php` — lista de agentes activos asignados al operador autenticado.
-- [ ] **Fase 5.9** — `GET /my-agents` (autenticado).
-- [ ] **Fase 5.10** — Testing de integración: creación/edición/desactivación de agentes, asignación/desasignación, validación de agentes duplicados por organización.
-- [ ] **Fase 5.11** — Commit y PR: `feat: módulo agentes bancarios y asignaciones operador-agente`.
+> **Decisión de alcance (Fase 5.1):** se descarta migrar `BankingNetwork` — es código PHP legacy que referencia las tablas `banks`, `bank_agents`, `stores`, `user_bank_agent_assignments`, todas **eliminadas físicamente** de la base de datos por la migración `2026_07_23_000009_drop_legacy_tables.php` (confirmado leyendo su código: `Schema::dropIfExists('user_bank_agent_assignments'/'bank_agents'/'stores'/'banks')`). Cualquier request a esos controllers fallaría en producción actual. Se migra únicamente `Agents` (estructura vigente, tablas `agents`/`user_agent_assignments` activas y con datos reales).
+- [x] **Fase 5.1** — Decisión tomada y documentada arriba: migrar solo `Agents`, descartar `BankingNetwork`.
+- [x] **Fase 5.2** — DTOs creados en `src/modules/agents/dto/`: `CreateAgentDto`, `UpdateAgentDto` (extiende de `CreateAgentDto`, mismas reglas que PHP que usa el mismo `FormRequest` para ambas rutas), `AssignAgentDto` — verificados campo por campo contra `AgentRequest.php`/`AssignAgentRequest.php`.
+- [x] **Fase 5.3** — `AgentsService` (`src/modules/agents/services/agents.service.ts`): `list()`, `createAgent()`, `updateAgent()`, `deactivateAgent()` — réplica de `AgentController::index/store/update/deactivate()`, incluyendo auditoría (`agent.created`/`agent.updated`/`agent.deactivated`) y la desactivación en cascada de asignaciones activas (`activeAssignments()->update(['is_active' => false, 'ends_at' => now()])` de PHP).
+- [x] **Fase 5.4** — Autorización equivalente a `AgentPolicy.php` implementada vía `@Roles(Role.ADMINISTRADOR_PROPIETARIO)` en todos los endpoints de gestión de agentes/asignaciones (PHP: solo admin gestiona; ningún endpoint de lectura individual para operador en el `AgentPolicy` original más allá de `MyAgentsController`, que no tiene autorización explícita — solo filtra por `auth()->user()`).
+- [x] **Fase 5.5** — Endpoints en `AgentsController`: `GET/POST /agents`, `PATCH /agents/:id`, `POST /agents/:id/deactivate`.
+- [x] **Fase 5.6** — `UserAgentAssignmentsService` (`src/modules/agents/services/user-agent-assignments.service.ts`): `list()`, `assign()`, `deactivate()` — réplica de `UserAgentAssignmentController::index/store/destroy()`, validando que el agente exista/esté activo/pertenezca a la organización (`exists:agents,id,is_active,1`) y que no exista ya una asignación activa duplicada (`Rule::unique(...)->where('is_active', true)`), con auditoría `assignment.created`/`assignment.deactivated`.
+- [x] **Fase 5.7** — Endpoints: `GET/POST /users/:id/assignments`, `POST /assignments/:id/deactivate` (no hard delete, réplica exacta de `destroy()` que solo marca `is_active = false`).
+- [x] **Fase 5.8** — `UserAgentAssignmentsService.list()` reutilizado por el endpoint `GET /my-agents` — réplica de `MyAgentsController::index()`.
+- [x] **Fase 5.9** — `GET /my-agents` (autenticado, sin `@Roles()` — cualquier operador ve sus propias asignaciones).
+- [x] **Fase 5.10** — **Validación end-to-end real** (no unitaria) contra la base de datos Supabase, 17 escenarios: creación de agente, código duplicado (409), listado con filtro, actualización, creación de operador, asignación de agente, asignación duplicada activa (409), listado de asignaciones, cambio de contraseña obligatorio del operador, `GET /my-agents` mostrando el agente asignado, intento de creación de agente por un operador (403, solo admin), desactivación de asignación individual, verificación de que `/my-agents` refleja la asignación inactiva, desactivación del agente (con terminación en cascada de asignaciones restantes), idempotencia al reintentar desactivar el agente ("ya está inactivo"), y desactivación del operador de prueba — todos los escenarios pasaron correctamente.
 
 ---
 
