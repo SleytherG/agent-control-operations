@@ -250,12 +250,11 @@
 
 ## BLOQUE 11 — Contrato de API y documentación
 
-- [ ] **Fase 11.1** — Decorar todos los DTOs con `@ApiProperty()` de Swagger para generar documentación completa y tipada.
-- [ ] **Fase 11.2** — Decorar todos los controllers/endpoints con `@ApiTags()`, `@ApiOperation()`, `@ApiResponse()`.
-- [ ] **Fase 11.3** — Generar cliente TypeScript tipado desde el esquema OpenAPI (`openapi-typescript` o similar) para uso directo en el repo `agenteflow-mobile` (Bloque 2 del `frontend-plan.md`) — evita mantener tipos duplicados manualmente entre backend y frontend.
-- [ ] **Fase 11.4** — Publicar el paquete de tipos generado (opcional: como paquete npm privado, o simplemente como artefacto versionado copiado al repo frontend).
-- [ ] **Fase 11.5** — Documentar en `README.md` del repo `agenteflow-api` cómo levantar el entorno local, variables de entorno requeridas, y cómo regenerar el cliente de tipos.
-- [ ] **Fase 11.6** — Commit: `docs: contrato de API completo (Swagger) + generación de tipos para frontend`.
+- [x] **Fase 11.1** — Los 20 DTOs de todos los módulos (Auth, Users, Agents, Organization, Operations, Sessions, Reporting, DailyClosing) decorados con `@ApiProperty()`/`@ApiPropertyOptional()`, incluyendo descripción, ejemplo y restricciones (longitud/enum/mínimo/máximo) según corresponda en cada campo.
+- [x] **Fase 11.2** — Los 9 controllers (`AuthController`, `UsersController`, `SessionsController`, `AgentsController`, `OrganizationController`, `OperationsController`, `OperationTypesController`, `DailyClosingController`, `DashboardController`) decorados con `@ApiTags()`/`@ApiBearerAuth()` a nivel de clase y `@ApiOperation()`/`@ApiResponse()` en los endpoints principales. Verificado vía `/docs-json`: 42 rutas y 20 schemas generados correctamente.
+- [x] **Fase 11.3** — Cliente de tipos TypeScript generado desde el spec OpenAPI con [`openapi-typescript`](https://github.com/openapi-ts/openapi-typescript) (`src/generated/api-types.ts`, 2436 líneas), excluido de lint/prettier como artefacto autogenerado (`eslint.config.mjs`). Script npm `generate:api-types` agregado para regenerarlo reproduciblemente contra `http://localhost:3000/docs-json`.
+- [x] **Fase 11.4** — Artefacto de tipos copiado como archivo versionado a `control-operaciones-agente-frontend/src/types/generated/api-types.ts`, disponible para consumo directo en el frontend Expo sin reemplazar los tipos manuales existentes (decisión no invasiva, evita romper trabajo en curso del frontend).
+- [x] **Fase 11.5** — `README.md` del repo `control-operaciones-agente-backend` reescrito por completo (reemplazando el boilerplate de NestJS): stack, variables de entorno, instalación, cómo levantar el entorno local, cómo acceder a Swagger UI/JSON, cómo regenerar y copiar el cliente de tipos, testing, lint y estructura del proyecto módulo por módulo.
 
 ---
 
